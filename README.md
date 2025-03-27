@@ -17,7 +17,7 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
-### Long list of to-do: 
+### Long list of ideas for experiments:
 
 - [ ] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
   - [ ] SSVEP
@@ -26,8 +26,14 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] Replace AvgPool with attention-based pooling
 - [ ] Modify encoder/decoder (e.g., skip connections)
 - [ ] Introduce reconstruction loss in the frequency domain
+- [ ] Explore contrastive loss between real vs. generated EEG in latent space
+- [ ] Implement classifier-free guidance style objective (conditioned vs. unconditioned paths)
 - [ ] Tune loss weighting: `α * classification + β * diffusion`
-- [ ] Experiment with the training procedure (cold start vs. step-by-step freezing) 
+- [ ] Experiment with training procedure:
+  - [ ] Cold start: train all modules jointly from scratch
+  - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
+- [ ] Run EDA & Viz:
+  - [ ] Generate samples of synthetic EEG and compare visually/statistically with real EEG  
 
 > *Add a summary of changes.*
 
