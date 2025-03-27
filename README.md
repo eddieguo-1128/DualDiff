@@ -4,13 +4,13 @@ It's implemented as part of [CMU 11-785 Course on Deep Learning](https://deeplea
 
 ## Baseline
 
-- **Motor Imagery** Adapted from [EEGNet](https://github.com/amrzhd/EEGNet/tree/main) for BCI Competition IV 2a dataset.
+- **Motor Imagery**: Adapted from [EEGNet](https://github.com/amrzhd/EEGNet/tree/main) for BCI Competition IV 2a dataset.
 
-- **SSVEP** Adapted from [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor). Dataset: [Tsinghua BCI Benchmark Dataset](https://bci.med.tsinghua.edu.cn/download.html).
+- **SSVEP**: Adapted from [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) using [Tsinghua BCI Benchmark Dataset](https://bci.med.tsinghua.edu.cn/download.html).
 
-- **P300** Adapted from the [P300 Speller](https://github.com/Manucar/p300-speller) repository.
+- **P300**: Adapted from the [P300 Speller](https://github.com/Manucar/p300-speller) repository.
 
-- **FEIS** *Source to be updated.*
+- **FEIS**: *Source to be updated.*
   
 ## Acknowledgements
 
