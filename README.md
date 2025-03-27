@@ -17,7 +17,7 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
-### Long list of to-do 
+### Long list of to-do: 
 
 - [ ] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
   - [ ] SSVEP
