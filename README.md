@@ -13,8 +13,10 @@ This project implements a joint EEG generation and classification model using de
 
 ## Diffusion model 
 
+Initially based on the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG data generation. We adapted and extended core components. 
+
 > *To be updated after final experiments.*
   
 ## Acknowledgements
 
-This project is based on the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG data generation. We adapted and extended core components. 
+> *To be updated.*
