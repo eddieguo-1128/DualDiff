@@ -4,17 +4,12 @@ This project implements a joint EEG generation and classification model using de
 
 ## Baseline
 
-As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy. It help us evaluate the impact of diffusion-based data generation and joint training.
-
-- **Motor Imagery**: Adapted from [EEGNet](https://github.com/amrzhd/EEGNet/tree/main) for BCI Competition IV 2a dataset.
-
-- **SSVEP**: Adapted from [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) using [Tsinghua BCI Benchmark Dataset](https://bci.med.tsinghua.edu.cn/download.html).
-
-- **P300**: Adapted from the [P300 Speller](https://github.com/Manucar/p300-speller) repository.
-
-- **FEIS**: Adapted from *To be updated*
-
-> *Add a table with results.*
+| Task            | Dataset                                         | Reference Implementation                                                                 | Accuracy |
+|-----------------|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------|
+| Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/tree/main)                                     | 69.00%   |
+| SSVEP           | Tsinghua BCI Benchmark Dataset                   | [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) | 84.88%   |
+| P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                  | 74.00% / 77.98% |
+| Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | *To be updated*                                                                           | 6.37%    |
 
 ## Diffusion model 
 
