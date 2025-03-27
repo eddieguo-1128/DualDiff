@@ -1,21 +1,22 @@
 # Dual-Objective Diffusion Models for EEG
 
-It's implemented as part of [CMU 11-785 Course on Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
+This project implements a joint EEG generation and classification model using denoising diffusion techniques. It's a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
 
 ## Baseline
 
-- **Motor Imagery**: Adapted from [EEGNet](https://github.com/amrzhd/EEGNet/tree/main) for BCI Competition IV 2a dataset.
+| Task            | Dataset                                         | Reference implementation                                                                 | Accuracy |
+|-----------------|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------|
+| Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/tree/main)                                     | 69.00%   |
+| SSVEP           | Tsinghua BCI Benchmark Dataset                   | [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) | 84.88%   |
+| P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                  | 74.00% / 77.98% |
+| Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | *To be updated*                                                                           | 6.37%    |
 
-- **SSVEP**: Adapted from [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) using [Tsinghua BCI Benchmark Dataset](https://bci.med.tsinghua.edu.cn/download.html).
+## Diffusion model 
 
-- **P300**: Adapted from the [P300 Speller](https://github.com/Manucar/p300-speller) repository.
+Initially based on the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG data generation. We adapted and extended core components. 
 
-- **FEIS**: *Source to be updated.*
-
-## Key experiments and improvements 
-
-*To be updated.*
+> *To be updated after final experiments.*
   
 ## Acknowledgements
 
-This project is based on the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG data generation. We adapted and extended core components. 
+> *To be updated.*
