@@ -27,7 +27,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with the model**: 
   - [ ] Check skip connections in encoder/decoder
   - [ ] Replace AvgPool with attention-based pooling before the classifier
-  - [ ] Try different types of diffusion models
+  - [ ] Change the architecture (double block inside - more on this later)
 - [ ] **Experiment with losses**:
   - [ ] Introduce reconstruction loss in the frequency domain
   - [ ] Explore contrastive loss between real vs. generated EEG in latent space
