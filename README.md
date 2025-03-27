@@ -4,6 +4,8 @@ This project implements a joint EEG generation and classification model using de
 
 ## Baseline
 
+As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
+
 | Task            | Dataset                                         | Reference implementation                                                                 | Accuracy |
 |-----------------|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------|
 | Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/tree/main)                                     | 69.00%   |
@@ -11,11 +13,15 @@ This project implements a joint EEG generation and classification model using de
 | P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                  | 74.00% / 77.98% |
 | Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | *To be updated*                                                                           | 6.37%    |
 
-## Diffusion model 
+## Experiments
 
-Initially based on the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG data generation. We adapted and extended core components. 
+We adapted and extended core components of the [DiffE repository](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
-> *To be updated after final experiments.*
+> *Add a summary of changes.*
+
+## Results
+
+> *Add a table with results after final experiments.*
   
 ## Acknowledgements
 
