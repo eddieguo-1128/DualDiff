@@ -4,7 +4,7 @@ This project implements a joint EEG generation and classification model using de
 
 ## Baseline
 
-| Task            | Dataset                                         | Reference Implementation                                                                 | Accuracy |
+| Task            | Dataset                                         | Reference implementation                                                                 | Accuracy |
 |-----------------|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------|
 | Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/tree/main)                                     | 69.00%   |
 | SSVEP           | Tsinghua BCI Benchmark Dataset                   | [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) | 84.88%   |
