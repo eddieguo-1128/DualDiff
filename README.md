@@ -22,17 +22,20 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
   - [ ] SSVEP
   - [ ] FEIS
-- [ ] Try spectrogram input instead of raw signal
-- [ ] Replace AvgPool with attention-based pooling
-- [ ] Modify encoder/decoder (e.g., skip connections)
-- [ ] Introduce reconstruction loss in the frequency domain
-- [ ] Explore contrastive loss between real vs. generated EEG in latent space
-- [ ] Implement classifier-free guidance style objective (conditioned vs. unconditioned paths)
-- [ ] Tune loss weighting: `α * classification + β * diffusion`
-- [ ] Experiment with training procedure:
+- [ ] **Experiment with feature extractors**: 
+  - [ ] Try spectrogram input instead of raw signal
+- [ ] **Experiment with the model**: 
+  - [ ] Check skip connections in encoder/decoder
+  - [ ] Replace AvgPool with attention-based pooling before the classifier 
+- [ ] **Experiment with losses**:
+  - [ ] Introduce reconstruction loss in the frequency domain
+  - [ ] Explore contrastive loss between real vs. generated EEG in latent space
+  - [ ] Tune loss weighting: `α * classification + β * diffusion`
+  - [ ] Implement classifier-free guidance style objective (conditioned vs. unconditioned paths)
+- [ ] **Experiment with training procedure**:
   - [ ] Cold start: train all modules jointly from scratch
   - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
-- [ ] Run EDA & Viz:
+- [ ] **Run EDA & viz**:
   - [ ] Generate samples of synthetic EEG and compare visually/statistically with real EEG  
 
 > *Add a summary of changes.*
