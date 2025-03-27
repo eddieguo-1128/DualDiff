@@ -11,6 +11,10 @@ It's implemented as part of [CMU 11-785 Course on Deep Learning](https://deeplea
 - **P300**: Adapted from the [P300 Speller](https://github.com/Manucar/p300-speller) repository.
 
 - **FEIS**: *Source to be updated.*
+
+## Key experiments and improvements 
+
+*To be updated.*
   
 ## Acknowledgements
 
