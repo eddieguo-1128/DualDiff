@@ -8,12 +8,12 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 | Task            | Dataset                                         | Reference implementation                                                                 | Accuracy |
 |-----------------|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------|
-| Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/tree/main)                                     | 69.00%   |
+| Motor imagery   | BCI Competition IV 2a                            | [EEGNet](https://github.com/amrzhd/EEGNet/)                                             | 69.00%   |
 | SSVEP           | Tsinghua BCI Benchmark Dataset                   | [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor) | 84.88%   |
 | P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                  | 74.00% / 77.98% |
-| Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | *TODO*                                                                           | 6.37%    |
+| Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | [FEIS](https://github.com/scottwellington/FEIS/tree/main)                  | 6.37%    |
 
-## Experiments
+## Experiments 
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
