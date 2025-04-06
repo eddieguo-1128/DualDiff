@@ -1,7 +1,6 @@
 # Dual-Objective Diffusion Models for EEG
 
-This project implements a joint EEG generation and classification model using denoising diffusion techniques. It's a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
-
+This project implements a joint EEG generation and classification model using denoising diffusion techniques. 
 ## Baseline
 
 As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
@@ -46,5 +45,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 > *TODO - Add a table with results after final experiments.*
   
 ## Acknowledgements
+
+It's a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
 
 > *TODO - To be updated.*
