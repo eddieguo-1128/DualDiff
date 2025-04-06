@@ -46,6 +46,6 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   
 ## Acknowledgements
 
-It's a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
+The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
 
 > *TODO - To be updated.*
