@@ -29,7 +29,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] Change the architecture (double block inside - more on this later)
 - [ ] **Experiment with losses**:
   - [ ] Introduce reconstruction loss in the frequency domain
-  - [ ] Explore contrastive loss between real vs. generated EEG in latent space
+  - [ ] Explore contrastive losses between real vs. generated EEG in latent space
   - [ ] Tune loss weighting: `α * classification + β * diffusion`
   - [ ] Implement classifier-free guidance style objective (conditioned vs. unconditioned paths)
 - [ ] **Experiment with training procedure**:
