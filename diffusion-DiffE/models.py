@@ -175,7 +175,29 @@ class ConditionalUNet(nn.Module):
         up = (up1, up2, up3)
         return out, down, up
 
+class AttentionPool1d(nn.Module):
+    def __init__(self, in_channels):
+        super(AttentionPool1d, self).__init__()
+        # Learnable query vector (shape: [in_channels])
+        self.query = nn.Parameter(torch.randn(in_channels))
 
+    def forward(self, x):
+        """
+        x: Tensor of shape (B, C, L) where B=batch size, C=channels, L=sequence length
+        Returns a tensor of shape (B, C) by computing a weighted sum over L.
+        """
+        B, C, L = x.shape
+        # Permute x to shape (B, L, C)
+        x_perm = x.permute(0, 2, 1)  # (B, L, C)
+        # Compute attention scores as dot-product between each time step and the query vector.
+        # Resulting scores shape: (B, L)
+        scores = torch.einsum('blc,c->bl', x_perm, self.query)
+        # Softmax over the time dimension to get attention weights.
+        weights = F.softmax(scores, dim=-1)  # (B, L)
+        # Compute weighted sum over the time dimension.
+        pooled = torch.sum(x * weights.unsqueeze(1), dim=2)  # (B, C)
+        return pooled
+    
 class Encoder(nn.Module):
     def __init__(self, in_channels, dim=512):
         super(Encoder, self).__init__()
@@ -189,8 +211,9 @@ class Encoder(nn.Module):
         self.down2 = UnetDown(self.e1_out, self.e2_out, 1, gn=8, factor=2)
         self.down3 = UnetDown(self.e2_out, self.e3_out, 1, gn=8, factor=2)
 
-        self.avg_pooling = nn.AdaptiveAvgPool1d(output_size=1)
-        self.max_pooling = nn.AdaptiveMaxPool1d(output_size=1)
+        # self.avg_pooling = nn.AdaptiveAvgPool1d(output_size=1)
+        self.att_pooling = AttentionPool1d(self.e3_out)
+        # self.max_pooling = nn.AdaptiveMaxPool1d(output_size=1)
         self.act = nn.Tanh()
 
     def forward(self, x0):
@@ -198,7 +221,8 @@ class Encoder(nn.Module):
         dn1 = self.down1(x0)  # 2048 -> 1024
         dn2 = self.down2(dn1)  # 1024 -> 512
         dn3 = self.down3(dn2)  # 512 -> 256
-        z = self.avg_pooling(dn3).view(-1, self.e3_out)  # [b, features]
+        # z = self.avg_pooling(dn3).view(-1, self.e3_out)  # [b, features]
+        z = self.att_pooling(dn3)
         down = (dn1, dn2, dn3)
         out = (down, z)
         return out
