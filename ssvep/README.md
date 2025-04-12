@@ -23,3 +23,5 @@ SSVEP:
 "svep_diffE_eegnet_encoder_loss-ce+supcon.ipynb": modified the loss as "loss = loss_c + loss_supcon". loss_c uses cross entropy.
 
 "svep_diffE_eegnet_encoder_loss-ce+supcon+decoder.ipynb": add loss for decoder reconstruction, add projection for improving supcon loss, and make  beta and gamma gradually increasing during training.
+
+"ssvep_diffE_newdata.ipynb": run on data_4s from Kip's group
