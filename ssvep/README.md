@@ -18,4 +18,4 @@ SSVEP:
 
 "ssvep_diffE_eegnet_encoder.ipynb": replace the encoder with eegnet
 
-"svep_diffE_eegnet_encoder_loss-ce+supcon.ipynb": modified the loss as "loss = alpha * loss_c + beta * loss_supcon". loss_c uses cross entropy.
+"svep_diffE_eegnet_encoder_loss-ce+supcon.ipynb": modified the loss as "loss = loss_c + loss_supcon". loss_c uses cross entropy.
