@@ -13,3 +13,7 @@ SSVEP:
 "ssvep_diffE_train_val_test_new_encoder-fc.ipynb": new grouping method and only train encoder and FC
 
 "ssvep_diffE_Spectrogram_train_val_test_new.ipynb": new grouping method and transform the 1D EEG data to 2D spectrogram
+
+12/04/2025
+
+"ssvep_diffE_eegnet_encoder.ipynb": replace the encoder with eegnet
