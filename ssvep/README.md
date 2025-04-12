@@ -17,3 +17,5 @@ SSVEP:
 12/04/2025
 
 "ssvep_diffE_eegnet_encoder.ipynb": replace the encoder with eegnet
+"Ben_ssvep_diffE_raw_input": original implementation using raw data as input
+"Ben_ssvep_diffE_Spectrogram_diff_EEG": attach the eegnet after CAE decoder and train autoencoders / eegnet separately (originla fc loss flow lowered accuracy)
