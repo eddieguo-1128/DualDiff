@@ -18,9 +18,9 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 ### Long list of ideas:
 
-- [ ] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
-  - [ ] SSVEP
-  - [ ] FEIS
+- [x] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
+  - [x] SSVEP
+  - [x] FEIS
 - [ ] **Experiment with feature extractors**: 
   - [ ] Try spectrogram input instead of raw signal
 - [ ] **Experiment with the model**: 
