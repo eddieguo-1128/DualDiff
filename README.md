@@ -17,7 +17,7 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
-### Long list of ideas:
+### Long to-do:
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all 
 - [x] **Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on**: 
