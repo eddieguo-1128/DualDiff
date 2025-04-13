@@ -58,7 +58,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 ## Results
 
-> *TODO - Add a table with results after final experiments.*
+> *TODO - Create an ablations sheet and add a table with results after final experiments.*
   
 ## Acknowledgements
 
