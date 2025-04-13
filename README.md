@@ -27,7 +27,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] Try normalizing the input EEG
   - [ ] Try normalizing the latent space learned by the diffusion (z)
 - [ ] **Experiment with feature extractors**: 
-  - [ ] Try spectrogram input instead of raw EEG signal
+  - [x] Try spectrogram input instead of raw EEG signal @Ben 
 - [ ] **Experiment with the model**: 
   - [x] Use EEGNet as an encoder in diffusion @Mengchun
   - [ ] Use EEGNet as a classifier instead of FC @Ben 
