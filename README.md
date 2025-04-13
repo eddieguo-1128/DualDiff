@@ -39,7 +39,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with losses**:
   - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) @Mengchun
   - [x] (SSVEP) Try a contrastive loss between `z and y` @Mengchun
-  - [x] (SSVEP) Try different reconstruction losses, for example: (1) `x and x_hat`; (2) `x and decoder_out`; (3) `x_hat and decoder_out`; (4) `x, x_hat, and decoder_out` @Mengchun
+  - [x] (SSVEP) Try different reconstruction losses, for example, between: (1) `x and x_hat`; (2) `x and decoder_out`; (3) `x_hat and decoder_out`; (4) `x, x_hat, and decoder_out` @Mengchun
   - [x] (SSVEP) Tune weighting: `loss = α * classification + β * reconstruction + γ * contrastive` @Mengchun
   - [ ] Introduce reconstruction loss in the frequency domain
 - [ ] **Experiment with training procedure**:
