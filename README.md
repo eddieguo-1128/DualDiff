@@ -30,7 +30,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] Try spectrogram input instead of raw EEG signal @Ben 
 - [ ] **Experiment with the model**: 
   - [x] Use EEGNet as an encoder in diffusion @Mengchun
-  - [ ] Use EEGNet as a classifier instead of FC @Ben 
+  - [x] Use EEGNet as a final classifier instead of FC @Ben 
   - [x] Replace AvgPool with attention-based pooling @Parusha
   - [ ] Change the architecture (double block inside - more on this later)
 - [ ] **Experiment with losses**:
