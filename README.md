@@ -21,19 +21,19 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all 
 - [x] **Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on**: 
-  - [x] SSVEP dataset
+  - [x] SSVEP dataset (use either .mat or .npy data)
   - [x] FEIS dataset 
 - [ ] **Experiment with local (subject-level) normalization**: @Ben and @Mengchun
   - [ ] Try normalizing the input EEG
   - [ ] Try normalizing the latent space learned by the diffusion (z)
-  - [ ] Think about a learnable `subject layer` that would learn the subject space and "automatically" adjust
+  - [ ] Maybe think about a learnable `subject layer` that would learn the subject space and magically adjust
 - [ ] **Experiment with feature extractors**: 
   - [x] Try spectrogram input instead of raw EEG signal @Ben 
 - [ ] **Experiment with the model**: 
   - [x] Use EEGNet as an encoder in diffusion @Mengchun
   - [x] Use EEGNet as a final classifier instead of FC @Ben 
   - [x] Replace AvgPool with attention-based pooling @Parusha
-  - [ ] Change the architecture (double block inside - more on this later)
+  - [ ] Change the diffusion architecture (double block inside - more on this later)
 - [ ] **Experiment with losses**:
   - [x] Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) @Mengchun
   - [x] Try a contrastive loss between `z and y` @Mengchun
