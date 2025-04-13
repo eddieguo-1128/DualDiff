@@ -19,10 +19,10 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 ### Long list of ideas:
 
-- [x] Prepare proper train, val, and two test sets (seen and unseen subjects) @all 
-- [x] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
-  - [x] SSVEP
-  - [x] FEIS
+- [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all 
+- [x] **Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on**: 
+  - [x] SSVEP dataset
+  - [x] FEIS dataset 
 - [ ] **Experiment with local (subject-level) normalization**: @Ben and @Mengchun
   - [ ] Try normalizing the input EEG
   - [ ] Try normalizing the latent space learned by the diffusion (z)
