@@ -26,7 +26,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with local (subject-level) normalization**: @Ben and @Mengchun
   - [ ] Try normalizing the input EEG
   - [ ] Try normalizing the latent space learned by the diffusion (z)
-  - [ ] Think about more advanced "subject layers" 
+  - [ ] Think about a learnable `subject layer` that would learn the subject space and "automatically" adjust
 - [ ] **Experiment with feature extractors**: 
   - [x] Try spectrogram input instead of raw EEG signal @Ben 
 - [ ] **Experiment with the model**: 
