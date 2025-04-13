@@ -19,6 +19,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 ### Long list of ideas:
 
+- [x] Prepare proper train, val, and two test sets (seen and unseen subjects) @all 
 - [x] Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on: 
   - [x] SSVEP
   - [x] FEIS
@@ -42,7 +43,9 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] Cold start: train all modules jointly from scratch
   - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
 - [ ] **Run EDA & viz**: @Mengchun
-  - [x] Generate samples of synthetic EEG and compare visually/statistically with real EEG  
+  - [x] Run t-SNE on EEG inputs VS labels (train set)
+  - [x] Run t-SNE on latent space (z) VS labels (train set)
+  - [x] Compare the diffusion output at `x`, `x_hat`, `noise`, and `decoder_out`
 
 > *TODO - Add a summary of changes.*
 
