@@ -13,6 +13,8 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 | P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                    | 74.00% / 77.98% |
 | Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | [FEIS](https://github.com/scottwellington/FEIS/tree/main)                                  | 6.37%    |
 
+> *TODO - Find the paper with the state-of-the-art performance on the FEIS dataset, provided it's trained on ALL subject data. Does 6.37% include ALL subjects & ALL stages?*
+
 ## Experiments 
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
@@ -22,7 +24,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all 
 - [x] **Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on**: 
   - [x] SSVEP dataset (use either .mat or .npy data) @Ben and @Mengchun
-  - [x] FEIS dataset (benchmark the performance per stage (hearing, thinking, speaking) + find the paper with the state-of-the-art performance on the FEIS dataset provided it's trained on ALL subject data) @Parusha and Eddie
+  - [x] FEIS dataset (benchmark the performance per stage (hearing, thinking, speaking) @Parusha and Eddie
 - [ ] **Experiment with local (subject-level) normalization**: @Ben and @Mengchun
   - [ ] (SSVEP) Try normalizing the input EEG
   - [ ] (SSVEP) Try normalizing the latent space learned by the diffusion (z)
