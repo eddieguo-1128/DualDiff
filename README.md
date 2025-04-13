@@ -44,8 +44,10 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
 - [ ] **Run EDA & viz**: @Mengchun
   - [x] Run t-SNE on EEG inputs VS labels (train set)
+  - [x] Run t-SNE on EEG inputs VS subjects (train set)
   - [x] Run t-SNE on latent space (z) VS labels (train set)
-  - [x] Compare the diffusion output at `x`, `x_hat`, `noise`, and `decoder_out`
+  - [x] Run t-SNE on latent space (z) VS subjects (train set)
+  - [x] Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
 
 > *TODO - Add a summary of changes.*
 
