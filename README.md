@@ -22,7 +22,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all 
 - [x] **Train and evaluate [DiffE repo](https://github.com/yorgoon/DiffE) on**: 
   - [x] SSVEP dataset (use either .mat or .npy data) @Ben and @Mengchun
-  - [x] FEIS dataset (benchmark the performance per stage (hearing, thinking, speaking) AND when trained on all three stages combined) @Parusha and Eddie
+  - [x] FEIS dataset (benchmark the performance per stage (hearing, thinking, speaking)) @Parusha and Eddie
 - [ ] **Experiment with local (subject-level) normalization**: @Ben and @Mengchun
   - [ ] Try normalizing the input EEG
   - [ ] Try normalizing the latent space learned by the diffusion (z)
@@ -43,6 +43,8 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with training procedure**:
   - [ ] Cold start: train all modules jointly from scratch
   - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
+- [ ] **Experiment with multimodality**: @Parusha and Eddie
+  - [ ] (For FEIS dataset) Think about creatively combining all three stages/modalities (hearing, thinking, speaking)
 - [ ] **Run EDA & viz**: @Mengchun
   - [x] Run t-SNE on EEG inputs VS labels (train set)
   - [x] Run t-SNE on EEG inputs VS subjects (train set)
