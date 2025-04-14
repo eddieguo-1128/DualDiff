@@ -27,3 +27,7 @@ SSVEP:
 "svep_diffE_eegnet_encoder_loss-ce+supcon+decoder.ipynb": add loss for decoder reconstruction, add projection for improving supcon loss, and make  beta and gamma gradually increasing during training.
 
 "ssvep_diffE_newdata.ipynb": run on data_4s from Kip's group
+
+12/14/2025
+
+"svep_diffE_eegnet_encoder_loss-ce+supcon+decoder-correct.ipynb": fixed t-SNE problem caused by dataset shuffling.
