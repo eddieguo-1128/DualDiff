@@ -34,7 +34,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (SSVEP) Use local (subject-level) normalization of the latent space learned by the diffusion (z) -- performs better
   - [ ] (SSVEP) Maybe think about a learnable `subject layer` that would learn the subject space and magically adjust
 - [ ] **Experiment with feature extractors**: 
-  - [x] (SSVEP) Try spectrogram input instead of raw EEG signal @Ben
+  - [x] (SSVEP) Try spectrogram input instead of raw EEG signal @Ben -- some implementation issues
 - [ ] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
   - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`) - @Ben
