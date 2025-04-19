@@ -22,7 +22,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 ### Long to-do:
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all
-- [ ] **Establish the baseline/benchmark**: 
+- [ ] **Establish the baseline/benchmark**: @all
   - [ ] (SSVEP) Check literature for SOTA (char-level) and calculate the chance/random guess @Mengchun
   - [ ] (FEIS) Check literature for SOTA (all subjects + individual vs performance per stage: hearing, thinking, speaking vs all three stages combined) and calculate the chance/random guess @Parusha and Eddie
   - [x] (SSVEP) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Ben and @Mengchun
@@ -41,11 +41,11 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [ ] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [ ] Change the diffusion architecture (double block inside - more on this later)
-- [ ] **Experiment with losses**:
-  - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) @Mengchun
-  - [x] (SSVEP) Try a contrastive loss between `z and y` @Mengchun
-  - [x] (SSVEP) Try different reconstruction losses, for example, between: (1) `x and x_hat`; (2) `x and decoder_out`; **(3) `x_hat and decoder_out`**; (4) `x, x_hat, and decoder_out` @Mengchun
-  - [x] (SSVEP) Tune weighting: `loss = α * classification + β * reconstruction + γ * contrastive` @Mengchun
+- [ ] **Experiment with losses**: @Mengchun
+  - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) 
+  - [x] (SSVEP) Try a contrastive loss between `z and y` 
+  - [x] (SSVEP) Try different reconstruction losses, for example, between: (1) `x and x_hat`; (2) `x and decoder_out`; **(3) `x_hat and decoder_out`**; (4) `x, x_hat, and decoder_out` 
+  - [x] (SSVEP) Tune weighting: `loss = α * classification + β * reconstruction + γ * contrastive` 
   - [ ] Introduce reconstruction loss in the frequency domain 
 - [ ] **Experiment with training procedure**:
   - [ ] Cold start: train all modules jointly from scratch
