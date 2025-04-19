@@ -22,7 +22,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 ### Long to-do:
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all
-- [ ] **Establish the baseline/benchmark**: @all
+- [ ] **Establish the baseline/benchmark**: 
   - [ ] (SSVEP) Check literature for SOTA (char-level) and calculate the chance/random guess @Mengchun
   - [ ] (FEIS) Check literature for SOTA (all subjects + individual vs performance per stage: hearing, thinking, speaking vs all three stages combined) and calculate the chance/random guess @Parusha and Eddie
   - [x] (SSVEP) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Ben and @Mengchun
