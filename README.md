@@ -37,7 +37,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] (SSVEP) Try spectrogram input instead of raw EEG signal @Ben -- some implementation issues, so maybe skip for now
 - [ ] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
-  - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`) - @Ben
+  - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`); [relevant paper](https://www.sciencedirect.com/science/article/pii/S0957417424024527) - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [ ] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [ ] Change the diffusion architecture (double block inside - more on this later)
