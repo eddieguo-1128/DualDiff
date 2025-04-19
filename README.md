@@ -53,10 +53,10 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with multimodality**: @Parusha and Eddie
   - [ ] (FEIS) Think about creatively combining all three stages/modalities (hearing, thinking, speaking); maybe introducing a separate "encoder" for each stage/modality and then fusing it before passing to the diffusion ddpm block
 - [x] **Run EDA & viz**: @Mengchun
-  - [x] (ALL) Run t-SNE on EEG inputs VS labels (train set)
-  - [x] (ALL) Run t-SNE on EEG inputs VS subjects (train set)
-  - [x] (ALL) Run t-SNE on latent space (z) VS labels (train set)
-  - [x] (ALL) Run t-SNE on latent space (z) VS subjects (train set)
+  - [x] (ALL) Run t-SNE/PCA on EEG inputs VS labels (train set)
+  - [x] (ALL) Run t-SNE/PCA on EEG inputs VS subjects (train set)
+  - [x] (ALL) Run t-SNE/PCA on latent space (z) VS labels (train set)
+  - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
 
 > *TODO - Add a summary of changes.*
