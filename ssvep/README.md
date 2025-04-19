@@ -28,6 +28,16 @@ SSVEP:
 
 "ssvep_diffE_newdata.ipynb": run on data_4s from Kip's group
 
-12/14/2025
+12/04/2025
 
 "svep_diffE_eegnet_encoder_loss-ce+supcon+decoder-correct.ipynb": fixed t-SNE problem caused by dataset shuffling.
+
+18/04/2025
+
+"baseline_ssvep_char_pytorch.ipynb": baseline model for pytorch-version eegnet on char.npy data
+
+"svep_diffE_eegnet_encoder_loss2.ipynb": fixed the error in the class eegnet, making acc return to 80%
+
+"svep_diffE_eegnet_encoder_loss_z_local_norm2.ipynb": local normalization by subject on z
+
+"svep_diffE_eegnet_encoder_loss_x_local_norm2.ipynb": local normalization by subject on input x
