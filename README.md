@@ -2,6 +2,8 @@
 
 This project implements a joint EEG generation and classification model using denoising diffusion techniques. 
 
+> TODO - Update the project title at the end.
+
 ## Baseline
 
 As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
