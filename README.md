@@ -15,7 +15,7 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 | P300            | BCI Competition III Dataset II / P300 Speller    | [P300 Speller](https://github.com/Manucar/p300-speller)                                    | 74.00% / 77.98% |
 | Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | [FEIS](https://github.com/scottwellington/FEIS/tree/main)                                  | 6.37%    |
 
-> *TODO - Does 6.37% (FEIS) include ALL subjects & ALL stages?*
+> *FEIS baseline is for a model trained on ALL subjects, but using only the THINKING stage.*
 
 > *TODO - Same question to 84.88% (SSVEP)? Is it for seen, unseen, or mixed subjects?*
  
