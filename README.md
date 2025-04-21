@@ -16,8 +16,8 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 | Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | EEGNet             | 6.37%    |
 
 **Note**: 
+- SSVEP baseline is tested on a mix of seen and unseen subjects
 - FEIS baseline is for a model trained on ALL subjects, but only the THINKING stage is used.
-- SSVEP baseline is testes on a mix of seen and unseen subjects
  
 ## Experiments 
 
@@ -76,7 +76,7 @@ The project is completed as a part of [CMU 11-785: Introduction to Deep Learning
 > *TODO - To be updated.*
 
 ## References 
-- [EEGNet](https://github.com/amrzhd/EEGNet/)    
 - [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor)
 - [P300 Speller](https://github.com/Manucar/p300-speller)
+- [EEGNet](https://github.com/amrzhd/EEGNet/)    
 - [FEIS](https://github.com/scottwellington/FEIS/tree/main) 
