@@ -26,9 +26,9 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 ### Long to-do:
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects)**: @all
-- [ ] **Establish the baseline/benchmark**: 
-  - [ ] (SSVEP) Check literature for SOTA (char-level) and calculate the chance/random guess @Mengchun
-  - [ ] (FEIS) Check literature for SOTA (all subjects + individual vs performance per stage: hearing, thinking, speaking vs all three stages combined) and calculate the chance/random guess @Parusha and Eddie
+- [x] **Establish the baseline/benchmark**: 
+  - [x] (SSVEP) Check literature for SOTA (char-level) and calculate the chance/random guess @Mengchun
+  - [x] (FEIS) Check literature for SOTA (all subjects + individual vs performance per stage: hearing, thinking, speaking vs all three stages combined) and calculate the chance/random guess @Parusha and Eddie
   - [x] (SSVEP) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Ben and @Mengchun
   - [x] (FEIS) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Parusha and Eddie
   - [ ] (FEIS) Check the results using the **best** SSVEP model (from @Mengchun) @Parusha and Eddie
@@ -37,13 +37,13 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (SSVEP) Use local (subject-level) normalization of EEG (x)
   - [x] (SSVEP) Use local (subject-level) normalization of the latent space learned by the diffusion (z) -- performs better
   - [ ] (SSVEP) Maybe think about a learnable `subject layer` that would learn the subject space and magically adjust
-- [ ] **Experiment with feature extractors**: 
-  - [ ] (SSVEP) Try spectrogram input instead of raw EEG signal @Ben -- some implementation issues, so maybe skip for now
+- [x] **Experiment with feature extractors**: 
+  - [x] (SSVEP) Try spectrogram input instead of raw EEG signal @Ben -- some implementation issues, so maybe skip for now
 - [ ] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
   - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`); [relevant paper](https://www.sciencedirect.com/science/article/pii/S0957417424024527) - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
-  - [ ] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
+  - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [ ] Change the diffusion architecture (double block inside - more on this later)
 - [ ] **Experiment with losses**: @Mengchun
   - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) 
@@ -55,7 +55,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] Cold start: train all modules jointly from scratch
   - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
 - [ ] **Experiment with multimodality**: @Parusha and Eddie
-  - [ ] (FEIS) Think about creatively combining all three stages/modalities (hearing, thinking, speaking); maybe introducing a separate "encoder" for each stage/modality and then fusing it before passing to the diffusion ddpm block
+  - [ ] (FEIS) Think about creatively combining all three stages/modalities (hearing, thinking, speaking); maybe introducing a separate "encoder" for each stage/modality and then fusing it before passing to the diffusion DDPM block
 - [x] **Run EDA & viz**: @Mengchun
   - [x] (ALL) Run t-SNE/PCA on EEG inputs VS labels (train set)
   - [x] (ALL) Run t-SNE/PCA on EEG inputs VS subjects (train set)
@@ -72,8 +72,6 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 ## Acknowledgements
 
 The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
-
-> *TODO - To be updated.*
 
 ## References 
 - [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor)
