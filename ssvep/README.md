@@ -38,6 +38,10 @@ SSVEP:
 
 "svep_diffE_eegnet_encoder_loss2.ipynb": fixed the error in the class eegnet, making acc return to 80%
 
-"svep_diffE_eegnet_encoder_loss_z_local_norm2.ipynb": local normalization by subject on z - **THE BEST ONE SO FAR**
+"svep_diffE_eegnet_encoder_loss_z_local_norm2.ipynb": local normalization by subject on z 
 
 "svep_diffE_eegnet_encoder_loss_x_local_norm2.ipynb": local normalization by subject on input x
+
+23/04/2025
+
+“svep_diffE_eegnet_encoder_loss_z_local_norm2_attention.ipynb”: add attention to the eegnet encoder - **THE BEST ONE SO FAR**
