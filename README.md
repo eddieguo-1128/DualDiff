@@ -10,10 +10,12 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 | Task            | Dataset                                          | Model              | Accuracy |
 |-----------------|--------------------------------------------------|--------------------|----------|
-| SSVEP           | Tsinghua BCI Benchmark Dataset                   | EEGNet             | 84.88%   |
-| P300            | BCI Competition III Dataset II / P300 Speller    | EEGNet             | 74.00% / 77.98% |
-| Motor imagery   | BCI Competition IV 2a                            | EEGNet             | 69.00%   |
-| Brain-to-speech | Fourteen-channel EEG for Imagined Speech (FEIS)  | EEGNet             | 6.37%    |
+| SSVEP           | Tsinghua BCI Benchmark Dataset                   | EEGNet             | 85.54% (seen) / 81.03% (unseen) |
+| P300            | BCI Competition III Dataset II                   | EEGNet             | 74.00%  |
+| P300            | P300 Speller                                     | EEGNet             | 77.98%  |
+| Motor imagery   | BCI Competition IV 2a                            | EEGNet             | 69.00%  |
+| Brain-to-thought (binary) | FEIS                                   | EEGNet             | xx.xx%  |
+| Brain-to-thought (multi-class) | FEIS                              | EEGNet             | 6.37%   |
 
 **Note**: 
 - SSVEP baseline is tested on a mix of seen and unseen subjects
