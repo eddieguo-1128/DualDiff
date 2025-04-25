@@ -23,7 +23,7 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 
 **Note**: 
 - SSVEP baseline is tested on a mix of seen and unseen subjects
-- FEIS baseline is for a model trained on ALL subjects, but only the THINKING stage is used.
+- FEIS baseline is for a model trained on ALL subjects
  
 ## Experiments 
 
