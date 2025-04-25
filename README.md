@@ -68,11 +68,11 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
 
-> *TODO - Add a summary of changes.*
+> TODO - Add the final code on the drive as .py files + change the repo name
 
 ## Results
 
-> *TODO - Create an ablations sheet and add a table with results after final experiments.*
+> TODO - Add a table with results after final experiments
   
 ## Acknowledgements
 
