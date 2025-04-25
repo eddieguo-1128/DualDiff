@@ -11,8 +11,8 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 | Task                          | Dataset                      | Model  | Classes | Accuracy                      |
 |-------------------------------|-------------------------------|--------|---------|-------------------------------|
 | SSVEP                         | Tsinghua BCI Benchmark        | EEGNet | 26      | 85.54% (seen) / 81.03%  (unseen)      |
-| P300 (BCI III)                | BCI Competition III           | EEGNet | 2       | 74.00%                        |
-| P300 (Speller)                | P300 Speller                  | EEGNet | 2       | 77.98%                        |
+| P300                          | BCI Competition III           | EEGNet | 2       | 74.00%                        |
+| P300                          | P300 Speller                  | EEGNet | 2       | 77.98%                        |
 | Motor Imagery                 | BCI Competition IV 2a         | EEGNet | 4       | 69.00%                        |
 | Speech Production (binary)    | FEIS                          | EEGNet | 2       | xx.xx%                        |
 | Speech Production (16-class)  | FEIS                          | EEGNet | 16      | xx.xx%                        |
