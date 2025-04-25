@@ -46,11 +46,11 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
   - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`); [relevant paper](https://www.sciencedirect.com/science/article/pii/S0957417424024527) - @Ben
-  - [ ] (SSVEP) Same as above but experiement with mixups on the input vs output side - @Ben
+  - [ ] (SSVEP) Same as above, but experiment with mixups on the input vs output side - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [ ] Change the diffusion architecture (double block inside - more on this later)
-- [ ] **Experiment with losses**: @Mengchun
+- [x] **Experiment with losses**: @Mengchun
   - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) 
   - [x] (SSVEP) Try a contrastive loss between `z and y` 
   - [x] (SSVEP) Try different reconstruction losses, for example, between: (1) `x and x_hat`; (2) `x and decoder_out`; **(3) `x_hat and decoder_out`**; (4) `x, x_hat, and decoder_out` 
