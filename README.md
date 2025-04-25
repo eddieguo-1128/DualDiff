@@ -6,7 +6,7 @@ This project implements a joint EEG generation and classification model using de
 
 As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
 
-| Task                          | Dataset                      | Model  | Classes | Test accuracy                      |
+| Task                          | Dataset                      | Model  | # of classes | Test accuracy                      |
 |-------------------------------|-------------------------------|--------|---------|-------------------------------|
 | SSVEP                         | Tsinghua BCI Benchmark        | EEGNet | 26      | 85.54% (seen) / 81.03%  (unseen)      |
 | P300                          | BCI Competition III           | EEGNet | 2       | 74.00%                        |
