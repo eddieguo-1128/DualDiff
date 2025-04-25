@@ -12,12 +12,12 @@ As a starting point, we implemented and ran simple EEGNet models for each datase
 | P300                          | BCI Competition III           | EEGNet | 2       | 74.00%                        |
 | P300                          | P300 Speller                  | EEGNet | 2       | 77.98%                        |
 | Motor Imagery                 | BCI Competition IV 2a         | EEGNet | 4       | 69.00%                        |
-| Speech Production (binary)    | FEIS                          | EEGNet | 2       | 74.83%                        |
-| Speech Production (16-class)  | FEIS                          | EEGNet | 16      | 5.84%                         |
-| Heard Speech (binary)         | FEIS                          | EEGNet | 2       | 74.87%                        |
-| Heard Speech (16-class)       | FEIS                          | EEGNet | 16      | 5.78%                         |
-| Imagined Speech (binary)      | FEIS                          | EEGNet | 2       | 74.84%                        |
-| Imagined Speech (16-class)    | FEIS                          | EEGNet | 16      | 6.17%                         |
+| Speech Production             | FEIS                          | EEGNet | 2       | 74.83%                        |
+| Speech Production             | FEIS                          | EEGNet | 16      | 5.84%                         |
+| Heard Speech                  | FEIS                          | EEGNet | 2       | 74.87%                        |
+| Heard Speech                  | FEIS                          | EEGNet | 16      | 5.78%                         |
+| Imagined Speech               | FEIS                          | EEGNet | 2       | 74.84%                        |
+| Imagined Speech               | FEIS                          | EEGNet | 16      | 6.17%                         |
 
 **Note**: 
 - SSVEP baseline is tested on a mix of seen and unseen subjects
