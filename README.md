@@ -8,14 +8,18 @@ This project implements a joint EEG generation and classification model using de
 
 As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
 
-| Task            | Dataset                                          | Model              | Accuracy |
-|-----------------|--------------------------------------------------|--------------------|----------|
-| SSVEP           | Tsinghua BCI Benchmark Dataset                   | EEGNet             | 85.54% (seen) / 81.03% (unseen) |
-| P300            | BCI Competition III Dataset II                   | EEGNet             | 74.00%  |
-| P300            | P300 Speller                                     | EEGNet             | 77.98%  |
-| Motor imagery   | BCI Competition IV 2a                            | EEGNet             | 69.00%  |
-| Brain-to-thought (binary) | FEIS                                   | EEGNet             | xx.xx%  |
-| Brain-to-thought (multi-class) | FEIS                              | EEGNet             | 6.37%   |
+| Task                          | Dataset                      | Model  | Classes | Accuracy                      |
+|-------------------------------|-------------------------------|--------|---------|-------------------------------|
+| SSVEP                         | Tsinghua BCI Benchmark        | EEGNet | 26      | 85.54% (seen) / 81.03%  (unseen)      |
+| P300 (BCI III)                | BCI Competition III           | EEGNet | 2       | 74.00%                        |
+| P300 (Speller)                | P300 Speller                  | EEGNet | 2       | 77.98%                        |
+| Motor Imagery                 | BCI Competition IV 2a         | EEGNet | 4       | 69.00%                        |
+| Speech Production (binary)    | FEIS                          | EEGNet | 2       | xx.xx%                        |
+| Speech Production (16-class)  | FEIS                          | EEGNet | 16      | xx.xx%                        |
+| Heard Speech (binary)         | FEIS                          | EEGNet | 2       | xx.xx%                        |
+| Heard Speech (16-class)       | FEIS                          | EEGNet | 16      | xx.xx%                        |
+| Imagined Speech (binary)      | FEIS                          | EEGNet | 2       | xx.xx%                        |
+| Imagined Speech (16-class)    | FEIS                          | EEGNet | 16      | 6.37%                         |
 
 **Note**: 
 - SSVEP baseline is tested on a mix of seen and unseen subjects
