@@ -35,7 +35,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (FEIS) Check literature for SOTA (all subjects + individual vs performance per stage: hearing, thinking, speaking vs all three stages combined) and calculate the chance/random guess @Parusha and Eddie
   - [x] (SSVEP) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Ben and @Mengchun
   - [x] (FEIS) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Parusha and Eddie
-  - [ ] (FEIS) Check the results using the **best** SSVEP model (from @Mengchun) @Parusha and Eddie
+  - [x] (FEIS) Check the results using the **best** SSVEP model (from @Mengchun) @Parusha and Eddie
   - [ ] (FEIS) Check the results using the **best** SSVEP model (from @Ben) @Parusha and Eddie -- not ready yet
 - [ ] **Experiment with normalization**: @Ben and @Mengchun
   - [x] (SSVEP) Use local (subject-level) normalization of EEG (x)
@@ -46,7 +46,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [ ] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
   - [ ] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`); [relevant paper](https://www.sciencedirect.com/science/article/pii/S0957417424024527) - @Ben
-  - [ ] (SSVEP) Same as above, but experiment with mixups on the input vs output side - @Ben
+  - [x] (SSVEP) Same as above, but experiment with mixups on the input vs output side - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [ ] Change the diffusion architecture (double block inside - more on this later)
@@ -56,9 +56,9 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (SSVEP) Try different reconstruction losses, for example, between: (1) `x and x_hat`; (2) `x and decoder_out`; **(3) `x_hat and decoder_out`**; (4) `x, x_hat, and decoder_out` 
   - [x] (SSVEP) Tune weighting: `loss = α * classification + β * reconstruction + γ * contrastive` 
   - [ ] Introduce reconstruction loss in the frequency domain 
-- [ ] **Experiment with training procedure**:
-  - [ ] Cold start: train all modules jointly from scratch
-  - [ ] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
+- [x] **Experiment with training procedure**:
+  - [x] Cold start: train all modules jointly from scratch
+  - [x] Step-by-step freezing: pretrain encoder/decoder, then freeze and fine-tune classifier
 - [ ] **Experiment with multimodality**: @Parusha and Eddie
   - [ ] (FEIS) Think about creatively combining all three stages/modalities (hearing, thinking, speaking); maybe introducing a separate "encoder" for each stage/modality and then fusing it before passing to the diffusion DDPM block
 - [x] **Run EDA & viz**: @Mengchun
@@ -79,7 +79,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
 
 ## References 
-- [Hybrid-EEGNET-CharRNN](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor)
-- [P300 Speller](https://github.com/Manucar/p300-speller)
-- [EEGNet](https://github.com/amrzhd/EEGNet/)    
-- [FEIS](https://github.com/scottwellington/FEIS/tree/main) 
+- [Hybrid-EEGNET-CharRNN code](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor)
+- [P300 Speller code](https://github.com/Manucar/p300-speller)
+- [EEGNet code](https://github.com/amrzhd/EEGNet/)    
+- [FEIS code](https://github.com/scottwellington/FEIS/tree/main) 
