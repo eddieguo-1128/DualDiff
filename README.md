@@ -59,7 +59,7 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [ ] (SSVEP) Experiment with mixups on the input vs output side (we need to perform ablations on them -> **include Ben's response from piazza**) - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
-  - [ ] Check the architecture, not sure why are feeding x and x_hat to the decoder
+  - [ ] Check the decoder architecture, not sure why we are feeding x and x_hat to the decoder + other stuff
   - [ ] Try domain adversarial training
   - [ ] Change the diffusion architecture (double block inside - more on this later)
 - [x] **Experiment with losses**: @Mengchun
