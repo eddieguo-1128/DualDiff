@@ -37,12 +37,12 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (FEIS) Train and evaluate on [DiffE repo](https://github.com/yorgoon/DiffE) @Parusha and Eddie
   - [x] (SSVEP) Get EEGNet baseline @Mengchun
   - [x] (FEIS) Get EEGNet baseline for binary vs multiclass for all three tasks @Eddie
-- [ ] **Get final results on datasets of various complexity**: 
+- [x] **Get final results on datasets of various complexity**: 
   - [x] (SSVEP) Get results for Mengchun's model @Mengchun
   - [x] (SSVEP) Get results for Ben's model @Ben 
   - [x] (FEIS) Get results for Mengchun's best model for binary vs multiclass for all three tasks @Parusha and Eddie
   - [ ] (P300 - 2 datasets) Get results for Mengchun's best model 
-  - [ ] (MI) Get results for Mengchun's best model 
+  - [x] (MI) Get results for Mengchun's best model 
 - [x] **Experiment with normalization**: @Ben and @Mengchun
   - [x] (SSVEP) Use local (subject-level) normalization of EEG (x)
   - [x] (SSVEP) Use local (subject-level) normalization of the latent space learned by the diffusion (z) -- performs better
@@ -52,14 +52,14 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 - [x] **Experiment with the model**: 
   - [x] (SSVEP) Use EEGNet as an encoder in diffusion @Mengchun
   - [x] (SSVEP) Implement a single pipeline for creating a synthetic EEG and mixing it with a real EEG (`weight1 * x + weight2 * x_hat + weight3 * decoder_out`) for the downstream classification using EEGNet (here, `x_hat` and `decoder_out` would be a distorted/augmented version of `x`); [relevant paper](https://www.sciencedirect.com/science/article/pii/S0957417424024527) - @Ben
-  - [ ] (SSVEP) Same as above, but take Mengchun's model as stage 1 + Mixup v1 as stage 2 - @Ben
-  - [ ] (SSVEP) Think of better techniques for mixups (try temporal mixups when we combine parts of inputs using some parameter that we draw from the distribution) - @Ben
-  - [ ] (SSVEP) Don't hardcode alpha, beta, gamma, but introduce learnable parameters - @Ben
-  - [ ] (SSVEP) Try feeding mixed input to the encoder to make latent z more robust - @Ben
-  - [ ] (SSVEP) Experiment with mixups on the input vs output side (we need to perform ablations on them -> **include Ben's response from piazza**) - @Ben
+  - [x] (SSVEP) Same as above, but take Mengchun's model as stage 1 + Mixup v1 as stage 2 - @Ben
+  - [x] (SSVEP) Think of better techniques for mixups (try temporal mixups when we combine parts of inputs using some parameter that we draw from the distribution) - @Ben
+  - [x] (SSVEP) Don't hardcode alpha, beta, gamma, but introduce learnable parameters or sample from a distribution - @Ben
+  - [x] (SSVEP) Try feeding mixed input to the encoder to make latent z more robust - @Ben
+  - [x] (SSVEP) Experiment with mixups on the input vs output side (we need to perform ablations on them) - @Ben
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
-  - [ ] Check the decoder architecture, not sure why we are feeding x and x_hat to the decoder + other stuff
+  - [x] Check the decoder architecture, not sure why we are feeding x and x_hat to the decoder + other stuff
   - [ ] Try domain adversarial training
   - [ ] Change the diffusion architecture (double block inside - more on this later)
 - [x] **Experiment with losses**: @Mengchun
