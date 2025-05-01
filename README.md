@@ -60,8 +60,12 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (FEIS) Replace AvgPool with attention-based pooling @Parusha
   - [x] (SSVEP) Replace AvgPool with attention-based pooling for the **best** model from @Mengchun
   - [x] Check the decoder architecture, not sure why we are feeding x and x_hat to the decoder + other stuff
-  - [ ] Try domain adversarial training
-  - [ ] Change the diffusion architecture (double block inside - more on this later)
+  - [ ] Run DualDiff-Mixup v1 (input mixup) and DualDiff-Mixup v1 (output mixup) using DualDiff-Latent v2 as stage 1
+  - [ ] Run DualDiff-Mixup v1 (input mixup) and DualDiff-Mixup v1 (output mixup) using DualDiff-Latent v2 as stage 1 + temporal input mixing algorithm instead of simple adding
+  - [ ] Ablate DualDiff-Mixup v2 on different mixing parameters 
+  - [ ] Run DualDiff-Mixup v2, but instead of mixing the raw inputs, try mixing the embeddings within the encoder (ablate at different layers)
+  - [ ] Set up a domain adversarial training
+  - [ ] Change the diffusion architecture (double block inside within z - more on this later)
 - [x] **Experiment with losses**: @Mengchun
   - [x] (SSVEP) Replace the MSE loss with the CE loss between `fc_out and y` (given it's a classification task) 
   - [x] (SSVEP) Try a contrastive loss between `z and y` 
