@@ -20,11 +20,9 @@ This project implements a joint EEG generation and classification model using de
 - [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
 - [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
 
-## Experiments 
+## Long to-do of experiments 
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
-
-### Long to-do:
 
 - [x] **Prepare proper train, val, and two test sets (seen and unseen subjects) using the same proportion across different datasets**: @all
 - [x] **Establish the baseline/benchmark**: 
@@ -38,8 +36,8 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (SSVEP) Get results for Mengchun's model @Mengchun
   - [x] (SSVEP) Get results for Ben's model @Ben 
   - [x] (FEIS) Get results for Mengchun's best model for binary vs multiclass for all three tasks @Parusha and Eddie
+  - [x] (MI) Get results for Mengchun's best model
   - [ ] (P300 - 2 datasets) Get results for Mengchun's best model 
-  - [x] (MI) Get results for Mengchun's best model 
 - [x] **Experiment with normalization**: @Ben and @Mengchun
   - [x] (SSVEP) Use local (subject-level) normalization of EEG (x)
   - [x] (SSVEP) Use local (subject-level) normalization of the latent space learned by the diffusion (z) -- performs better
