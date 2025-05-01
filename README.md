@@ -2,27 +2,24 @@
 
 This project implements a joint EEG generation and classification model using denoising diffusion techniques. 
 
-## Baseline
+## Results 
 
-As a starting point, we implemented and ran simple EEGNet models for each dataset to establish baseline classification accuracy on the test set.  
+<p align="left">
+  <a href="https://drive.google.com/file/d/1j9D4cUCC8CuNJWCPe7GjeGUAo6qSsD5l/view?usp=sharing" target="_blank">
+    <img src="https://img.shields.io/badge/View%20Final%20Report-blue?style=for-the-badge" alt="View Final Report">
+  </a>
+</p>
 
-| Task                          | Dataset                      | Model  | # of classes | Test accuracy                      |
-|-------------------------------|-------------------------------|--------|---------|-------------------------------|
-| SSVEP                         | Tsinghua BCI Benchmark        | EEGNet | 26      | 85.54% (seen) / 81.03%  (unseen)      |
-| P300                          | BCI Competition III           | EEGNet | 2       | 74.00%                        |
-| P300                          | P300 Speller                  | EEGNet | 2       | 77.98%                        |
-| Motor Imagery                 | BCI Competition IV 2a         | EEGNet | 4       | 69.00%                        |
-| Speech Production             | FEIS                          | EEGNet | 2       | 74.83%                        |
-| Speech Production             | FEIS                          | EEGNet | 16      | 5.84%                         |
-| Heard Speech                  | FEIS                          | EEGNet | 2       | 74.87%                        |
-| Heard Speech                  | FEIS                          | EEGNet | 16      | 5.78%                         |
-| Imagined Speech               | FEIS                          | EEGNet | 2       | 74.84%                        |
-| Imagined Speech               | FEIS                          | EEGNet | 16      | 6.17%                         |
+## Codebase
 
-**Note**: 
-- SSVEP baseline is tested on a mix of seen and unseen subjects
-- FEIS baseline is for a model trained on ALL subjects
- 
+- [`baseline`](./baseline): Original EEGNet and baseline evaluation scripts.
+- [`diffusion-DiffE`](./diffusion-DiffE): The original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
+- [`diffusion-DualDiff-Latent`](./diffusion-DualDiff-Latent): Modified DiffE `.py` files for the DualDiff-Latent model 
+- [`diffusion-DualDiff-Mixup`](./diffusion-DualDiff-Mixup): Modified DiffE `.py` files for the DualDiff-Mixup model 
+- [`feis-notebooks`](./feis-notebooks): Notebooks for the FEIS-specific experiments
+- [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
+- [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
+
 ## Experiments 
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
@@ -84,15 +81,12 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
 
-## Results
-
-> TODO - Add a link to the final report (generate a pdf, put on the drive, and paste a link here)
-
 ## Acknowledgements
 
 The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
 
 ## References 
+- [DiffE repo](https://github.com/yorgoon/DiffE)
 - [Hybrid-EEGNET-CharRNN code](https://github.com/kkipngenokoech/Hybrid-EEGNET-CharRNN-predictor)
 - [P300 Speller code](https://github.com/Manucar/p300-speller)
 - [EEGNet code](https://github.com/amrzhd/EEGNet/)    
