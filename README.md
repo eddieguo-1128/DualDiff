@@ -84,8 +84,6 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
 
 > TODO - Add a table with results after final experiments
 
-> TODO - Add the final code on the drive as .py files
-> 
 ## Acknowledgements
 
 The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
