@@ -20,7 +20,7 @@ This project implements a joint EEG generation and classification model using de
 - [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
 - [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
 
-## Long to-do of experiments 
+## Experiments to-do list
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
 
