@@ -13,7 +13,7 @@ This project implements a joint EEG generation and classification model using de
 ## Codebase
 
 - [`baseline`](./baseline): Original EEGNet and baseline evaluation scripts.
-- [`diffusion-DiffE`](./diffusion-DiffE): The original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
+- [`diffusion-DiffE`](./diffusion-DiffE): Original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
 - [`diffusion-DualDiff-Latent`](./diffusion-DualDiff-Latent): Modified DiffE `.py` files for the DualDiff-Latent model 
 - [`diffusion-DualDiff-Mixup`](./diffusion-DualDiff-Mixup): Modified DiffE `.py` files for the DualDiff-Mixup model 
 - [`feis-notebooks`](./feis-notebooks): Notebooks for the FEIS-specific experiments
