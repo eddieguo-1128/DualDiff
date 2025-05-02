@@ -1,6 +1,7 @@
 Ablation on decoder input
 
 Paradigm-ssvep
+
 Model-DualDiff-Latent v2 (w/ attention)
 
 Test accuracy:
