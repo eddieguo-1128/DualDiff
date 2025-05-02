@@ -229,6 +229,7 @@ def train(args):
     test_period = 1
     start_test = test_period
 
+    z_stats = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
     supcon_loss = SupConLoss(temperature=0.07)
     proj_head = ProjectionHead(input_dim=256, proj_dim=128).to(device)
 
