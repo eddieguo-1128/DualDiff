@@ -32,7 +32,7 @@ Updated: April 30, 2025
   - [ ] Impact of decoder inputs
   - [ ] Impact of losses
   - [ ] Why and how latent encodes stuff for both generation and classification
-- [ ] Think about changing the title; to dual-task + key insight about the latent z
+- [ ] Think about changing the title: to dual-task + key insight about the latent z
 
 ## Experiments to-do list
 
