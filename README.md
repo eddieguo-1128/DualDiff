@@ -26,11 +26,11 @@ This project implements a joint EEG generation and classification model using de
   - [ ] Only `decoder_out`
   - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
-  - [ ] Embeddings mixup (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
-- [ ] Run explainability study of **DualDiff-Latent v3** to understand what each part is learning 
+  - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
+- [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
   - [ ] Impact of decoder inputs (~ table 3)
   - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3**
-  - [ ] Why and how latent encodes stuff for both generation and classification
+  - [ ] Role of z (how exactly it dows both generation and classification) 
 - [ ] Think about changing the title: dual-task + key insight about the latent z
 
 ## Experiments to-do list
