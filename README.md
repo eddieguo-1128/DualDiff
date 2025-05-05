@@ -20,6 +20,27 @@ This project implements a joint EEG generation and classification model using de
 - [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
 - [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
 
+## Paper to-do list
+- [ ] Prep all code as modules to be run/reproduced quickly
+- [ ] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format 
+- [ ] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments 
+- [ ] Run a reproducibility study and report mean/std across all tasks (for P300, just pick one dataset): 
+  - [ ] EEGNet
+  - [ ] DualDiff-Latent v3
+  - [ ] SOTA for using synthetic subjects/channels (can be done as part of Ben's experiments)
+- [ ] Generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**:
+  - [ ] Only `x`
+  - [ ] Only `x_hat`
+  - [ ] Only `decoder_out`
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
+  - [ ] Embeddings mixup (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
+- [ ] Rerun table 6 using **DualDiff-Latent v3**
+- [ ] Run explainability study of **DualDiff-Latent v3** to understand what each part is learning 
+  - [ ] Impact of decoder inputs
+  - [ ] Impact of losses
+- [ ] Think about changing the title; to dual-task + key insight about the latent z
+      
 ## Experiments to-do list
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
@@ -78,12 +99,6 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS labels (train set)
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
-- [x] **Xxx**: 
-  - [ ] Prepare a modularized version for a faster reproducibility study
-  - [ ] Run (1) EEGNet, (2) DualDiff-Latent v3, (3) **SOTA for synthetic subjects** on multiple seeds on all tasks (for P300, just pick one dataset)
-  - [ ] Take **DualDiff-Latent v3** to generate x_hat, decoder_out, and then test 3 mixup strategies -- (1) raw input mixup add/avg, (2) temporal mixup (+ ablation on hyperparams), (3) embeddings mixup (+ ablation after which network layer we use it: before or after the projection layer before z); (4) **using SOTA mixup strategy** -- on EEGNet classifier
-  - [ ] Rerun table 6 on **DualDiff-Latent v3**
-  - [ ] Think about changing the title; to dual-task + key insight about the latent z
 
 ## Acknowledgements
 
