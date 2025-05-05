@@ -6,9 +6,11 @@ This project implements a joint EEG generation and classification model using de
 
 <p align="left">
   <a href="https://drive.google.com/file/d/1j9D4cUCC8CuNJWCPe7GjeGUAo6qSsD5l/view?usp=sharing" target="_blank">
-    <img src="https://img.shields.io/badge/View Final Report (Apr 30)-blue?style=for-the-badge" alt="View Final Report (Apr 30)">
+    <img src="https://img.shields.io/badge/View Final Report-blue?style=for-the-badge" alt="View Final Report">
   </a>
 </p>
+
+Updated: April 30, 2025
 
 ## Codebase
 
