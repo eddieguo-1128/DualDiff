@@ -12,16 +12,6 @@ This project implements a joint EEG generation and classification model using de
 
 Updated: April 30, 2025
 
-## Codebase
-
-- [`baseline`](./baseline): Original EEGNet and baseline evaluation scripts.
-- [`diffusion-DiffE`](./diffusion-DiffE): Original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
-- [`diffusion-DualDiff-Latent`](./diffusion-DualDiff-Latent): Modified DiffE `.py` files for the DualDiff-Latent model 
-- [`diffusion-DualDiff-Mixup`](./diffusion-DualDiff-Mixup): Modified DiffE `.py` files for the DualDiff-Mixup model 
-- [`feis-notebooks`](./feis-notebooks): Notebooks for the FEIS-specific experiments
-- [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
-- [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
-
 ## Paper to-do list
 - [ ] Prep all code as modules to be run/reproduced quickly
 - [ ] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format 
@@ -43,7 +33,7 @@ Updated: April 30, 2025
   - [ ] Impact of losses
   - [ ] Why and how latent encodes stuff for both generation and classification
 - [ ] Think about changing the title; to dual-task + key insight about the latent z
-      
+
 ## Experiments to-do list
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
@@ -99,6 +89,16 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
 
+## Codebase
+
+- [`baseline`](./baseline): Original EEGNet and baseline evaluation scripts.
+- [`diffusion-DiffE`](./diffusion-DiffE): Original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
+- [`diffusion-DualDiff-Latent`](./diffusion-DualDiff-Latent): Modified DiffE `.py` files for the DualDiff-Latent model 
+- [`diffusion-DualDiff-Mixup`](./diffusion-DualDiff-Mixup): Modified DiffE `.py` files for the DualDiff-Mixup model 
+- [`feis-notebooks`](./feis-notebooks): Notebooks for the FEIS-specific experiments
+- [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
+- [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
+  
 ## Acknowledgements
 
 The project is completed as a part of [CMU 11-785: Introduction to Deep Learning](https://deeplearning.cs.cmu.edu/S25/index.html).
