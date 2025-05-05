@@ -78,6 +78,12 @@ We adapted and extended core components of the [DiffE repo](https://github.com/y
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS labels (train set)
   - [x] (ALL) Run t-SNE/PCA on latent space (z) VS subjects (train set)
   - [x] (ALL) Compare the diffusion output across `x`, `x_hat`, `noise`, and `decoder_out`
+- [x] **Xxx**: 
+  - [ ] Prepare a modularized version for a faster reproducibility study
+  - [ ] Run (1) EEGNet, (2) DualDiff-Latent v3, (3) **SOTA for synthetic subjects** on multiple seeds on all tasks (for P300, just pick one dataset)
+  - [ ] Take **DualDiff-Latent v3** to generate x_hat, decoder_out, and then test 3 mixup strategies -- (1) raw input mixup add/avg, (2) temporal mixup (+ ablation on hyperparams), (3) embeddings mixup (+ ablation after which network layer we use it: before or after the projection layer before z); (4) **using SOTA mixup strategy** -- on EEGNet classifier
+  - [ ] Rerun table 6 on **DualDiff-Latent v3**
+  - [ ] Think about changing the title; to dual-task + key insight about the latent z
 
 ## Acknowledgements
 
