@@ -24,13 +24,14 @@ This project implements a joint EEG generation and classification model using de
   - [ ] Only `x`
   - [ ] Only `x_hat`
   - [ ] Only `decoder_out`
-  - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
-  - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
-  - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average @Ben
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams) @Ben
+  - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z) @Ben
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
   - [ ] Impact of decoder inputs (~ table 3)
   - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3**
-  - [ ] Role of z (how exactly it dows both generation and classification) 
+  - [ ] Role of z (how exactly it does both generation and classification)
+  - [ ] Check what happens if we remove the 2nd diffusion block, and make z a part of DDPM. 
 - [ ] Think about changing the title: dual-task + key insight about the latent z
 
 ## Experiments to-do list
