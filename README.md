@@ -10,9 +10,9 @@ This project implements a joint EEG generation and classification model using de
   </a>
 </p>
 
-Updated: April 30, 2025
+*Updated: April 30, 2025*
 
-## Paper to-do list
+## Paper to-do list (interim ddl - May 11; final ddl - May 15, 2025)
 - [ ] Prep all code as modules to be run/reproduced quickly
 - [ ] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format 
 - [ ] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments 
@@ -27,10 +27,9 @@ Updated: April 30, 2025
   - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
   - [ ] Embeddings mixup (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
-- [ ] Rerun table 6 using **DualDiff-Latent v3**
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand what each part is learning 
-  - [ ] Impact of decoder inputs
-  - [ ] Impact of losses
+  - [ ] Impact of decoder inputs (~ table 3)
+  - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3**
   - [ ] Why and how latent encodes stuff for both generation and classification
 - [ ] Think about changing the title: dual-task + key insight about the latent z
 
