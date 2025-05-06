@@ -340,26 +340,43 @@ class Decoder(nn.Module):
 
         self.z_proj = nn.Linear(self.e3_out, self.d1_out)
 
-        # self.sin_emb = SinusoidalPosEmb(n_feat)
-        # self.timeembed1 = EmbedFC(n_feat, self.e3_out)
-        # self.timeembed2 = EmbedFC(n_feat, self.u2_out)
-        # self.timeembed3 = EmbedFC(n_feat, self.u3_out)
-        # self.contextembed1 = EmbedFC(self.e3_out, self.e3_out)
-        # self.contextembed2 = EmbedFC(self.e3_out, self.u2_out)
-        # self.contextembed3 = EmbedFC(self.e3_out, self.u3_out)
-
         # Unet up sampling
         self.up1 = UnetUp(self.d3_out + self.e3_out, self.u2_out, 1, gn=8, factor=2)
         self.up2 = UnetUp(self.d2_out + self.u2_out, self.u3_out, 1, gn=8, factor=2)
+        
+        ## case 1:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0),)
+
+        ## case 2:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(in_channels * 2, in_channels, 1, 1, 0),)
+
+        ## case 3:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
+
+        ## case 4:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
+
+        ## case 5:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out, in_channels, 1, 1, 0),)
+        
+        ## case 6:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out, in_channels, 1, 1, 0),)
+
+        ## case 7:
+        self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
+
+        ## case 8:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
+
+        ## case 9:
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0),)
+
+
         self.up3 = nn.Sequential(
             nn.Upsample(scale_factor=2, mode="nearest"),
-            # nn.Conv1d(
             #     self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0
             # ),
-            nn.Conv1d(
-                self.d1_out + in_channels, in_channels, 1, 1, 0
-            ),
-        )
+            nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
 
         # self.out = nn.Conv1d(self.u4_out+in_channels, in_channels, 1)
         self.pool = nn.AvgPool1d(2)
@@ -380,17 +397,41 @@ class Decoder(nn.Module):
         # Up sampling
         up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
         up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
-        # out = self.up3(
-        #     torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1)
-        # )
-        B, _, T = dn11.shape  # obtain the length of time
-        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
 
-        # out = self.up3(
-        #     torch.cat([z_proj,up2, dn11.detach()], 1)
-        # )
-        #out = self.up3(torch.cat([z_proj,self.pool(x0)], 1))
-        out = self.up3(torch.cat([z_proj,self.pool(x_hat)], 1))
+        ## case 1: x + x_hat + skips (default)
+        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+
+        ## case 2: x + x_hat
+        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach())], 1))
+
+        ## case 3: x_hat + skips
+        # out = self.up3(torch.cat([self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+
+        ## case 4: x + skips
+        # out = self.up3(torch.cat([self.pool(x0), up2, dn11.detach()], 1))
+
+        ## case 5: skips
+        # out = self.up3(torch.cat([up2, dn11.detach()], 1))
+
+        ## case 6: z only
+        # B, _, T = dn11.shape  
+        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        # out = self.up3([z_proj])
+
+        ## case 7: z + x
+        B, _, T = dn11.shape 
+        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
+        
+        ## case 8: z + x_hat
+        # B, _, T = dn11.shape 
+        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        # out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+
+        ## case 9: z + skips
+        # B, _, T = dn11.shape 
+        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        # out = self.up3(torch.cat([z_proj, up2, dn11.detach()], 1))
 
         return out
     
@@ -408,68 +449,6 @@ class DiffE(nn.Module):
         decoder_out = self.decoder(x0, encoder_out, ddpm_out)
         fc_out = self.fc(encoder_out[1])
         return decoder_out, fc_out,z
-
-
-class DecoderNoDiff(nn.Module):
-    def __init__(self, in_channels, n_feat=256, encoder_dim=512, n_classes=13):
-        super(DecoderNoDiff, self).__init__()
-
-        self.in_channels = in_channels
-        self.n_feat = n_feat
-        self.n_classes = n_classes
-        self.e1_out = encoder_dim
-        self.e2_out = encoder_dim
-        self.e3_out = encoder_dim
-        self.u1_out = n_feat
-        self.u2_out = n_feat
-        self.u3_out = n_feat
-        self.u4_out = n_feat
-
-        self.sin_emb = SinusoidalPosEmb(n_feat)
-        self.timeembed1 = EmbedFC(n_feat, self.e3_out)
-        self.timeembed2 = EmbedFC(n_feat, self.u2_out)
-        self.timeembed3 = EmbedFC(n_feat, self.u3_out)
-        self.contextembed1 = EmbedFC(self.e3_out, self.e3_out)
-        self.contextembed2 = EmbedFC(self.e3_out, self.u2_out)
-        self.contextembed3 = EmbedFC(self.e3_out, self.u3_out)
-
-        # Unet up sampling
-        self.up2 = UnetUp(self.e3_out, self.u2_out, 1, gn=8, factor=2)
-        self.up3 = UnetUp(self.e2_out + self.u2_out, self.u3_out, 1, gn=8, factor=2)
-        # self.up4 = UnetUp(self.e1_out+self.u3_out, self.u4_out, 1, 1, gn=in_channels, factor=2, is_res=True)
-        self.up4 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode="nearest"),
-            nn.Conv1d(self.u3_out + self.e1_out + in_channels, in_channels, 1, 1, 0),
-        )
-
-        self.out = nn.Conv1d(self.u4_out, in_channels, 1)
-        self.pool = nn.AvgPool1d(2)
-
-    def forward(self, x0, x_hat, encoder_out, t):
-        down, z = encoder_out
-        dn1, dn2, dn3 = down
-        tembd = self.sin_emb(t).view(-1, self.n_feat, 1)  # [b, n_feat, 1]
-        tembd1 = self.timeembed1(self.sin_emb(t)).view(
-            -1, self.e3_out, 1
-        )  # [b, n_feat, 1]
-        tembd2 = self.timeembed2(self.sin_emb(t)).view(
-            -1, self.u2_out, 1
-        )  # [b, n_feat, 1]
-        tembd3 = self.timeembed3(self.sin_emb(t)).view(
-            -1, self.u3_out, 1
-        )  # [b, n_feat, 1]
-
-        # Up sampling
-        ddpm_loss = F.l1_loss(x0, x_hat, reduction="none")
-
-        up2 = self.up2(dn3)  # 256 -> 512
-        up3 = self.up3(torch.cat([up2, dn2], 1))  # 512 -> 1024
-        out = self.up4(
-            torch.cat([self.pool(x0), self.pool(x_hat), up3, dn1], 1)
-        )  # 1024 -> 2048
-        # out = self.out(torch.cat([out, x_hat], 1)) # 2048 -> 2048
-        # out = self.out(out)
-        return out
     
 # Final classification head
 class LinearClassifier(nn.Module):
