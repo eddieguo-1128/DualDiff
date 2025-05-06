@@ -139,10 +139,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         # DDPM loss and update
         #loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
         #loss_ddpm.mean().backward()
-        loss_ddpm_value = F.l1_loss(x_hat, x, reduction="none")  # Store raw tensor
-        loss_ddpm = loss_ddpm_value.mean()  # Mean for backprop
-        loss_ddpm.backward()
-
         optim1.step()
         ddpm_out = x_hat, down, up, t
         
@@ -158,7 +154,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         ])
         
         # Compute losses
-        loss_gap = nn.L1Loss()(decoder_out, loss_ddpm_value.detach())
         #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
         loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
         loss_c = nn.CrossEntropyLoss()(fc_out, y)
@@ -219,8 +214,6 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                 for i in range(z.size(0))])
             
             #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm)
-            loss_ddpm_value = F.l1_loss(x_hat, x, reduction="none")
-            loss_gap = nn.L1Loss()(decoder_out, loss_ddpm_value)
             loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
             loss_c = nn.CrossEntropyLoss()(fc_out, y)
             z_proj = proj_head(z)
