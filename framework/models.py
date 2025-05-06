@@ -371,14 +371,6 @@ class Decoder(nn.Module):
         ## case 9:
         #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0),)
 
-
-        self.up3 = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode="nearest"),
-            #     self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0
-            # ),
-            nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
-
-        # self.out = nn.Conv1d(self.u4_out+in_channels, in_channels, 1)
         self.pool = nn.AvgPool1d(2)
 
     def forward(self, x0, encoder_out, diffusion_out):
@@ -416,7 +408,7 @@ class Decoder(nn.Module):
         ## case 6: z only
         # B, _, T = dn11.shape  
         # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3([z_proj])
+        # out = self.up3(z_proj)
 
         ## case 7: z + x
         B, _, T = dn11.shape 
