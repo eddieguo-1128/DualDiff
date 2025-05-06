@@ -37,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = "run5" 
+run_name = "run6" 
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
