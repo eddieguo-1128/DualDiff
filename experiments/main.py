@@ -3,6 +3,7 @@ from dataset import *
 from loss import *
 from models import *
 from utils import *
+from viz import *
 
 def evaluate(encoder, fc, generator, device):
     """Evaluate model performance on a data generator"""
@@ -401,6 +402,19 @@ if __name__ == "__main__":
     
     # Run training
     best_metrics = train()
+
+    # Load training history from the saved CSV
+    try:
+        history_df = pd.read_csv(os.path.join(log_dir, 'training_history.csv'))
+        history = {
+            'train_loss': history_df['train_loss'].tolist(),
+            'train_acc': history_df['train_acc'].tolist(),
+            'val_loss': history_df['val_loss'].dropna().tolist(),
+            'val_acc': history_df['val_acc'].dropna().tolist()}
+        # Plot training progress
+        plot_training_progress(history, log_dir)
+    except Exception as e:
+        print(f"Could not plot training progress: {e}")
     
     # Test best model
     test_results = test_best_model(best_metrics)

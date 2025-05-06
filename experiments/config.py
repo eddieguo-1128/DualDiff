@@ -12,6 +12,9 @@ from sklearn.metrics import (f1_score, roc_auc_score, precision_score, recall_sc
 import time
 import pandas as pd
 from datetime import datetime
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, 
+                       module="sklearn.metrics._classification")
 
 # --------- Command-line arguments (optional) ---------
 
@@ -34,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = "run1" 
+run_name = "run2" 
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)

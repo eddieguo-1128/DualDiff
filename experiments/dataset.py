@@ -45,7 +45,7 @@ def load_data_by_session(root_dir, subject_id, session_idx_list):
     return torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.long)
 
 # Split and load dataset into DataLoaders
-def load_split_dataset(root_dir, num_seen, seed=43):
+def load_split_dataset(root_dir, num_seen, seed):
     random.seed(seed)
     all_subjects = list(range(1, 36))
     seen_subjects = random.sample(all_subjects, num_seen)
@@ -57,6 +57,9 @@ def load_split_dataset(root_dir, num_seen, seed=43):
         "val2":   [(sid, [4]) for sid in seen_subjects],
         "test1":  [(sid, [5]) for sid in seen_subjects],
         "test2":  [(sid, [0, 1, 2, 3, 4, 5]) for sid in unseen_subjects]}
+
+    print(f"[Split] Seen subjects (train/val/test1): {seen_subjects}")
+    print(f"[Split] Unseen subjects (test2): {unseen_subjects}")
 
     loaders = {}
     subject_id_dict = {}

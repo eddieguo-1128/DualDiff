@@ -377,14 +377,6 @@ class Decoder(nn.Module):
         # print("x0 shape:", x0.shape) #[32, 64, 248]
         # print("x_hat shape:", x_hat.shape) #[32, 64, 248]
 
-        # embed context, time step
-        # temb = self.sin_emb(t).view(-1, self.n_feat, 1) # [b, n_feat, 1]
-        # temb1 = self.timeembed1(temb).view(-1, self.e3_out, 1) # [b, features]
-        # temb2 = self.timeembed2(temb).view(-1, self.u2_out, 1) # [b, features]
-        # temb3 = self.timeembed3(temb).view(-1, self.u3_out, 1) # [b, features]
-        # ct2 = self.contextembed2(z).view(-1, self.u2_out, 1) # [b, n_feat, 1]
-        # ct3 = self.contextembed3(z).view(-1, self.u3_out, 1) # [b, n_feat, 1]
-
         # Up sampling
         up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
         up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
@@ -397,7 +389,8 @@ class Decoder(nn.Module):
         # out = self.up3(
         #     torch.cat([z_proj,up2, dn11.detach()], 1)
         # )
-        out = self.up3(torch.cat([z_proj,self.pool(x0)], 1))
+        #out = self.up3(torch.cat([z_proj,self.pool(x0)], 1))
+        out = self.up3(torch.cat([z_proj,self.pool(x_hat)], 1))
 
         return out
     
