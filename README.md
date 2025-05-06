@@ -13,7 +13,7 @@ This project implements a joint EEG generation and classification model using de
 *Updated: April 30, 2025*
 
 ## Paper to-do list (interim ddl - May 11; final ddl - May 15, 2025)
-- [x] Prep all code as modules / framework to be run/reproduced quickly @Kate
+- [x] Prep all code as framework to be run/reproduced quickly @Kate
 - [x] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format @Mengchun
 - [x] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments --> uses weighted avg for now
 - [ ] Run a reproducibility study and report mean/std across all tasks (for P300, just pick one dataset): 
@@ -28,6 +28,7 @@ This project implements a joint EEG generation and classification model using de
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams) @Ben
   - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z) @Ben
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
+  - [ ] Find the best testing procedure using subjectwise z-norm (just train, or test also)
   - [ ] Impact of decoder inputs (~ table 3)
   - [ ] Impact of encoder inputs (`x` vs `x_hat`)
   - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3** + Explain that we have a total loss + individual L1 loss, and run some experiment with its combinations + if time allows, try smth except for SupCon loss
