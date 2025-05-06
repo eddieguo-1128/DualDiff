@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", category=UserWarning,
 # --------- Command-line arguments (optional) ---------
 
 # --------- Work directory  ---------
-option = "drive"  # "local" or "drive"
+option = "local"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
@@ -61,7 +61,7 @@ encoder_dim = 256
 fc_dim = 512
 
 # --------- Training hyperparams ---------
-num_epochs = 500
+num_epochs = 1
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
@@ -94,3 +94,8 @@ eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
 test_frequency = 1
 
 # --------- Testing ---------
+use_subject_wise_z_norm = {
+    "train": True,               # normalize z using subject-wise stats during training
+    "test_seen": "train",        # normalize test_seen using training stats (from train_loader)
+    "test_unseen": "calibrate"   # normalize test_unseen using 0–3 session stats (from test data)
+}

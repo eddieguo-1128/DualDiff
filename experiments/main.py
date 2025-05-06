@@ -6,7 +6,6 @@ from utils import *
 from viz import *
 
 def evaluate(encoder, fc, generator, device):
-    """Evaluate model performance on a data generator"""
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
@@ -29,13 +28,69 @@ def evaluate(encoder, fc, generator, device):
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     
-    metrics = {
-        "accuracy": accuracy, 
-        "f1": f1,
-        "recall": recall, 
-        "precision": precision, 
-        "auc": auc
-    }
+    metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
+               "precision": precision, "auc": auc}
+    return metrics
+
+def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, unseen=False, z_stats_train=None):
+    diffe.eval()
+    labels = np.arange(0, 26)
+    Y, Y_hat = [], []
+
+    with torch.no_grad():
+        if unseen:
+            # For unseen subjects: calculate z-stats on-the-fly from sessions 0-3 (104 samples)
+            all_x, all_y, all_sid = [], [], []
+            for x, y, sid in loader:
+                all_x.append(x)
+                all_y.append(y)
+                all_sid.append(sid)
+            all_x = torch.cat(all_x, dim=0).to(device)
+            all_y = torch.cat(all_y, dim=0).to(device)
+            all_sid = torch.cat(all_sid, dim=0)
+
+            subjects = all_sid.unique(sorted=True)
+            for s in subjects:
+                indices = (all_sid == s)
+                x_sub = all_x[indices]
+                y_sub = all_y[indices]
+                z = diffe.encoder(x_sub)[1]
+
+                z_mean = z[:104].mean(dim=0, keepdim=True)
+                z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
+                z = (z - z_mean) / z_std
+
+                y_hat = F.softmax(diffe.fc(z), dim=1)
+                Y.append(y_sub.detach().cpu())
+                Y_hat.append(y_hat.detach().cpu())
+        else:
+            # For seen subjects: use provided z_stats_train from training data
+            if z_stats_train is None:
+                raise ValueError("z_stats_train must be provided for seen subject evaluation.")
+
+            for x, y, sid in loader:
+                x, y = x.to(device), y.to(device)
+                _, z = diffe.encoder(x)
+                z = torch.stack([
+                    (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
+                    z_stats_train[int(sid[i].item())][1].squeeze(0)
+                    for i in range(z.size(0))
+                ])
+                y_hat = F.softmax(diffe.fc(z), dim=1)
+                Y.append(y.detach().cpu())
+                Y_hat.append(y_hat.detach().cpu())
+
+    Y = torch.cat(Y).numpy()
+    Y_hat = torch.cat(Y_hat).numpy()
+
+    accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+    f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
+    recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
+    precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
+    auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
+
+    metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
+               "precision": precision, "auc": auc}
     return metrics
 
 def initialize_models():
@@ -137,21 +192,26 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
             x = F.interpolate(x, size=target_len)
         
         # DDPM loss and update
-        #loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
-        #loss_ddpm.mean().backward()
+        loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
+        loss_ddpm.mean().backward()
         optim1.step()
         ddpm_out = x_hat, down, up, t
-        
+      
         # Train DiffE
         optim2.zero_grad()
+
+        x_hat_detach = x_hat.detach() # new
+        down_detach = [d.detach() for d in down] # new
+        up_detach = [u.detach() for u in up] # new
+        ddpm_out = x_hat_detach, down_detach, up_detach, t # new
+
         decoder_out, fc_out, z = diffe(x, ddpm_out)
         
         # Normalize by subject
         z = torch.stack([
             (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
             z_stats[int(sid[i].item())][1].squeeze(0) 
-            for i in range(z.size(0))
-        ])
+            for i in range(z.size(0))])
         
         # Compute losses
         #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
@@ -347,9 +407,9 @@ def train():
     history_df.to_csv(os.path.join(log_dir, 'training_history.csv'), index=False)
     
     # Return best model
-    return best_metrics
+    return best_metrics, z_stats
 
-def test_best_model(best_metrics):
+def test_best_model(best_metrics, z_stats_train):
 
     # Load best model
     ddpm, diffe = initialize_models()
@@ -371,14 +431,26 @@ def test_best_model(best_metrics):
     
     # Evaluate on test sets
     diffe.eval()
-    test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-    test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
-    
+
+    # ---- Test Seen ----
+    if use_subject_wise_z_norm.get("test_seen") == "train":
+        test1_metrics = evaluate_with_subjectwise_znorm(
+            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train)
+    else:
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
+
+    # ---- Test Unseen ----
+    if use_subject_wise_z_norm.get("test_unseen") == "calibrate":
+        test2_metrics = evaluate_with_subjectwise_znorm(
+            diffe, test2_loader, device, name="Test2", unseen=True)
+    else:
+        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+
     print("\n===== Test Results =====")
-    print("Test1 accuracy:", test1_metrics["accuracy"]*100, "%")
-    print("Test1 F1 score:", test1_metrics["f1"]*100, "%")
-    print("Test2 accuracy:", test2_metrics["accuracy"]*100, "%")
-    print("Test2 F1 score:", test2_metrics["f1"]*100, "%")
+    print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
+    print(f"Test1 F1 score: {test1_metrics['f1']*100:.2f}%")
+    print(f"Test2 accuracy: {test2_metrics['accuracy']*100:.2f}%")
+    print(f"Test2 F1 score: {test2_metrics['f1']*100:.2f}%")
     
     # Save test results
     results = {"test1": test1_metrics, 
@@ -388,7 +460,7 @@ def test_best_model(best_metrics):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     np.save(os.path.join(log_dir, f'test_results_{timestamp}.npy'), results)
     
-    return results
+    return results, z_stats_train
 
 if __name__ == "__main__":
 
@@ -401,7 +473,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Run training
-    best_metrics = train()
+    best_metrics, z_stats_train = train()
 
     # Load training history from the saved CSV
     try:
@@ -417,4 +489,4 @@ if __name__ == "__main__":
         print(f"Could not plot training progress: {e}")
     
     # Test best model
-    test_results = test_best_model(best_metrics)
+    test_results = test_best_model(best_metrics, z_stats_train)
