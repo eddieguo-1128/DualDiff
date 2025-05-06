@@ -61,7 +61,7 @@ encoder_dim = 256
 fc_dim = 512
 
 # --------- Training hyperparams ---------
-num_epochs = 1
+num_epochs = 500
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
