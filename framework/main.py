@@ -432,10 +432,10 @@ def test_best_model(best_metrics, z_stats_train):
     # Evaluate on test sets
     diffe.eval()
 
-    test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-    test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+    #test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
+    #test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
 
-    """
+    
     # ---- Test Seen ----
     if use_subject_wise_z_norm.get("test_seen") == "train":
         test1_metrics = evaluate_with_subjectwise_znorm(
@@ -449,7 +449,7 @@ def test_best_model(best_metrics, z_stats_train):
             diffe, test2_loader, device, name="Test2", unseen=True)
     else:
         test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
-    """
+   
     print("\n===== Test Results =====")
     print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
     print(f"Test1 F1 score: {test1_metrics['f1']*100:.2f}%")
