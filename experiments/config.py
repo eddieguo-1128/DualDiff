@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", category=UserWarning,
 # --------- Command-line arguments (optional) ---------
 
 # --------- Work directory  ---------
-option = "local"  # "local" or "drive"
+option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
@@ -37,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = "run2" 
+run_name = "run3" 
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
