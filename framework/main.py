@@ -11,7 +11,17 @@ def evaluate(encoder, fc, generator, device):
     Y_hat = []
     for x, y, sid in generator:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
-        encoder_out = encoder(x)
+
+        if encoder_input == "x_hat" and ddpm is not None:
+            x_hat, *_ = ddpm(x)
+            # if x_hat.shape[-1] != x.shape[-1]:
+            #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
+            encoder_in = x_hat
+        else:
+            encoder_in = x
+
+        encoder_out = encoder(encoder_in)
+
         y_hat = fc(encoder_out[1])
         y_hat = F.softmax(y_hat, dim=1)
         Y.append(y.detach().cpu())
@@ -54,7 +64,16 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 indices = (all_sid == s)
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
-                z = diffe.encoder(x_sub)[1]
+
+                if encoder_input == "x_hat" and ddpm is not None:
+                    x_hat, *_ = ddpm(x_sub)
+                    # if x_hat.shape[-1] != x_sub.shape[-1]:
+                    #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
+                    encoder_in = x_hat
+                else:
+                    encoder_in = x_sub
+
+                z = diffe.encoder(encoder_in)[1]
 
                 z_mean = z[:104].mean(dim=0, keepdim=True)
                 z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
@@ -70,7 +89,17 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
             for x, y, sid in loader:
                 x, y = x.to(device), y.to(device)
-                _, z = diffe.encoder(x)
+
+                if encoder_input == "x_hat" and ddpm is not None:
+                    x_hat, *_ = ddpm(x)
+                    # if x_hat.shape[-1] != x.shape[-1]:
+                    #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
+                    encoder_in = x_hat
+                else:
+                    encoder_in = x
+
+                _, z = diffe.encoder(encoder_in)
+                
                 z = torch.stack([
                     (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
@@ -95,8 +124,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
 def initialize_models():
     # DDPM model
-    ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
-    ddpm = DDPM(nn_model=ddpm_model, betas=(1e-6, 1e-2), n_T=n_T, device=device).to(device)
+    if ddpm_variant == "use_ddpm":
+        ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
+        ddpm = DDPM(nn_model=ddpm_model, betas=(1e-6, 1e-2), n_T=n_T, device=device).to(device)
+    else:
+        ddpm = None
     
     # Encoder 
     encoder = EEGNet(nb_classes=num_classes, 
@@ -110,7 +142,11 @@ def initialize_models():
                      dropoutType=eegnet_params["dropout_type"]).to(device)
     
     # Decoder and classifier
-    decoder = Decoder(in_channels=channels, n_feat=ddpm_dim, encoder_dim=encoder_dim).to(device)
+    if decoder_variant == "use_decoder":
+        decoder = Decoder(in_channels=channels, n_feat=ddpm_dim, encoder_dim=encoder_dim).to(device)
+    else:
+        decoder = None
+    
     fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
     
     # DiffE combines everything
@@ -180,26 +216,46 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
-        
+
+        if epoch == 0 and num_batches == 0:
+            print(f"[Config] DDPM: {ddpm_variant}, Encoder input: {encoder_input}, Decoder: {decoder_variant}")
+
         # Train DDPM
-        optim1.zero_grad()
-        x_hat, down, up, noise, t = ddpm(x)
-        
-        # Align dimensions if needed
-        if x_hat.shape[-1] != x.shape[-1]:
-            target_len = min(x_hat.shape[-1], x.shape[-1])
-            x_hat = F.interpolate(x_hat, size=target_len)
-            x = F.interpolate(x, size=target_len)
-        
-        # DDPM loss and update
-        loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
-        loss_ddpm.mean().backward()
-        optim1.step()
-        ddpm_out = x_hat, down, up, t
+        if ddpm_variant == "use_ddpm":
+            optim1.zero_grad()
+            x_hat, down, up, noise, t = ddpm(x)
+
+            # Align dimensions if needed
+            if x_hat.shape[-1] != x.shape[-1]:
+                target_len = min(x_hat.shape[-1], x.shape[-1])
+                x_hat = F.interpolate(x_hat, size=target_len)
+                x = F.interpolate(x, size=target_len)
+
+            loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
+            loss_ddpm.mean().backward()
+            optim1.step()
+            ddpm_out = x_hat, down, up, t
+        else:
+            x_hat = None
+            ddpm_out = None
       
         # Train DiffE
         optim2.zero_grad()
-        decoder_out, fc_out, z = diffe(x, ddpm_out)
+
+        if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
+            encoder_in = x
+        else:
+            encoder_in = x_hat if encoder_input == "x_hat" else x
+
+        if decoder_variant == "no_decoder":
+            _, fc_out, z = diffe(encoder_in, ddpm_out)
+            loss_decoder = 0.0
+        else:
+            decoder_out, fc_out, z = diffe(encoder_in, ddpm_out)
+            if ddpm_variant == "use_ddpm":
+                loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
+            else:
+                loss_decoder = F.l1_loss(decoder_out, x)
         
         # Normalize by subject
         if use_subject_wise_z_norm != "none":
@@ -210,7 +266,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         
         # Compute losses
         #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
-        loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
         loss_c = nn.CrossEntropyLoss()(fc_out, y)
         z_proj = proj_head(z)
         loss_supcon = supcon_loss(z_proj, y)
@@ -251,17 +306,35 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
         for x, y, sid in val_loader:
             x, y = x.to(device), y.type(torch.LongTensor).to(device)
             y_cat = F.one_hot(y, num_classes=num_classes).float().to(device)
-            
-            x_hat, down, up, noise, t = ddpm(x)
-            ddpm_out = x_hat, down, up, t
-            
-            if x_hat.shape[-1] != x.shape[-1]:
-                target_len = min(x_hat.shape[-1], x.shape[-1])
-                x_hat = F.interpolate(x_hat, size=target_len)
-                x = F.interpolate(x, size=target_len)
-            
-            loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
-            decoder_out, fc_out, z = diffe(x, ddpm_out)
+
+            if ddpm_variant == "use_ddpm":
+                x_hat, down, up, noise, t = ddpm(x)
+                ddpm_out = x_hat, down, up, t
+
+                if x_hat.shape[-1] != x.shape[-1]:
+                    target_len = min(x_hat.shape[-1], x.shape[-1])
+                    x_hat = F.interpolate(x_hat, size=target_len)
+                    x = F.interpolate(x, size=target_len)
+
+                loss_ddpm = F.l1_loss(x_hat, x, reduction="none") 
+            else:
+                x_hat = None
+                ddpm_out = None
+
+            if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
+                encoder_in = x
+            else:
+                encoder_in = x_hat if encoder_input == "x_hat" else x
+
+            if decoder_variant == "no_decoder":
+                _, fc_out, z = diffe(encoder_in, ddpm_out)
+                loss_decoder = 0.0
+            else:
+                decoder_out, fc_out, z = diffe(encoder_in, ddpm_out)
+                if ddpm_variant == "use_ddpm":
+                    loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
+                else:
+                    loss_decoder = F.l1_loss(decoder_out, x)
             
             z = torch.stack([
                 (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
@@ -269,7 +342,6 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                 for i in range(z.size(0))])
             
             #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm)
-            loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
             loss_c = nn.CrossEntropyLoss()(fc_out, y)
             z_proj = proj_head(z)
             loss_supcon = supcon_loss(z_proj, y)
