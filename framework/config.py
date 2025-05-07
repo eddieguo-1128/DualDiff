@@ -77,7 +77,7 @@ decoder_input = os.environ.get("DECODER_INPUT", "z + x") # Choose from:
                                                             ## "z + skips"
 
 # --------- Training hyperparams ---------
-num_epochs = 350 # for all ablations, do 500 epochs
+num_epochs = 400 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
