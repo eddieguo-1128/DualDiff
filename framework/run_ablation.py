@@ -67,9 +67,15 @@ for dec_input in decoder_inputs:
 # Save results
 results_df = pd.DataFrame(results)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-results_df.to_csv(f"ablation_summary_{timestamp}.csv", index=False)
-print(f"\nFinished. Saved results to ablation_summary_{timestamp}.csv")
 
+# Create an ablation results directory within work_dir
+ablation_dir = os.path.join(work_dir, "ablation_results")
+os.makedirs(ablation_dir, exist_ok=True)
+
+# Save to the ablation directory
+results_path = os.path.join(ablation_dir, f"ablation_summary_{timestamp}.csv")
+results_df.to_csv(results_path, index=False)
+print(f"\nFinished. Saved results to {results_path}")
 
 #z_norm_modes = ["option1", "option2", "option3", "none"]
 #encoder_inputs = ["x", "x_hat"] ## later
