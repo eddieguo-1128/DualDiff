@@ -60,6 +60,22 @@ ddpm_dim = 128
 encoder_dim = 256
 fc_dim = 512
 
+# Encoder parameters
+eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
+                 "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
+
+# Decoder parameters (to implement)
+deconder_input = "z + x" # Choose from: 
+                                ## "x + x_hat + skips"
+                                ## "x + x_hat"
+                                ## "x_hat + skips"
+                                ## "x + skips"
+                                ## "skips"
+                                ## "z only"
+                                ## "z + x"
+                                ## "z + x_hat"
+                                ## "z + skips"
+
 # --------- Training hyperparams ---------
 num_epochs = 500 # for all ablations, do 500 epochs
 batch_size = 32
@@ -85,10 +101,6 @@ ema_update_every = 10
 
 # SupCon loss parameters
 supcon_temperature = 0.07
-
-# Model-specific parameters
-eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
-                 "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
 
 # --------- Evaluation ---------
 test_frequency = 1
