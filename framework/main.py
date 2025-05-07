@@ -199,12 +199,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
       
         # Train DiffE
         optim2.zero_grad()
-
-        #x_hat_detach = x_hat.detach() # new
-        #down_detach = [d.detach() for d in down] # new
-        #up_detach = [u.detach() for u in up] # new
-        #ddpm_out = x_hat_detach, down_detach, up_detach, t # new
-
         decoder_out, fc_out, z = diffe(x, ddpm_out)
         
         # Normalize by subject
@@ -215,7 +209,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         
         # Compute losses
         #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
-        loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
+        loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
         loss_c = nn.CrossEntropyLoss()(fc_out, y)
         z_proj = proj_head(z)
         loss_supcon = supcon_loss(z_proj, y)
@@ -432,10 +426,10 @@ def test_best_model(best_metrics, z_stats_train):
     # Evaluate on test sets
     diffe.eval()
 
-    #test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-    #test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+    test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
+    test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
 
-    
+    """
     # ---- Test Seen ----
     if use_subject_wise_z_norm.get("test_seen") == "train":
         test1_metrics = evaluate_with_subjectwise_znorm(
@@ -449,7 +443,8 @@ def test_best_model(best_metrics, z_stats_train):
             diffe, test2_loader, device, name="Test2", unseen=True)
     else:
         test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
-   
+    """
+    
     print("\n===== Test Results =====")
     print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
     print(f"Test1 F1 score: {test1_metrics['f1']*100:.2f}%")
