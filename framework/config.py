@@ -37,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = "run7" 
+run_name = "run8" 
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -61,7 +61,7 @@ encoder_dim = 256
 fc_dim = 512
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 150 epochs
+num_epochs = 500 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1

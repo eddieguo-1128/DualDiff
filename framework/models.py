@@ -363,10 +363,10 @@ class Decoder(nn.Module):
         #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out, in_channels, 1, 1, 0),)
 
         ## case 7:
-        self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
+        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
 
         ## case 8:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
+        self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
 
         ## case 9:
         #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0),)
@@ -411,14 +411,14 @@ class Decoder(nn.Module):
         # out = self.up3(z_proj)
 
         ## case 7: z + x
-        B, _, T = dn11.shape 
-        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
+        #B, _, T = dn11.shape 
+        #z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        #out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
         
         ## case 8: z + x_hat
-        # B, _, T = dn11.shape 
-        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+        B, _, T = dn11.shape 
+        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+        out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
 
         ## case 9: z + skips
         # B, _, T = dn11.shape 
