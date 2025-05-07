@@ -61,7 +61,7 @@ encoder_dim = 256
 fc_dim = 512
 
 # --------- Training hyperparams ---------
-num_epochs = 100 # for all ablations, do 500 epochs
+num_epochs = 500 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
@@ -95,7 +95,9 @@ test_frequency = 1
 
 # --------- Testing ---------
 use_subject_wise_z_norm = {
-    "train": True,               # normalize z using subject-wise stats during training
-    "test_seen": "train",        # normalize test_seen using training stats (from train_loader)
-    "test_unseen": "calibrate"   # normalize test_unseen using 0–3 session stats (from test data)
+    "mode": "option1",  # Choose from:
+                        # "option1": Z-norm in train only; standard test eval
+                        # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+                        # "option3": Standard test_seen; test_unseen uses calibration
+    "train": True       # This is used during training regardless of test mode
 }
