@@ -107,10 +107,11 @@ test_frequency = 1
 
 # --------- Testing ---------
 use_subject_wise_z_norm = {
-    "mode": "option1",  # Choose from:
-                        # "option1": Z-norm in train only; standard test eval
-                        # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
-                        # "option3": Standard test_seen; test_unseen uses calibration
-                        # "none"
-    "train": True       # This is used during training regardless of test mode
+    "mode": os.environ.get("Z_NORM_MODE", "option1"),
+    "train": True
 }
+# Choose from:
+# "option1": Z-norm in train only; standard test eval
+# "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+# "option3": Standard test_seen; test_unseen uses calibration
+# "none"
