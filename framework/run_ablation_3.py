@@ -7,19 +7,33 @@ from config import work_dir, use_subject_wise_z_norm
 
 # Define ablation axes
 
-decoder_inputs = ["x + x_hat + skips", 
-                  "x + x_hat",
-                  "x_hat + skips",
-                  "x + skips",
-                  "skips",
-                  "z only",
-                  "z + x",
-                  "z + x_hat",
-                  "z + skips"]
+seeds = [42, 43, 44] 
 
-seeds = [42, 43, 44]
-
-z_norm_mode = "option2"  # Change this to run different z-norm ablations
+ddpm_variants = ["use_ddpm", 
+                 "no_ddpm"] # no ddpm means no x_hat is generated // sweep 3
+encoder_inputs = ["x", 
+                  "x_hat"] # x_hat is only available when ddpm is used // sweep 3
+decoder_input = ["z only"]
+decoder_variants = ["use_decoder",
+                     "no_decoder"] # no decoder means no decoder_out is generated // sweep 3
+z_norm_mode = "option2" # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+classifier_variants = ["eegnet_classifier", 
+                       "fc_classifier"] 
+classifier_inputs = ["x", "x_hat", "decoder_out", 
+                     "input_mixup", "z"]
+mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
+                  "prior embeddings weighted average", "later embeddings weighted average"] # synch with Ben
+ddpm_loss = [True, False] 
+total_loss_combinations = ["alpha*{classication_loss} + beta*{reconstruction2_loss} + gamma*{contrastive_loss}", # default for sweep 3
+                           "alpha*{classication_loss}",                                                    
+                           "alpha*{classication_loss} + beta*{reconstruction2_loss}",                   
+                           "alpha*{classication_loss} + gamma*{contrastive_loss}"]
+classication_loss = ["CE", "MSE"] # default is CE
+reconstruction2_loss = "L1" # default
+contrastive_loss = "SupCon" # default, but consider adding more
+alpha = 1 # default
+beta = "scheduler to 0.05" # default
+gamma = "scheduler to 0.2" # default
 
 results = []
 
@@ -68,8 +82,7 @@ for dec_input in decoder_inputs:
         "test_seen_mean": seen_mean * 100,
         "test_seen_std": seen_std * 100,
         "test_unseen_mean": unseen_mean * 100,
-        "test_unseen_std": unseen_std * 100
-    })
+        "test_unseen_std": unseen_std * 100})
 
 # Save results
 results_df = pd.DataFrame(results)
@@ -84,7 +97,7 @@ results_path = os.path.join(ablation_dir, f"ablation_summary_z{z_norm_mode}_{tim
 results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
 
-#z_norm_modes = ["option1", "option2", "option3", "none"]
-#encoder_inputs = ["x", "x_hat"] ## later
-#ddpm_variants = ["use_ddpm", "no_ddpm"]
-#loss_combinations = ... # later
+"""
+decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
+                  "skips", "z only", "z + x", "z + x_hat", "z + skips"] 
+"""
