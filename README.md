@@ -28,9 +28,9 @@ This project implements a joint EEG generation and classification model using de
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams) @Ben
   - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z) @Ben
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
-  - [ ] Find the best testing procedure using subjectwise z-norm (just train, or test also)
-  - [ ] Impact of decoder inputs (~ table 3)
-  - [ ] Impact of encoder inputs (`x` vs `x_hat`)
+  - [ ] Find the best testing procedure using subjectwise z-norm (just train, or test also) -> **run6**
+  - [ ] Impact of decoder inputs (~ table 3) @Kate // 300 epochs 
+  - [ ] Impact of encoder inputs (`x` vs `x_hat`) 
   - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3** + Explain that we have a total loss + individual L1 loss, and run some experiment with its combinations + if time allows, try smth except for SupCon loss
   - [ ] Impact of DDPM (what if we remove DDPM entirely, and just feed `x` directly to the encoder)
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
