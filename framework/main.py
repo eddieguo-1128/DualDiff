@@ -202,10 +202,11 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         decoder_out, fc_out, z = diffe(x, ddpm_out)
         
         # Normalize by subject
-        z = torch.stack([
-            (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-            z_stats[int(sid[i].item())][1].squeeze(0) 
-            for i in range(z.size(0))])
+        if use_subject_wise_z_norm != "none":
+            z = torch.stack([
+                (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                z_stats[int(sid[i].item())][1].squeeze(0) 
+                for i in range(z.size(0))])
         
         # Compute losses
         #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())

@@ -7,6 +7,7 @@ from torch.nn import Conv2d, BatchNorm2d, AvgPool2d, Dropout
 import torch.nn.functional as F
 from einops import reduce
 from dataset import *
+from config import *
 
 # Padding utility
 def get_padding(kernel_size, dilation=1):
@@ -344,32 +345,48 @@ class Decoder(nn.Module):
         self.up1 = UnetUp(self.d3_out + self.e3_out, self.u2_out, 1, gn=8, factor=2)
         self.up2 = UnetUp(self.d2_out + self.u2_out, self.u3_out, 1, gn=8, factor=2)
         
-        ## case 1:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0),)
-
-        ## case 2:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(in_channels * 2, in_channels, 1, 1, 0),)
-
-        ## case 3:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 4:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 5:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out, in_channels, 1, 1, 0),)
-        
-        ## case 6:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out, in_channels, 1, 1, 0),)
-
-        ## case 7:
-        self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 8:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 9:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0),)
+        # Configure the upsampling layer based on decoder_input configuration
+        if decoder_input == "x + x_hat + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0))
+        elif decoder_input == "x + x_hat":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(in_channels * 2, in_channels, 1, 1, 0))
+        elif decoder_input == "x_hat + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "x + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out, in_channels, 1, 1, 0))
+        elif decoder_input == "z only":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out, in_channels, 1, 1, 0))
+        elif decoder_input == "z + x":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "z + x_hat":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "z + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0))
+        else:
+            print(f"Warning: Unknown decoder_input config '{decoder_input}'. Defaulting to 'z + x'")
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
 
         self.pool = nn.AvgPool1d(2)
 
@@ -382,51 +399,38 @@ class Decoder(nn.Module):
         x_hat, down_ddpm, up, t = diffusion_out
         dn11, dn22, dn33 = down_ddpm
 
-        # print("z shape:", z.shape) #[32, 256]
-        # print("x0 shape:", x0.shape) #[32, 64, 248]
-        # print("x_hat shape:", x_hat.shape) #[32, 64, 248]
-
         # Up sampling
         up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
         up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
-
-        ## case 1: x + x_hat + skips (default)
-        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
-
-        ## case 2: x + x_hat
-        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach())], 1))
-
-        ## case 3: x_hat + skips
-        # out = self.up3(torch.cat([self.pool(x_hat.detach()), up2, dn11.detach()], 1))
-
-        ## case 4: x + skips
-        # out = self.up3(torch.cat([self.pool(x0), up2, dn11.detach()], 1))
-
-        ## case 5: skips
-        # out = self.up3(torch.cat([up2, dn11.detach()], 1))
-
-        ## case 6: z only
-        # B, _, T = dn11.shape  
-        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3(z_proj)
-
-        ## case 7: z + x
-        B, _, T = dn11.shape 
-        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
         
-        ## case 8: z + x_hat
-        #B, _, T = dn11.shape 
-        #z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        #out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+        # Project z vector to feature space if needed
+        B, _, T = dn11.shape
+        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
 
-        ## case 9: z + skips
-        # B, _, T = dn11.shape 
-        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3(torch.cat([z_proj, up2, dn11.detach()], 1))
+        if decoder_input == "x + x_hat + skips":
+            out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+        elif decoder_input == "x + x_hat":
+            out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach())], 1))
+        elif decoder_input == "x_hat + skips":
+            out = self.up3(torch.cat([self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+        elif decoder_input == "x + skips":
+            out = self.up3(torch.cat([self.pool(x0), up2, dn11.detach()], 1))
+        elif decoder_input == "skips":
+            out = self.up3(torch.cat([up2, dn11.detach()], 1))
+        elif decoder_input == "z only":
+            out = self.up3(z_proj)
+        elif decoder_input == "z + x":
+            out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
+        elif decoder_input == "z + x_hat":
+            out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+        elif decoder_input == "z + skips":
+            out = self.up3(torch.cat([z_proj, up2, dn11.detach()], 1))
+        else:
+            out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
 
         return out
-    
+
+
 class DiffE(nn.Module):
     def __init__(self, encoder, decoder, fc):
         super(DiffE, self).__init__()

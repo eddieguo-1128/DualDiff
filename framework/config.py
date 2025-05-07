@@ -26,7 +26,7 @@ elif option == "drive":
     work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"
 
 # --------- Reproducibility  ---------
-seed = 44
+seed = int(os.environ.get("SEED", "44"))
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # --------- Dataset  ---------
@@ -37,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = "run9" 
+run_name = os.environ.get("RUN_NAME", "run9")
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -65,19 +65,19 @@ eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
                  "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
 
 # Decoder parameters (to implement)
-deconder_input = "z + x" # Choose from: 
-                                ## "x + x_hat + skips"
-                                ## "x + x_hat"
-                                ## "x_hat + skips"
-                                ## "x + skips"
-                                ## "skips"
-                                ## "z only"
-                                ## "z + x"
-                                ## "z + x_hat"
-                                ## "z + skips"
+decoder_input = os.environ.get("DECODER_INPUT", "z + x") # Choose from: 
+                                                            ## "x + x_hat + skips"
+                                                            ## "x + x_hat"
+                                                            ## "x_hat + skips"
+                                                            ## "x + skips"
+                                                            ## "skips"
+                                                            ## "z only"
+                                                            ## "z + x"
+                                                            ## "z + x_hat"
+                                                            ## "z + skips"
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 2 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
@@ -111,5 +111,6 @@ use_subject_wise_z_norm = {
                         # "option1": Z-norm in train only; standard test eval
                         # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
                         # "option3": Standard test_seen; test_unseen uses calibration
+                        # "none"
     "train": True       # This is used during training regardless of test mode
 }
