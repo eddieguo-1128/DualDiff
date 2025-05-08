@@ -151,9 +151,21 @@ def initialize_models():
     print("\n--------- Model Summary ---------")
     print("Input channels    :", channels)
     print("Timepoints        :", timepoints)
-    print("DDPM parameters   :", sum(p.numel() for p in ddpm.parameters()))
+    
+    # Print DDPM parameters if it exists
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        print("DDPM parameters   :", sum(p.numel() for p in ddpm.parameters()))
+    else:
+        print("DDPM parameters   : 0 (no DDPM used)")
+    
     print("Encoder parameters:", sum(p.numel() for p in encoder.parameters()))
-    print("Decoder parameters:", sum(p.numel() for p in decoder.parameters()))
+    
+    # Print decoder parameters if it exists
+    if decoder_variant == "use_decoder" and decoder is not None:
+        print("Decoder parameters:", sum(p.numel() for p in decoder.parameters()))
+    else:
+        print("Decoder parameters: 0 (no decoder used)")
+    
     print("Classifier params :", sum(p.numel() for p in fc.parameters()))
     print("Total DiffE params:", sum(p.numel() for p in diffe.parameters()))
     print("-------------------------------\n")
@@ -161,9 +173,21 @@ def initialize_models():
     return ddpm, diffe
 
 def setup_optimizers(ddpm, diffe):
-
     # Optimizers
-    optim1 = optim.RMSprop(ddpm.parameters(), lr=base_lr)
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        optim1 = optim.RMSprop(ddpm.parameters(), lr=base_lr)
+        scheduler1 = optim.lr_scheduler.CyclicLR(optimizer=optim1, 
+                                             base_lr=base_lr,
+                                             max_lr=max_lr, 
+                                             step_size_up=scheduler_step_size,
+                                             mode="exp_range", 
+                                             cycle_momentum=False,
+                                             gamma=scheduler_gamma)
+    else:
+        # Create dummy optimizer and scheduler when DDPM is not used
+        optim1 = None
+        scheduler1 = None
+    
     optim2 = optim.RMSprop(diffe.parameters(), lr=base_lr)
     
     # EMA
@@ -171,30 +195,24 @@ def setup_optimizers(ddpm, diffe):
                  beta=ema_beta, 
                  update_after_step=ema_update_after, 
                  update_every=ema_update_every)
-            
-    # Learning rate schedulers
-    scheduler1 = optim.lr_scheduler.CyclicLR(optimizer=optim1, 
-                                             base_lr=base_lr,
-                                             max_lr=max_lr, 
-                                             step_size_up=scheduler_step_size,
-                                             mode="exp_range", 
-                                             cycle_momentum=False,
-                                             gamma=scheduler_gamma)
     
+    # Learning rate scheduler for DiffE
     scheduler2 = optim.lr_scheduler.CyclicLR(optimizer=optim2, 
-                                             base_lr=base_lr,
-                                             max_lr=max_lr, 
-                                             step_size_up=scheduler_step_size,
-                                             mode="exp_range", 
-                                             cycle_momentum=False,
-                                             gamma=scheduler_gamma)
+                                         base_lr=base_lr,
+                                         max_lr=max_lr, 
+                                         step_size_up=scheduler_step_size,
+                                         mode="exp_range", 
+                                         cycle_momentum=False,
+                                         gamma=scheduler_gamma)
     
     return optim1, optim2, fc_ema, scheduler1, scheduler2
 
 def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2, 
                 fc_ema, epoch, z_stats, proj_head, supcon_loss):
 
-    ddpm.train()
+    # Only put DDPM in train mode if it exists
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        ddpm.train()
     diffe.train()
     
     # Initialize tracking variables
@@ -213,7 +231,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
         # Train DDPM
-        if ddpm_variant == "use_ddpm":
+        if ddpm_variant == "use_ddpm" and ddpm is not None and optim1 is not None:
             optim1.zero_grad()
             x_hat, down, up, noise, t = ddpm(x)
 
@@ -267,7 +285,8 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         optim2.step()
         
         # Update schedulers and EMA
-        scheduler1.step()
+        if scheduler1 is not None:
+            scheduler1.step()
         scheduler2.step()
         fc_ema.update()
         
@@ -285,11 +304,12 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
 
 def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma):
 
-    ddpm.eval()
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        ddpm.eval()
     diffe.eval()
     
     # Get metrics using the evaluate function
-    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device)
+    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input)
     
     # Calculate validation loss
     val_loss = 0
@@ -496,26 +516,27 @@ def test_best_model(best_metrics, z_stats_train):
 
     if z_norm_mode == "option1":
         # Option 1: Z-norm in train only; standard test eval
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device, ddpm=ddpm, encoder_input=encoder_input)
     
     elif z_norm_mode == "option2":
         # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
         test1_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train)
+            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train,
+            ddpm=ddpm, encoder_input=encoder_input)
         test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
+            diffe, test2_loader, device, name="Test2", unseen=True, 
+            ddpm=ddpm, encoder_input=encoder_input)
     
     elif z_norm_mode == "option3":
         # Option 3: Standard test_seen; test_unseen uses calibration
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
-    
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True,
+                                                        ddpm=ddpm, encoder_input=encoder_input)
     else:
         print(f"Unknown Z-normalization mode: {z_norm_mode}. Using default evaluation.")
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device, ddpm=ddpm, encoder_input=encoder_input)
 
     print("\n===== Test Results =====")
     print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
