@@ -400,14 +400,44 @@ class Decoder(nn.Module):
             # Create dummy tensors with appropriate shapes
             B, C, T = x0.shape
             x_hat = x0.clone()  # Use input as a placeholder
-            dn11, dn22, dn33 = dn1, dn2, dn3  # Use encoder features as placeholders
+            
+            # Don't use encoder features directly - create properly sized placeholders
+            # Get the right channel sizes that match what'd come from the DDPM
+            B, C_dn3, T_dn3 = dn3.shape
+            B, C_dn2, T_dn2 = dn2.shape
+            B, C_dn1, T_dn1 = dn1.shape
+            
+            dn11 = torch.zeros(B, C_dn1, T_dn1, device=dn1.device)
+            dn22 = torch.zeros(B, C_dn2, T_dn2, device=dn2.device)
+            dn33 = torch.zeros(B, C_dn3, T_dn3, device=dn3.device)
         else:
             # DDPM output
             x_hat, down_ddpm, up, t = diffusion_out
             dn11, dn22, dn33 = down_ddpm
-
+        
+        # Check shapes before concatenating
+        if dn3.shape[1] + dn33.shape[1] != self.d3_out + self.e3_out:
+            # Print shape info for debugging
+            print(f"Shape mismatch in up1: dn3 {dn3.shape}, dn33 {dn33.shape}")
+            
+            # Safely resize channels if needed for the dummy case
+            if diffusion_out is None:
+                # Resize to match expected dimensions
+                dn33 = torch.zeros_like(dn3)
+        
         # Up sampling
         up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
+        
+        # Similar shape checking for the next concatenation
+        if up1.shape[1] + dn22.shape[1] != self.u2_out + self.d2_out:
+            # Print shape info for debugging
+            print(f"Shape mismatch in up2: up1 {up1.shape}, dn22 {dn22.shape}")
+            
+            # Safely resize if needed
+            if diffusion_out is None:
+                # Resize to match expected dimensions
+                dn22 = torch.zeros_like(up1)
+        
         up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
         
         # Project z vector to feature space if needed
@@ -436,7 +466,6 @@ class Decoder(nn.Module):
             out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
 
         return out
-
 
 class DiffE(nn.Module):
     def __init__(self, encoder, decoder, fc):
