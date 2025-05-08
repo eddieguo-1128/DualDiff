@@ -37,7 +37,7 @@ elif option == "drive":
 num_subjects = 35
 
 # --------- Logging  ---------
-run_name = os.environ.get("RUN_NAME", "run9")
+run_name = os.environ.get("RUN_NAME", "run10")
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -54,18 +54,21 @@ num_classes = 26
 channels = 64 
 timepoints = 250  # From EEGNet parameters
 
-# DDPM parameters
+# DDPM 
+ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
 n_T = 1000
 ddpm_dim = 128
 encoder_dim = 256
 fc_dim = 512
 
 # Encoder parameters
+encoder_input = os.environ.get("ENCODER_INPUT", "x")       # "x" or "x_hat"
 eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
                  "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
 
 # Decoder parameters (to implement)
-decoder_input = os.environ.get("DECODER_INPUT", "z + x") # Choose from: 
+decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")  # "use_decoder" or "no_decoder"
+decoder_input = os.environ.get("DECODER_INPUT", "z only") # Choose from: 
                                                             ## "x + x_hat + skips"
                                                             ## "x + x_hat"
                                                             ## "x_hat + skips"
@@ -77,7 +80,7 @@ decoder_input = os.environ.get("DECODER_INPUT", "z + x") # Choose from:
                                                             ## "z + skips"
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 1 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
