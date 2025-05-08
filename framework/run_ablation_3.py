@@ -89,3 +89,12 @@ os.makedirs(ablation_dir, exist_ok=True)
 results_path = os.path.join(ablation_dir, f"ablation_ddpm_encoder_decoder_{timestamp}.csv")
 results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
+
+# cases checked by this runner file 
+#ddpm=use_ddpm, encoder_input=x, decoder_variant=use_decoder, seed=42, z_norm=option2
+#ddpm=use_ddpm, encoder_input=x, decoder_variant=no_decoder, seed=42, z_norm=option2
+#ddpm=use_ddpm, encoder_input=x_hat, decoder_variant=use_decoder, seed=42, z_norm=option2
+#ddpm=use_ddpm, encoder_input=x_hat, decoder_variant=no_decoder, seed=42, z_norm=option2
+#ddpm=no_ddpm, encoder_input=x, decoder_variant=use_decoder, seed=42, z_norm=option2 
+#ddpm=no_ddpm, encoder_input=x, decoder_variant=no_decoder, seed=42, z_norm=option2
+#skipping incompatible combo: no_ddpm + x_hat
