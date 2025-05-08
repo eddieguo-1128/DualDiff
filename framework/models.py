@@ -407,43 +407,86 @@ class Decoder(nn.Module):
             B, C_dn2, T_dn2 = dn2.shape
             B, C_dn1, T_dn1 = dn1.shape
             
-            dn11 = torch.zeros(B, C_dn1, T_dn1, device=dn1.device)
-            dn22 = torch.zeros(B, C_dn2, T_dn2, device=dn2.device)
-            dn33 = torch.zeros(B, C_dn3, T_dn3, device=dn3.device)
+            # Calculate expected channel dimensions for DDPM features
+            expected_ch_dn1 = self.d1_out  # Likely 256
+            expected_ch_dn2 = self.d2_out  # Likely 512 
+            expected_ch_dn3 = self.d3_out  # Likely 768
+            
+            dn11 = torch.zeros(B, expected_ch_dn1, T_dn1, device=dn1.device)
+            dn22 = torch.zeros(B, expected_ch_dn2, T_dn2, device=dn2.device)
+            dn33 = torch.zeros(B, expected_ch_dn3, T_dn3, device=dn3.device)
         else:
             # DDPM output
             x_hat, down_ddpm, up, t = diffusion_out
             dn11, dn22, dn33 = down_ddpm
         
-        # Check shapes before concatenating
-        if dn3.shape[1] + dn33.shape[1] != self.d3_out + self.e3_out:
-            # Print shape info for debugging
-            print(f"Shape mismatch in up1: dn3 {dn3.shape}, dn33 {dn33.shape}")
+        # Calculate expected input channels for up1 layer
+        expected_up1_channels = self.d3_out + self.e3_out
+        
+        # Check if we need to adjust the channels
+        if dn3.shape[1] + dn33.shape[1] != expected_up1_channels:
+            print(f"Shape mismatch in up1: dn3 {dn3.shape}, dn33 {dn33.shape}, expected total {expected_up1_channels}")
             
-            # Safely resize channels if needed for the dummy case
+            # Safely adjust the channels for the dummy case
             if diffusion_out is None:
-                # Resize to match expected dimensions
-                dn33 = torch.zeros_like(dn3)
+                # Create a concatenated tensor with the right number of channels
+                concat_in = torch.cat([dn3, dn33], dim=1)
+                
+                # Create a new tensor with the correct number of channels needed by up1
+                if concat_in.shape[1] < expected_up1_channels:
+                    # Need to add channels
+                    missing_channels = expected_up1_channels - concat_in.shape[1]
+                    padding = torch.zeros(B, missing_channels, T_dn3, device=dn3.device)
+                    concat_in = torch.cat([concat_in, padding], dim=1)
+                else:
+                    # Need to reduce channels
+                    concat_in = concat_in[:, :expected_up1_channels, :]
+                    
+                # Pass the properly sized tensor to up1
+                up1 = self.up1(concat_in)
+            else:
+                # This shouldn't happen with real DDPM output
+                raise ValueError(f"Channel mismatch with real DDPM: {dn3.shape[1]} + {dn33.shape[1]} != {expected_up1_channels}")
+        else:
+            # Normal case - shapes match
+            up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
         
-        # Up sampling
-        up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
+        # Rest of the function remains the same...
+        # Calculate expected input channels for up2 layer
+        expected_up2_channels = self.u2_out + self.d2_out
         
-        # Similar shape checking for the next concatenation
-        if up1.shape[1] + dn22.shape[1] != self.u2_out + self.d2_out:
-            # Print shape info for debugging
-            print(f"Shape mismatch in up2: up1 {up1.shape}, dn22 {dn22.shape}")
+        # Check if we need to adjust the channels
+        if up1.shape[1] + dn22.shape[1] != expected_up2_channels:
+            print(f"Shape mismatch in up2: up1 {up1.shape}, dn22 {dn22.shape}, expected total {expected_up2_channels}")
             
-            # Safely resize if needed
+            # Safely adjust the channels for the dummy case
             if diffusion_out is None:
-                # Resize to match expected dimensions
-                dn22 = torch.zeros_like(up1)
-        
-        up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
-        
+                # Create a concatenated tensor with the right number of channels
+                concat_in = torch.cat([up1, dn22], dim=1)
+                
+                # Create a new tensor with the correct number of channels needed by up2
+                if concat_in.shape[1] < expected_up2_channels:
+                    # Need to add channels
+                    missing_channels = expected_up2_channels - concat_in.shape[1]
+                    padding = torch.zeros(B, missing_channels, T_dn2, device=dn2.device)
+                    concat_in = torch.cat([concat_in, padding], dim=1)
+                else:
+                    # Need to reduce channels
+                    concat_in = concat_in[:, :expected_up2_channels, :]
+                    
+                # Pass the properly sized tensor to up2
+                up2 = self.up2(concat_in)
+            else:
+                # This shouldn't happen with real DDPM output
+                raise ValueError(f"Channel mismatch with real DDPM: {up1.shape[1]} + {dn22.shape[1]} != {expected_up2_channels}")
+        else:
+            # Normal case - shapes match
+            up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
+
         # Project z vector to feature space if needed
         B, _, T = dn11.shape
         z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-
+    
         if decoder_input == "x + x_hat + skips":
             out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
         elif decoder_input == "x + x_hat":
