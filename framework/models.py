@@ -441,10 +441,17 @@ class DiffE(nn.Module):
 
     def forward(self, x0, ddpm_out):
         encoder_out = self.encoder(x0)
-        z = encoder_out[1] #return z
-        decoder_out = self.decoder(x0, encoder_out, ddpm_out)
+        z = encoder_out[1]  # return z
+        
+        # Only call decoder if it exists
+        if self.decoder is not None:
+            decoder_out = self.decoder(x0, encoder_out, ddpm_out)
+        else:
+            # If no decoder, return None for decoder output
+            decoder_out = None
+            
         fc_out = self.fc(encoder_out[1])
-        return decoder_out, fc_out,z
+        return decoder_out, fc_out, z
     
 # Final classification head
 class LinearClassifier(nn.Module):
