@@ -41,10 +41,11 @@ for ddpm_variant in ddpm_variants:
             print("Skipping incompatible combo: no_ddpm + x_hat")
             continue
         for decoder_variant in decoder_variants:
+            acc_seen_list = []
+            acc_unseen_list = []
+            dec_input = decoder_inputs[0]  # fixed to z only
+            print(f"\nRunning: ddpm={ddpm_variant}, encoder_input={encoder_input}, decoder_variant={decoder_variant}, z_norm={z_norm_mode}")
             for seed in seeds:
-                dec_input = decoder_inputs[0]  # fixed to z only
-                print(f"\nRunning: ddpm={ddpm_variant}, encoder_input={encoder_input}, decoder_variant={decoder_variant}, seed={seed}, z_norm={z_norm_mode}")
-
                 # Set environment variables
                 os.environ["DECODER_INPUT"] = dec_input
                 os.environ["SEED"] = str(seed)
@@ -70,17 +71,26 @@ for ddpm_variant in ddpm_variants:
                 path = os.path.join(log_dir, result_files[-1])
                 result = np.load(path, allow_pickle=True).item()
 
+                # Compute statistics
                 acc_seen = result["test1"]["accuracy"]
                 acc_unseen = result["test2"]["accuracy"]
 
-                results.append({"decoder_input": dec_input,
-                                "ddpm_variant": ddpm_variant,
-                                "encoder_input": encoder_input,
-                                "decoder_variant": decoder_variant,
-                                "seed": seed,
-                                "z_norm_mode": z_norm_mode, 
-                                "test_seen_acc": acc_seen * 100,
-                                "test_unseen_acc": acc_unseen * 100})
+                acc_seen_list.append(acc_seen)
+                acc_unseen_list.append(acc_unseen)
+
+            seen_mean, seen_std = np.mean(acc_seen_list), np.std(acc_seen_list)
+            unseen_mean, unseen_std = np.mean(acc_unseen_list), np.std(acc_unseen_list)
+
+            results.append({
+                "decoder_input": dec_input,
+                "ddpm_variant": ddpm_variant,
+                "encoder_input": encoder_input,
+                "decoder_variant": decoder_variant,
+                "z_norm_mode": z_norm_mode,
+                "test_seen_mean": seen_mean * 100,
+                "test_seen_std": seen_std * 100,
+                "test_unseen_mean": unseen_mean * 100,
+                "test_unseen_std": unseen_std * 100})
 
 results_df = pd.DataFrame(results)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
