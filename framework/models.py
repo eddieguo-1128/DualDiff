@@ -396,8 +396,15 @@ class Decoder(nn.Module):
         dn1, dn2, dn3 = down
 
         # DDPM output
-        x_hat, down_ddpm, up, t = diffusion_out
-        dn11, dn22, dn33 = down_ddpm
+        if diffusion_out is None:
+            # Create dummy tensors with appropriate shapes
+            B, C, T = x0.shape
+            x_hat = x0.clone()  # Use input as a placeholder
+            dn11, dn22, dn33 = dn1, dn2, dn3  # Use encoder features as placeholders
+        else:
+            # DDPM output
+            x_hat, down_ddpm, up, t = diffusion_out
+            dn11, dn22, dn33 = down_ddpm
 
         # Up sampling
         up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
