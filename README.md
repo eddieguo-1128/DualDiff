@@ -34,10 +34,10 @@ This project implements a joint EEG generation and classification model using de
   - [x] Impact of DDPM (what if we remove DDPM entirely, and just feed `x` directly to the encoder)
   - [X] Impact of encoder inputs (`x` vs `x_hat`) 
   - [X] Impact of decoder (what if we remove the decoder)
-  - [ ] Impact of losses (~ table 6) -> Rerun table 6 using **DualDiff-Latent v3** + Explain that we have a total loss + individual L1 loss, and run some experiment with its combinations + if time allows, try smth except for SupCon loss
+  - [ ] Impact of losses 
   - [ ] Impact of classifier
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
-  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder)
+  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) @Kate 
   - [ ] (skip for now, already explained it in other parts) Role of z (for future: how exactly it does both generation and classification)
 - [ ] Think about changing the title: dual-task + key insight about the latent z
 
