@@ -520,8 +520,19 @@ class DiffE(nn.Module):
 
         # Input adapters if needed
         if classifier_input in ["x", "x_hat", "decoder_out", "input_mixup"]:
-            self.fc_adapter = nn.Sequential(nn.AdaptiveAvgPool1d(1),
-                                            nn.Flatten())
+            # Determine target dimension based on classifier type
+            if isinstance(fc, EEGNetClassifier):
+                # Get input dimension of the EEGNetClassifier's dense layer
+                target_dim = fc.dense.in_features  # This should be F2 * ((Samples // 4) // 8)
+            else:
+                # For LinearClassifier or other types
+                target_dim = 256  # Default encoder embedding dimension
+                
+            self.fc_adapter = nn.Sequential(
+                nn.AdaptiveAvgPool1d(1),  # [B, C, T] → [B, C, 1]
+                nn.Flatten(),  # [B, C, 1] → [B, C]
+                nn.Linear(64, target_dim)  # Transform to the expected dimension
+            )
 
     def forward(self, x0, ddpm_out):
         encoder_out = self.encoder(x0)
