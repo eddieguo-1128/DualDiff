@@ -136,13 +136,27 @@ def initialize_models():
                      F2=eegnet_params["F2"],
                      dropoutType=eegnet_params["dropout_type"]).to(device)
     
-    # Decoder and classifier
+    # Decoder
     if decoder_variant == "use_decoder":
         decoder = Decoder(in_channels=channels, n_feat=ddpm_dim, encoder_dim=encoder_dim).to(device)
     else:
         decoder = None
     
-    fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
+    # Classifier
+    if classifier_variant == "eegnet_classifier":
+        fc = EEGNetClassifier(nb_classes=eegnet_classifier_params["nb_classes"],
+                              Chans=eegnet_classifier_params["Chans"],
+                              Samples=eegnet_classifier_params["Samples"],
+                              dropoutRate=eegnet_classifier_params["dropoutRate"],
+                              kernLength=eegnet_classifier_params["kernLength"],
+                              F1=eegnet_classifier_params["F1"],
+                              D=eegnet_classifier_params["D"],
+                              F2=eegnet_classifier_params["F2"],
+                              dropoutType=eegnet_classifier_params["dropoutType"]).to(device)
+    elif classifier_variant == "fc_classifier":
+        fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
+    else:
+        raise ValueError(f"Unknown classifier variant: {classifier_variant}")
     
     # DiffE combines everything
     diffe = DiffE(encoder, decoder, fc).to(device)
@@ -274,7 +288,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                 for i in range(z.size(0))])
         
         # Compute losses
-        #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
         loss_c = nn.CrossEntropyLoss()(fc_out, y)
         z_proj = proj_head(z)
         loss_supcon = supcon_loss(z_proj, y)
@@ -352,7 +365,6 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                     z_stats[int(sid[i].item())][1].squeeze(0) 
                     for i in range(z.size(0))])
             
-            #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm)
             loss_c = nn.CrossEntropyLoss()(fc_out, y)
             z_proj = proj_head(z)
             loss_supcon = supcon_loss(z_proj, y)

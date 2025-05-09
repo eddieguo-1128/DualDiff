@@ -518,6 +518,11 @@ class DiffE(nn.Module):
         self.decoder = decoder
         self.fc = fc
 
+        # Input adapters if needed
+        if classifier_input in ["x", "x_hat", "decoder_out", "input_mixup"]:
+            self.fc_adapter = nn.Sequential(nn.AdaptiveAvgPool1d(1),
+                                            nn.Flatten())
+
     def forward(self, x0, ddpm_out):
         encoder_out = self.encoder(x0)
         z = encoder_out[1]  # return z
@@ -526,10 +531,32 @@ class DiffE(nn.Module):
         if self.decoder is not None:
             decoder_out = self.decoder(x0, encoder_out, ddpm_out)
         else:
-            # If no decoder, return None for decoder output
-            decoder_out = None
-            
-        fc_out = self.fc(encoder_out[1])
+            decoder_out = None # If no decoder, return None for decoder output
+
+        # Handle different classifier input types
+        if classifier_input == "z":
+            # Default: use encoder embedding
+            fc_in = z
+        elif classifier_input == "x":
+            # Use raw input (need to adapt dimensions)
+            fc_in = self.fc_adapter(x0) if hasattr(self, 'fc_adapter') else z
+        elif classifier_input == "x_hat" and ddpm_out is not None:
+            # Use DDPM reconstruction
+            x_hat = ddpm_out[0]
+            fc_in = self.fc_adapter(x_hat.detach()) if hasattr(self, 'fc_adapter') else z
+        elif classifier_input == "decoder_out" and decoder_out is not None:
+            # Use decoder output
+            fc_in = self.fc_adapter(decoder_out) if hasattr(self, 'fc_adapter') else z
+        #elif classifier_input == "input_mixup" and ddpm_out is not None: # TODO: Apply mixup between original input and DDPM reconstruction
+            #x_hat = ddpm_out[0]
+            #lambda_mix = 0.5  # Equal weighting
+            #mixed_input = lambda_mix * x0 + (1-lambda_mix) * x_hat.detach()
+            #fc_in = self.fc_adapter(mixed_input) if hasattr(self, 'fc_adapter') else z
+        else:
+            # Fallback to using encoder embedding
+            fc_in = z
+
+        fc_out = self.fc(fc_in)
         return decoder_out, fc_out, z
     
 # Final classification head
@@ -543,8 +570,7 @@ class LinearClassifier(nn.Module):
             nn.Linear(in_features=latent_dim, out_features=latent_dim),
             nn.GroupNorm(4, latent_dim),
             nn.PReLU(),
-            nn.Linear(in_features=latent_dim, out_features=emb_dim),
-        )
+            nn.Linear(in_features=latent_dim, out_features=emb_dim))
 
     def forward(self, x):
         x = self.linear_out(x)
@@ -633,3 +659,73 @@ class ProjectionHead(nn.Module):
 
     def forward(self, z):
         return F.normalize(self.net(z), dim=1)
+    
+
+class EEGNetClassifier(nn.Module):
+    def __init__(self, nb_classes, Chans=64, Samples=128, dropoutRate=0.5,
+                 kernLength=64, F1=8, D=2, F2=16, norm_rate=0.25, dropoutType='Dropout'):
+        super(EEGNetClassifier, self).__init__()
+        if dropoutType == 'Dropout':
+            DropoutClass = nn.Dropout
+        elif dropoutType == 'SpatialDropout2D':
+            DropoutClass = lambda p: nn.Dropout2d(p)
+        else:
+            raise ValueError("dropoutType must be 'Dropout' or 'SpatialDropout2D'")
+
+        # Block 1
+        self.conv1 = nn.Conv2d(1, F1, kernel_size=(1, kernLength), padding='same', bias=False)
+        self.bn1 = nn.BatchNorm2d(F1)
+
+        self.depthwiseConv = nn.Conv2d(
+            F1, F1 * D, kernel_size=(Chans, 1), groups=F1, bias=False
+        )
+        self.bn2 = nn.BatchNorm2d(F1 * D)
+        self.activation1 = nn.ELU()
+        self.avgpool1 = nn.AvgPool2d(kernel_size=(1, 4))
+        self.drop1 = DropoutClass(dropoutRate)
+
+        # Block 2
+        self.separable_depthwise = nn.Conv2d(
+            F1 * D, F1 * D, kernel_size=(1, 16), groups=F1 * D, padding='same', bias=False
+        )
+        self.separable_pointwise = nn.Conv2d(
+            F1 * D, F2, kernel_size=1, bias=False
+        )
+        self.bn3 = nn.BatchNorm2d(F2)
+        self.activation2 = nn.ELU()
+        self.avgpool2 = nn.AvgPool2d(kernel_size=(1, 8))
+        self.drop2 = DropoutClass(dropoutRate)
+
+        # Final dense layer
+        self.flatten = nn.Flatten()
+        self.dense = nn.Linear(F2 * ((Samples // 4) // 8), nb_classes)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):  # x: (N, 1, Chans, Samples)
+        
+        if len(x.shape) == 2: # If input is just a feature vector (e.g. from encoder embedding)
+            return self.dense(x) # Use only the dense layer
+        
+        if len(x.shape) == 3:  # (N, Chans, Samples)
+            x = x.unsqueeze(1) # Add the channel dimension
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.depthwiseConv(x)
+        x = self.bn2(x)
+        x = self.activation1(x)
+        x = self.avgpool1(x)
+        x = self.drop1(x)
+
+        x = self.separable_depthwise(x)
+        x = self.separable_pointwise(x)
+        x = self.bn3(x)
+        x = self.activation2(x)
+        x = self.avgpool2(x)
+        x = self.drop2(x)
+
+        x = self.flatten(x)
+        x = self.dense(x)
+        #x = self.softmax(x) # we'll apply it during loss calculation
+
+        return x

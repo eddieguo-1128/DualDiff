@@ -66,7 +66,7 @@ encoder_input = os.environ.get("ENCODER_INPUT", "x")       # "x" or "x_hat"
 eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
                  "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
 
-# Decoder parameters (to implement)
+# Decoder parameters
 decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")  # "use_decoder" or "no_decoder"
 decoder_input = os.environ.get("DECODER_INPUT", "z only") # Choose from: 
                                                             ## "x + x_hat + skips"
@@ -79,8 +79,21 @@ decoder_input = os.environ.get("DECODER_INPUT", "z only") # Choose from:
                                                             ## "z + x_hat"
                                                             ## "z + skips"
 
+# Classifier parameters
+classifier_variant = os.environ.get("CLASSIFIER_VARIANT", "fc_classifier")  # "eegnet_classifier" or "fc_classifier"
+classifier_input = os.environ.get("CLASSIFIER_INPUT", "z")  # "x", "x_hat", "decoder_out", "input_mixup", or "z"
+eegnet_classifier_params = {"nb_classes": num_classes,
+                            "Chans": channels,
+                            "Samples": timepoints,
+                            "dropoutRate": eegnet_params["dropout_rate"],
+                            "kernLength": eegnet_params["kernel_length"],
+                            "F1": eegnet_params["F1"], 
+                            "D": eegnet_params["D"], 
+                            "F2": eegnet_params["F2"],
+                            "dropoutType": eegnet_params["dropout_type"]}
+
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 1 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
