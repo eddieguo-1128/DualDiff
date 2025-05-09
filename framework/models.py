@@ -518,25 +518,9 @@ class DiffE(nn.Module):
         self.decoder = decoder
         self.fc = fc
 
-        # Input adapters if needed
-        if classifier_input in ["x", "x_hat", "decoder_out", "input_mixup"]:
-            # Determine target dimension based on classifier type
-            if isinstance(fc, EEGNetClassifier):
-                # Get input dimension of the EEGNetClassifier's dense layer
-                target_dim = fc.dense.in_features  # This should be F2 * ((Samples // 4) // 8)
-            else:
-                # For LinearClassifier or other types
-                target_dim = 256  # Default encoder embedding dimension
-                
-            self.fc_adapter = nn.Sequential(
-                nn.AdaptiveAvgPool1d(1),  # [B, C, T] → [B, C, 1]
-                nn.Flatten(),  # [B, C, 1] → [B, C]
-                nn.Linear(64, target_dim)  # Transform to the expected dimension
-            )
-
     def forward(self, x0, ddpm_out):
         encoder_out = self.encoder(x0)
-        z = encoder_out[1]  # return z
+        z = encoder_out[1]  
         
         # Only call decoder if it exists
         if self.decoder is not None:
@@ -544,48 +528,20 @@ class DiffE(nn.Module):
         else:
             decoder_out = None # If no decoder, return None for decoder output
 
-        # Handle different classifier input types
+        # Pass the appropriate input type directly to the classifier
         if classifier_input == "z":
-            # Default: use encoder embedding
-            fc_in = z
+            fc_in = z  # [B, 256]
         elif classifier_input == "x":
-            # Use raw input (need to adapt dimensions)
-            fc_in = self.fc_adapter(x0) if hasattr(self, 'fc_adapter') else z
+            fc_in = x0  # [B, 64, 250] 
         elif classifier_input == "x_hat" and ddpm_out is not None:
-            # Use DDPM reconstruction
-            x_hat = ddpm_out[0]
-            fc_in = self.fc_adapter(x_hat.detach()) if hasattr(self, 'fc_adapter') else z
+            fc_in = ddpm_out[0].detach()  # [B, 64, 250]
         elif classifier_input == "decoder_out" and decoder_out is not None:
-            # Use decoder output
-            fc_in = self.fc_adapter(decoder_out) if hasattr(self, 'fc_adapter') else z
-        #elif classifier_input == "input_mixup" and ddpm_out is not None: # TODO: Apply mixup between original input and DDPM reconstruction
-            #x_hat = ddpm_out[0]
-            #lambda_mix = 0.5  # Equal weighting
-            #mixed_input = lambda_mix * x0 + (1-lambda_mix) * x_hat.detach()
-            #fc_in = self.fc_adapter(mixed_input) if hasattr(self, 'fc_adapter') else z
+            fc_in = decoder_out.detach()  # [B, 64, 250]
         else:
-            # Fallback to using encoder embedding
-            fc_in = z
+            fc_in = z  # Default fallback
 
         fc_out = self.fc(fc_in)
         return decoder_out, fc_out, z
-    
-# Final classification head
-class LinearClassifier(nn.Module):
-    def __init__(self, in_dim, latent_dim, emb_dim):
-        super().__init__()
-        self.linear_out = nn.Sequential(
-            nn.Linear(in_features=in_dim, out_features=latent_dim),
-            nn.GroupNorm(4, latent_dim),
-            nn.PReLU(),
-            nn.Linear(in_features=latent_dim, out_features=latent_dim),
-            nn.GroupNorm(4, latent_dim),
-            nn.PReLU(),
-            nn.Linear(in_features=latent_dim, out_features=emb_dim))
-
-    def forward(self, x):
-        x = self.linear_out(x)
-        return x
     
 def cosine_beta_schedule(timesteps, s=0.008):
     """
@@ -598,7 +554,6 @@ def cosine_beta_schedule(timesteps, s=0.008):
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0, 0.999)
-
 
 def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     """
@@ -615,7 +570,6 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0, 0.999)
-
 
 def ddpm_schedules(beta1, beta2, T):
     # assert beta1 < beta2 < 1.0, "beta1 and beta2 must be in (0, 1)"
@@ -671,7 +625,29 @@ class ProjectionHead(nn.Module):
     def forward(self, z):
         return F.normalize(self.net(z), dim=1)
     
+# Final classification head
+class LinearClassifier(nn.Module):
+    def __init__(self, in_dim, latent_dim, emb_dim):
+        super().__init__()
+        self.linear_out = nn.Sequential(
+            nn.Linear(in_features=in_dim, out_features=latent_dim),
+            nn.GroupNorm(4, latent_dim),
+            nn.PReLU(),
+            nn.Linear(in_features=latent_dim, out_features=latent_dim),
+            nn.GroupNorm(4, latent_dim),
+            nn.PReLU(),
+            nn.Linear(in_features=latent_dim, out_features=emb_dim))
+        self.att_pool = AttentionPool1d(256)
 
+    def forward(self, x):
+        if x.dim() == 2:
+            return self.linear_out(x)
+        elif x.dim() == 3:
+            x = self.att_pool(x)  # [B, in_dim]
+            return self.linear_out(x)
+        else:
+            raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
+        
 class EEGNetClassifier(nn.Module):
     def __init__(self, nb_classes, Chans=64, Samples=128, dropoutRate=0.5,
                  kernLength=64, F1=8, D=2, F2=16, norm_rate=0.25, dropoutType='Dropout'):
@@ -710,15 +686,15 @@ class EEGNetClassifier(nn.Module):
         # Final dense layer
         self.flatten = nn.Flatten()
         self.dense = nn.Linear(F2 * ((Samples // 4) // 8), nb_classes)
-        self.softmax = nn.Softmax(dim=1)
 
-    def forward(self, x):  # x: (N, 1, Chans, Samples)
+    def forward(self, x):  # expected input -> (N, 1, Chans, Samples)
         
-        if len(x.shape) == 2: # If input is just a feature vector (e.g. from encoder embedding)
-            return self.dense(x) # Use only the dense layer
+        if len(x.shape) == 2: # or just pass to the dense layer 
+            # Project z into a compatible 3D shape to pass through conv layers
+            x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, 1, 128)  # [B, 256, 1, 128] → simulate EEG shape
         
-        if len(x.shape) == 3:  # (N, Chans, Samples)
-            x = x.unsqueeze(1) # Add the channel dimension
+        if len(x.shape) == 3:  # (N, Chans, Samples) -> [B, 64, 250]
+            x = x.unsqueeze(1) # Add the channel dimension -> (N, 1, Chans, Samples)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -736,7 +712,6 @@ class EEGNetClassifier(nn.Module):
         x = self.drop2(x)
 
         x = self.flatten(x)
-        x = self.dense(x)
-        #x = self.softmax(x) # we'll apply it during loss calculation
+        x = self.dense(x) # produced result -> (N, nb_classes) -> [B, 26]
 
         return x
