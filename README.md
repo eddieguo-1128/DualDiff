@@ -36,6 +36,7 @@ This project implements a joint EEG generation and classification model using de
   - [X] Impact of decoder (what if we remove the decoder)
   - [ ] Impact of losses 
   - [ ] Impact of classifier
+  - [ ] Impact of classifier inputs
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
   - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) @Kate 
   - [ ] (skip for now, already explained it in other parts) Role of z (for future: how exactly it does both generation and classification)
