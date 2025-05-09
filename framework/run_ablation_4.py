@@ -7,16 +7,12 @@ from config import work_dir, use_subject_wise_z_norm
 
 # Define ablation axes
 seeds = [42, 43, 44] 
-ddpm_variants = ["use_ddpm",
-                 "no_ddpm"] # no ddpm means no x_hat is generated
-encoder_inputs = ["x", 
-                  "x_hat"] # x_hat is only available when ddpm is used
+ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
+encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["z only"]
-decoder_variants = ["use_decoder",
-                     "no_decoder"] # no decoder means no decoder_out is generated 
+decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
 z_norm_mode = "option2" # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
-classifier_variants = ["eegnet_classifier", 
-                       "fc_classifier"] # sweep 4
+classifier_variants = ["eegnet_classifier", "fc_classifier"] # sweep 4
 classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # sweep 4 // later add an option for "input_mixup"
 mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
                   "prior embeddings weighted average", "later embeddings weighted average"] # ablate later 
@@ -39,12 +35,31 @@ for classifier_variant in classifier_variants:
         if classifier_variant == "eegnet_classifier" and classifier_input == "z":
             print(f"Skipping: classifier_variant={classifier_variant}, classifier_input={classifier_input}")
             continue
+
+        # Set decoder and DDPM variants based on classifier input requirements
+        if classifier_input == "x":
+            # For x input, we don't need DDPM or decoder
+            ddpm_variant = "no_ddpm"
+            decoder_variant = "no_decoder"
+        elif classifier_input == "x_hat":
+            # For x_hat input, we need DDPM but no decoder
+            ddpm_variant = "use_ddpm"
+            decoder_variant = "no_decoder"
+        elif classifier_input == "decoder_out":
+            # For decoder_out input, we need decoder but no DDPM
+            ddpm_variant = "no_ddpm" 
+            decoder_variant = "use_decoder"
+        else:  # classifier_input == "z"
+            # For z input (embedding), we use default config
+            ddpm_variant = "use_ddpm"  
+            decoder_variant = "use_decoder"
+        
+        # Fixed parameters
+        dec_input = decoder_inputs[0]  # fixed to z only
+        encoder_input = encoder_inputs[0]  # fixed to x
+
         acc_seen_list = []
         acc_unseen_list = []
-        dec_input = decoder_inputs[0]  # fixed to z only
-        ddpm_variant = ddpm_variants[0]  # fixed to use_ddpm
-        encoder_input = encoder_inputs[0]  # fixed to x
-        decoder_variant = decoder_variants[0]  # fixed to use_decoder
         
         for seed in seeds: 
             print(f"\nRunning: classifier_variant={classifier_variant}, classifier_input={classifier_input}, seed={seed}, z_norm={z_norm_mode}")
@@ -109,11 +124,11 @@ results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
 
 # This runs 
-## classifier_variant=eegnet_classifier, classifier_input=x
-## classifier_variant=eegnet_classifier, classifier_input=x_hat
-## classifier_variant=eegnet_classifier, classifier_input=decoder_out
+## classifier_variant=eegnet_classifier, classifier_input=x -> "no_decoder" + "no_ddpm"
+## classifier_variant=eegnet_classifier, classifier_input=x_hat "no_decoder"
+## classifier_variant=eegnet_classifier, classifier_input=decoder_out -> "no_ddpm"
 ## classifier_variant=eegnet_classifier, classifier_input=z -> skip this case
-## classifier_variant=fc_classifier, classifier_input=x
-## classifier_variant=fc_classifier, classifier_input=x_hat
-## classifier_variant=fc_classifier, classifier_input=decoder_out
+## classifier_variant=fc_classifier, classifier_input=x -> "no_decoder" + "no_ddpm"
+## classifier_variant=fc_classifier, classifier_input=x_hat "no_decoder"
+## classifier_variant=fc_classifier, classifier_input=decoder_out "no_ddpm"
 ## classifier_variant=fc_classifier, classifier_input=z

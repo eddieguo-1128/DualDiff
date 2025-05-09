@@ -65,12 +65,10 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 y_sub = all_y[indices]
 
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x_sub)
+                    x_hat, *_ = ddpm(x_sub)
                     encoder_in = x_hat.detach()
-                    ddpm_out = (x_hat, down, up, t)  # Create the ddpm_out tuple
                 else:
                     encoder_in = x_sub
-                    ddpm_out = None
 
                 z = diffe.encoder(encoder_in)[1]
 
@@ -78,22 +76,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
                 z = (z - z_mean) / z_std
 
-                # Check classifier type to handle z input properly
-                if isinstance(diffe.fc, LinearClassifier):
-                    y_hat = F.softmax(diffe.fc(z), dim=1)
-                elif isinstance(diffe.fc, EEGNetClassifier):
-                    # Need to handle the 2D input specially for EEGNetClassifier
-                    # The issue is EEGNetClassifier expects first dimension of z to be batch size
-                    # but here first dimension is number of channels which causes conv2d to fail
-                    if classifier_input == "z":
-                        # Using the special handling in EEGNetClassifier for 2D inputs
-                        y_hat = F.softmax(diffe.fc(z), dim=1)
-                    else:
-                        # For other classifier_inputs, we need to pass through the DiffE
-                        # This will use the classifier_input configuration
-                        _, fc_out, _ = diffe(x_sub, ddpm_out)
-                        y_hat = F.softmax(fc_out, dim=1)
-
+                y_hat = F.softmax(diffe.fc(z), dim=1)
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
         else:
@@ -105,14 +88,10 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 x, y = x.to(device), y.to(device)
 
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x)
+                    x_hat, *_ = ddpm(x)
                     encoder_in = x_hat.detach()
-                    ddpm_out = (x_hat, down, up, t)
-                elif classifier_input == "x_hat":
-                    ddpm_out = (torch.zeros_like(x), None, None, None)
-                elif classifier_input == "x":
+                else:
                     encoder_in = x
-                    ddpm_out = None
 
                 _, z = diffe.encoder(encoder_in)
 
@@ -121,21 +100,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
                     for i in range(z.size(0))
                 ])
-
-                # Check classifier type to handle z input properly
-                if isinstance(diffe.fc, LinearClassifier):
-                    # LinearClassifier can handle z directly
-                    y_hat = F.softmax(diffe.fc(z), dim=1)
-                elif isinstance(diffe.fc, EEGNetClassifier):
-                    # For EEGNetClassifier we need to be careful
-                    if classifier_input == "z":
-                        # Using the special handling in EEGNetClassifier for 2D inputs
-                        y_hat = F.softmax(diffe.fc(z), dim=1)
-                    else:
-                        # For other classifier_inputs, we need to go through DiffE
-                        _, fc_out, _ = diffe(x, ddpm_out)
-                        y_hat = F.softmax(fc_out, dim=1)
-
+                y_hat = F.softmax(diffe.fc(z), dim=1)
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
 

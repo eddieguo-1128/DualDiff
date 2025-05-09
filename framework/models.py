@@ -319,7 +319,6 @@ class EEGNet(nn.Module):
         down = (dn1_out, dn2_out, dn3_out)
         return (down, z)
 
-
 # Decoder
 class Decoder(nn.Module):
     def __init__(self, in_channels, n_feat=256, encoder_dim=512, n_classes=13):
