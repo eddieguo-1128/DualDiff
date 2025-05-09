@@ -106,6 +106,11 @@ results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
 
 # This runs 
-## classifier_variant=eegnet_classifier, classifier_input=x, seed=42, z_norm=option2
-## classifier_variant=eegnet_classifier, classifier_input=x_hat, seed=42, z_norm=option2
-
+## classifier_variant=eegnet_classifier, classifier_input=x
+## classifier_variant=eegnet_classifier, classifier_input=x_hat
+## classifier_variant=eegnet_classifier, classifier_input=decoder_out
+## classifier_variant=eegnet_classifier, classifier_input=z
+## classifier_variant=fc_classifier, classifier_input=x
+## classifier_variant=fc_classifier, classifier_input=x_hat
+## classifier_variant=fc_classifier, classifier_input=decoder_out
+## classifier_variant=fc_classifier, classifier_input=z
