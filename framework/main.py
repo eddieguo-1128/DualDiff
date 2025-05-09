@@ -70,7 +70,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     ddpm_out = (x_hat, down, up, t)  # Create the ddpm_out tuple
                 else:
                     encoder_in = x_sub
-                    ddpm_out = (None, None, None, None)
+                    ddpm_out = None
 
                 z = diffe.encoder(encoder_in)[1]
 
@@ -108,12 +108,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     x_hat, down, up, t = ddpm(x)
                     encoder_in = x_hat.detach()
                     ddpm_out = (x_hat, down, up, t)
-                else:
+                elif classifier_input == "x_hat":
+                    ddpm_out = (torch.zeros_like(x), None, None, None)
+                elif classifier_input == "x":
                     encoder_in = x
-                    if classifier_input == "x_hat":
-                        ddpm_out = (torch.zeros_like(x), None, None, None)
-                    else:
-                        ddpm_out = (None, None, None, None)
+                    ddpm_out = None
 
                 _, z = diffe.encoder(encoder_in)
 

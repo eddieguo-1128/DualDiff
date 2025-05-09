@@ -36,6 +36,9 @@ results = []
 
 for classifier_variant in classifier_variants:
     for classifier_input in classifier_inputs:
+        if classifier_variant == "eegnet_classifier" and classifier_input == "z":
+            print(f"Skipping: classifier_variant={classifier_variant}, classifier_input={classifier_input}")
+            continue
         acc_seen_list = []
         acc_unseen_list = []
         dec_input = decoder_inputs[0]  # fixed to z only
@@ -109,7 +112,7 @@ print(f"\nFinished. Saved results to {results_path}")
 ## classifier_variant=eegnet_classifier, classifier_input=x
 ## classifier_variant=eegnet_classifier, classifier_input=x_hat
 ## classifier_variant=eegnet_classifier, classifier_input=decoder_out
-## classifier_variant=eegnet_classifier, classifier_input=z
+## classifier_variant=eegnet_classifier, classifier_input=z -> skip this case
 ## classifier_variant=fc_classifier, classifier_input=x
 ## classifier_variant=fc_classifier, classifier_input=x_hat
 ## classifier_variant=fc_classifier, classifier_input=decoder_out
