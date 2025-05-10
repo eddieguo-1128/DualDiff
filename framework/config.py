@@ -23,7 +23,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"
+    work_dir = "/content/drive/MyDrive/project/model/ssvep"
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -33,7 +33,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 if option == "local":
     data_dir = os.path.join(work_dir, "SSVEP-CHAR")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/Communikate//IDL-research/dataset/ssvep/chars/"
+    data_dir = "/content/drive/MyDrive/project/dataset/ssvep/chars"
 num_subjects = 35
 
 # --------- Logging  ---------
