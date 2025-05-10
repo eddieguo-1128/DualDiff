@@ -21,7 +21,7 @@ def evaluate(encoder, fc, ddpm, generator, device):
             x_hat, *_ = ddpm(x)
             # if x_hat.shape[-1] != x.shape[-1]:
             #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
-            encoder_in = x_hat
+            encoder_in = x_hat.detach()
         else:
             encoder_in = x
 
@@ -74,7 +74,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     x_hat, *_ = ddpm(x_sub)
                     # if x_hat.shape[-1] != x_sub.shape[-1]:
                     #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
-                    encoder_in = x_hat
+                    encoder_in = x_hat.detach()
                 else:
                     encoder_in = x_sub
 
@@ -99,7 +99,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     x_hat, *_ = ddpm(x)
                     # if x_hat.shape[-1] != x.shape[-1]:
                     #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
-                    encoder_in = x_hat
+                    encoder_in = x_hat.detach()
                 else:
                     encoder_in = x
 
@@ -254,7 +254,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
             encoder_in = x
         else:
-            encoder_in = x_hat if encoder_input == "x_hat" else x
+            encoder_in = x_hat.detach() if encoder_input == "x_hat" else x
 
         if decoder_variant == "no_decoder":
             _, fc_out, z = diffe(encoder_in, ddpm_out)
@@ -333,7 +333,8 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
             if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
                 encoder_in = x
             else:
-                encoder_in = x_hat if encoder_input == "x_hat" else x
+                encoder_in = x_hat.detach() if encoder_input == "x_hat" else x
+            
 
             if decoder_variant == "no_decoder":
                 _, fc_out, z = diffe(encoder_in, ddpm_out)
