@@ -88,28 +88,18 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
-                    # For z input, use the normalized embedding
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        # EEGNetClassifier handles 2D inputs internally
-                        y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-                        
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 elif classifier_input == "x":
-                    # For x input, use raw signal
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(x_sub), dim=1)
+                    y_hat = F.softmax(diffe.fc(x_sub), dim=1)
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
-                    # For x_hat input, use denoised signal
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
                 elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
-                    # For decoder_out, we need to run full DiffE forward
                     decoder_out, _, _ = diffe(x_sub, ddpm_out)
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
-                    # Default fallback to z embeddings
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 Y.append(y_sub.detach().cpu())
@@ -143,33 +133,22 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 z_norm = torch.stack([
                     (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
-                    for i in range(z.size(0))
-                ])
+                    for i in range(z.size(0))])
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
-                    # For z input, use the normalized embedding
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        # EEGNetClassifier handles 2D inputs internally
-                        y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-                        
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 elif classifier_input == "x":
-                    # For x input, use raw signal
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(x), dim=1)
+                    y_hat = F.softmax(diffe.fc(x), dim=1)
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
-                    # For x_hat input, use denoised signal
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
                 elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
-                    # For decoder_out, we need to run full DiffE forward
                     decoder_out, _, _ = diffe(x, ddpm_out)
-                    if isinstance(diffe.fc, EEGNetClassifier):
-                        y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
-                    # Default fallback to z embeddings
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 Y.append(y.detach().cpu())
