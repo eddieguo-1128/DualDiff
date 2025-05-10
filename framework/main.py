@@ -126,6 +126,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 def initialize_models():
     # DDPM model
     ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
+    decoder_variant= os.environ.get("DECODER_VARIANT", "use_decoder") 
 
     if ddpm_variant == "use_ddpm":
         ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
