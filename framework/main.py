@@ -5,6 +5,11 @@ from models import *
 from utils import *
 from viz import *
 
+ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
+decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")
+encoder_input = os.environ.get("ENCODER_INPUT", "x_hat")
+z_norm_mode = os.environ.get("Z_NORM_MODE", "option2")
+
 def evaluate(encoder, fc, ddpm, generator, device):
     labels = np.arange(0, num_classes)
     Y = []
@@ -125,8 +130,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
 def initialize_models():
     # DDPM model
-    ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
-    decoder_variant= os.environ.get("DECODER_VARIANT", "use_decoder") 
+    # ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
+    # decoder_variant= os.environ.get("DECODER_VARIANT", "use_decoder") 
 
     if ddpm_variant == "use_ddpm":
         ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
@@ -220,9 +225,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
-
-        ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
-        decoder_variant= os.environ.get("DECODER_VARIANT", "use_decoder") 
 
         if epoch == 0 and num_batches == 0:
             print(f"[Config] DDPM: {ddpm_variant}, Encoder input: {encoder_input}, Decoder: {decoder_variant}")
