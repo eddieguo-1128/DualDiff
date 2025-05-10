@@ -6,7 +6,7 @@ from datetime import datetime
 from config import work_dir, use_subject_wise_z_norm
 
 # Define ablation axes
-seeds = [42, 43] # 44
+seeds = [42, 43, 44]
 ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["z only"]
