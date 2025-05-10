@@ -635,12 +635,14 @@ class LinearClassifier(nn.Module):
             nn.GroupNorm(4, latent_dim),
             nn.PReLU(),
             nn.Linear(in_features=latent_dim, out_features=emb_dim))
+        self.eeg_proj = nn.Conv1d(64, 256, kernel_size=1)  # assumes input is [B, 64, T]
         self.att_pool = AttentionPool1d(256)
 
     def forward(self, x):
         if x.dim() == 2:
             return self.linear_out(x)
-        elif x.dim() == 3:
+        elif x.dim() == 3: # [B, 64, T]
+            x = self.eeg_proj(x)  # [B, 256, T]
             x = self.att_pool(x)  # [B, in_dim]
             return self.linear_out(x)
         else:

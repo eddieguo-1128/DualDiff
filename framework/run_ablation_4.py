@@ -41,26 +41,23 @@ for classifier_variant in classifier_variants:
             # For x input, we don't need DDPM or decoder
             ddpm_variant = "no_ddpm"
             decoder_variant = "no_decoder"
-            current_z_norm = "option2"
         elif classifier_input == "x_hat":
             # For x_hat input, we need DDPM but no decoder
             ddpm_variant = "use_ddpm"
             decoder_variant = "no_decoder"
-            current_z_norm = "option2"
         elif classifier_input == "decoder_out":
             # For decoder_out input, we need decoder but no DDPM
             ddpm_variant = "use_ddpm" 
             decoder_variant = "use_decoder"
-            current_z_norm = "option2"
         else:  # classifier_input == "z"
             # For z input (embedding), we use default config
             ddpm_variant = "use_ddpm"  
             decoder_variant = "use_decoder"
-            current_z_norm = "option2"
         
         # Fixed parameters
         dec_input = decoder_inputs[0]  # fixed to z only
         encoder_input = encoder_inputs[0]  # fixed to x
+        current_z_norm = z_norm_mode[1]
 
         acc_seen_list = []
         acc_unseen_list = []
