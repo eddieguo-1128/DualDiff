@@ -78,8 +78,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
                 else:
                     encoder_in = x_sub
 
-                print(f"x_sub.shape: {x_sub.shape}")
-                print(f"x_hat.shape: {x_hat.shape}")
+                # print(f"x_sub.shape: {x_sub.shape}")
+                # print(f"x_hat.shape: {x_hat.shape}")
 
                 z = diffe.encoder(encoder_in)[1]
 
@@ -106,8 +106,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
                 else:
                     encoder_in = x
 
-                print(f"x.shape: {x.shape}")
-                print(f"x_hat.shape: {x_hat.shape}")
+                # print(f"x.shape: {x.shape}")
+                # print(f"x_hat.shape: {x_hat.shape}")
 
                 _, z = diffe.encoder(encoder_in)
                 
