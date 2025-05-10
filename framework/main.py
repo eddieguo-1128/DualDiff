@@ -592,8 +592,10 @@ if __name__ == "__main__":
     # Initialize models
     ddpm, diffe = initialize_models()
     
+    
+    #best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
+    best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/diffe_loss_z-norm2_attention_debug.pth"}  
 
-    best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
     try:
         z_stats_train = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
         print("Recomputed z_stats_train using training data.")
