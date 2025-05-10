@@ -5,7 +5,7 @@ from models import *
 from utils import *
 from viz import *
 
-def evaluate(encoder, fc, generator, device):
+def evaluate(encoder, fc, ddpm, generator, device):
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
