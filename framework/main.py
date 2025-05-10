@@ -64,56 +64,118 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
 
+                # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, *_ = ddpm(x_sub)
+                    x_hat, down, up, t = ddpm(x_sub)
                     encoder_in = x_hat.detach()
+                    ddpm_out = (x_hat, down, up, t)
                 else:
                     encoder_in = x_sub
+                    ddpm_out = (None, None, None, None)
 
+                # Get embeddings for z-normalization
                 z = diffe.encoder(encoder_in)[1]
-
+                
+                # Apply z-normalization
                 z_mean = z[:104].mean(dim=0, keepdim=True)
                 z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
-                z = (z - z_mean) / z_std
+                z_norm = (z - z_mean) / z_std
 
-                y_hat = F.softmax(diffe.fc(z), dim=1)
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    # For z input, use the normalized embedding
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        # EEGNetClassifier handles 2D inputs internally
+                        y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                        
+                elif classifier_input == "x":
+                    # For x input, use raw signal
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(x_sub), dim=1)
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    # For x_hat input, use denoised signal
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    # For decoder_out, we need to run full DiffE forward
+                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                else:
+                    # Default fallback to z embeddings
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
         else:
             # For seen subjects: use provided z_stats_train from training data
-            if z_stats_train is None:
-                raise ValueError("z_stats_train must be provided for seen subject evaluation.")
+            if z_stats_train is None and classifier_input == "z":
+                raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
             for x, y, sid in loader:
                 x, y = x.to(device), y.to(device)
 
+                # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, *_ = ddpm(x)
+                    x_hat, down, up, t = ddpm(x)
                     encoder_in = x_hat.detach()
+                    ddpm_out = (x_hat, down, up, t)
                 else:
                     encoder_in = x
+                    ddpm_out = (None, None, None, None)
 
+                # Get embeddings and apply z-normalization
                 _, z = diffe.encoder(encoder_in)
-
-                z = torch.stack([
+                
+                # Apply subject-wise z-normalization using training statistics
+                z_norm = torch.stack([
                     (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
                     for i in range(z.size(0))
                 ])
-                y_hat = F.softmax(diffe.fc(z), dim=1)
+
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    # For z input, use the normalized embedding
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        # EEGNetClassifier handles 2D inputs internally
+                        y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                        
+                elif classifier_input == "x":
+                    # For x input, use raw signal
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(x), dim=1)
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    # For x_hat input, use denoised signal
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    # For decoder_out, we need to run full DiffE forward
+                    decoder_out, _, _ = diffe(x, ddpm_out)
+                    if isinstance(diffe.fc, EEGNetClassifier):
+                        y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                else:
+                    # Default fallback to z embeddings
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
 
     Y = torch.cat(Y).numpy()
     Y_hat = torch.cat(Y_hat).numpy()
 
+    # Calculate metrics (unchanged)
     accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
 
-    metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
+    metrics = {"accuracy": accuracy, "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
     return metrics
 

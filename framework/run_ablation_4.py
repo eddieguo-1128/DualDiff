@@ -131,7 +131,7 @@ print(f"\nFinished. Saved results to {results_path}")
 ## classifier_variant=eegnet_classifier, classifier_input=x -> "no_decoder" + "no_ddpm" + z_norm_mode "option1"
 ## classifier_variant=eegnet_classifier, classifier_input=x_hat -> "no_decoder" + z_norm_mode "option1"
 ## classifier_variant=eegnet_classifier, classifier_input=decoder_out -> "no_ddpm" + z_norm_mode "option1"
-## classifier_variant=eegnet_classifier, classifier_input=z -> maybe skip this case + z_norm_mode "option2"
+## classifier_variant=eegnet_classifier, classifier_input=z -> skip this case + z_norm_mode "option2"
 ## classifier_variant=fc_classifier, classifier_input=x -> "no_decoder" + "no_ddpm" + z_norm_mode "option1"
 ## classifier_variant=fc_classifier, classifier_input=x_hat -> "no_decoder" + z_norm_mode "option1"
 ## classifier_variant=fc_classifier, classifier_input=decoder_out -> "no_ddpm" + z_norm_mode "option1"
