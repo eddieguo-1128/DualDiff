@@ -7,7 +7,7 @@ from viz import *
 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
 decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")
-encoder_input = os.environ.get("ENCODER_INPUT", "x")
+encoder_input = os.environ.get("ENCODER_INPUT", "x_hat")
 z_norm_mode = os.environ.get("Z_NORM_MODE", "option2")
 
 def evaluate(encoder, fc, ddpm, generator, device):
@@ -108,6 +108,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
 
                 # print(f"x.shape: {x.shape}")
                 # print(f"x_hat.shape: {x_hat.shape}")
+                print(f"x_hat mean: {x_hat.mean()}, std: {x_hat.std()}")
+                print(f"x mean: {x.mean()}, std: {x.std()}")
 
                 _, z = diffe.encoder(encoder_in)
                 
