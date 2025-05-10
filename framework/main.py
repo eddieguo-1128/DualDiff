@@ -72,8 +72,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
 
                 if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x_sub)
-                    # if x_hat.shape[-1] != x_sub.shape[-1]:
-                    #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
+                    if x_hat.shape[-1] != x_sub.shape[-1]:
+                        x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
                     encoder_in = x_hat.detach()
                 else:
                     encoder_in = x_sub
@@ -100,16 +100,16 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
 
                 if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x)
-                    # if x_hat.shape[-1] != x.shape[-1]:
-                    #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
+                    if x_hat.shape[-1] != x.shape[-1]:
+                        x_hat = F.interpolate(x_hat, size=x.shape[-1])
                     encoder_in = x_hat.detach()
                 else:
                     encoder_in = x
 
                 # print(f"x.shape: {x.shape}")
                 # print(f"x_hat.shape: {x_hat.shape}")
-                print(f"x_hat mean: {x_hat.mean()}, std: {x_hat.std()}")
-                print(f"x mean: {x.mean()}, std: {x.std()}")
+                # print(f"x_hat mean: {x_hat.mean()}, std: {x_hat.std()}")
+                # print(f"x mean: {x.mean()}, std: {x.std()}")
 
                 _, z = diffe.encoder(encoder_in)
                 
@@ -593,8 +593,8 @@ if __name__ == "__main__":
     ddpm, diffe = initialize_models()
     
     
-    #best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
-    best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/diffe_loss_z-norm2_attention_debug.pth"}  
+    best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
+    #best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/diffe_loss_z-norm2_attention_debug.pth"}  
 
     try:
         z_stats_train = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
