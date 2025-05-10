@@ -366,6 +366,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     return epoch_loss / num_batches, epoch_acc / total_samples
 
+# Review this function, no need the code after metrics_val
 def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma):
 
     if ddpm_variant == "use_ddpm" and ddpm is not None:
