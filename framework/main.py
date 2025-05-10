@@ -66,11 +66,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x_sub)
+                    x_hat, down, up, noise, t = ddpm(x_sub)
                     encoder_in = x_hat.detach()
                     ddpm_out = (x_hat, down, up, t)
                 elif encoder_input == "x" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x_sub)
+                    x_hat, down, up, noise, t = ddpm(x_sub)
                     ddpm_out = (x_hat, down, up, t)
                     encoder_in = x_sub
                 elif ddpm is None:
@@ -124,11 +124,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x)
+                    x_hat, down, up, noise, t = ddpm(x)
                     encoder_in = x_hat.detach()
                     ddpm_out = (x_hat, down, up, t)
                 elif encoder_input == "x" and ddpm is not None:
-                    x_hat, down, up, t = ddpm(x)
+                    x_hat, down, up, noise, t = ddpm(x)
                     ddpm_out = (x_hat, down, up, t)
                     encoder_in = x
                 elif ddpm is None:
