@@ -122,7 +122,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                "precision": precision, "auc": auc}
     return metrics
 
-def initialize_models():
+def initialize_models(ddpm_variant):
     # DDPM model
     if ddpm_variant == "use_ddpm":
         ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
