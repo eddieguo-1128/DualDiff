@@ -221,6 +221,9 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
+        ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
+        decoder_variant= os.environ.get("DECODER_VARIANT", "use_decoder") 
+
         if epoch == 0 and num_batches == 0:
             print(f"[Config] DDPM: {ddpm_variant}, Encoder input: {encoder_input}, Decoder: {decoder_variant}")
 
