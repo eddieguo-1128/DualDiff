@@ -64,16 +64,23 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
             all_y = torch.cat(all_y, dim=0).to(device)
             all_sid = torch.cat(all_sid, dim=0)
 
-            subjects = all_sid.unique(sorted=True)
-            for s in subjects:
-                indices = (all_sid == s)
-                x_sub = all_x[indices]
-                y_sub = all_y[indices]
+            # subjects = all_sid.unique(sorted=True)
+            # for s in subjects:
+            #     indices = (all_sid == s)
+            #     x_sub = all_x[indices]
+            #     y_sub = all_y[indices]
+
+            samples_per_subject = num_sessions * 26  # Each subject has 6 sessions × 26 samples = 156
+            for i in range(num_subjects):
+                start = i * samples_per_subject
+                end = (i + 1) * samples_per_subject
+                x_sub = all_x[start:end]
+                y_sub = all_y[start:end]
 
                 if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x_sub)
-                    if x_hat.shape[-1] != x_sub.shape[-1]:
-                        x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
+                    # if x_hat.shape[-1] != x_sub.shape[-1]:
+                    #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
                     encoder_in = x_hat.detach()
                 else:
                     encoder_in = x_sub
@@ -100,8 +107,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
 
                 if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x)
-                    if x_hat.shape[-1] != x.shape[-1]:
-                        x_hat = F.interpolate(x_hat, size=x.shape[-1])
+                    # if x_hat.shape[-1] != x.shape[-1]:
+                    #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
                     encoder_in = x_hat.detach()
                 else:
                     encoder_in = x
