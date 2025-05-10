@@ -590,7 +590,6 @@ def ddpm_schedules(beta1, beta2, T):
         "sqrtmab": sqrtmab,  # \sqrt{1-\bar{\alpha_t}}
     }
 
-#DDPM
 class DDPM(nn.Module):
     def __init__(self, nn_model, betas, n_T, device):
         super(DDPM, self).__init__()

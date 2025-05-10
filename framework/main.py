@@ -40,7 +40,6 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"):
                "precision": precision, "auc": auc}
     return metrics
 
-# NEED TO FIX THIS FUNCTION evaluate_with_subjectwise_znorm
 def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, 
                                     unseen=False, z_stats_train=None, ddpm=None, encoder_input="x"):
     diffe.eval()
