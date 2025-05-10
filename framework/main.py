@@ -17,7 +17,7 @@ def evaluate(encoder, fc, ddpm, generator, device):
     for x, y, sid in generator:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
 
-        if encoder_input == "x_hat" and ddpm is not None:
+        if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
             x_hat, *_ = ddpm(x)
             # if x_hat.shape[-1] != x.shape[-1]:
             #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
@@ -47,7 +47,7 @@ def evaluate(encoder, fc, ddpm, generator, device):
                "precision": precision, "auc": auc}
     return metrics
 
-def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, unseen=False, z_stats_train=None):
+def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num_sessions=6, unseen=False, z_stats_train=None):
     diffe.eval()
     labels = np.arange(0, 26)
     Y, Y_hat = [], []
@@ -70,7 +70,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
 
-                if encoder_input == "x_hat" and ddpm is not None:
+                if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x_sub)
                     # if x_hat.shape[-1] != x_sub.shape[-1]:
                     #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
@@ -95,7 +95,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
             for x, y, sid in loader:
                 x, y = x.to(device), y.to(device)
 
-                if encoder_input == "x_hat" and ddpm is not None:
+                if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
                     x_hat, *_ = ddpm(x)
                     # if x_hat.shape[-1] != x.shape[-1]:
                     #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
@@ -515,26 +515,26 @@ def test_best_model(best_metrics, z_stats_train):
 
     if z_norm_mode == "option1":
         # Option 1: Z-norm in train only; standard test eval
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc,ddpm, test1_loader, device)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc,ddpm, test2_loader, device)
     
     elif z_norm_mode == "option2":
         # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
         test1_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train)
+            diffe, ddpm,test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train)
         test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
+            diffe, ddpm,test2_loader, device, name="Test2", unseen=True)
     
     elif z_norm_mode == "option3":
         # Option 3: Standard test_seen; test_unseen uses calibration
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, ddpm, test1_loader, device)
         test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
+            diffe, ddpm,test2_loader, device, name="Test2", unseen=True)
     
     else:
         print(f"Unknown Z-normalization mode: {z_norm_mode}. Using default evaluation.")
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc,ddpm, test1_loader, device)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc,ddpm, test2_loader, device)
 
     print("\n===== Test Results =====")
     print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
