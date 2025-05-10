@@ -8,7 +8,7 @@ from config import work_dir, use_subject_wise_z_norm
 # Define ablation axes
 seeds = [42, 43, 44] 
 ddpm_variants = ["use_ddpm"] # no ddpm means no x_hat is generated // sweep 3
-encoder_inputs = ["x_hat"] # x_hat is only available when ddpm is used // sweep 3
+encoder_inputs = ["x"] # x_hat is only available when ddpm is used // sweep 3
 decoder_inputs = ["z only"]
 decoder_variants = ["use_decoder"] # no decoder means no decoder_out is generated // sweep 3
 z_norm_mode = "option2" # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
