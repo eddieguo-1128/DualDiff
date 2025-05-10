@@ -578,13 +578,19 @@ if __name__ == "__main__":
     # except Exception as e:
     #     print(f"Could not plot training progress: {e}")
 
+    loaders = load_split_dataset(root_dir=data_dir, num_seen=33, seed=seed)
+    train_loader = loaders["train"]
+    
+    # Initialize models
+    ddpm, diffe = initialize_models()
+    
+
     best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
     try:
         z_stats_train = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
         print("Recomputed z_stats_train using training data.")
     except Exception as e:
         print(f"Error computing z_stats_train: {e}")
-
     
     # Test best model
     test_results = test_best_model(best_metrics, z_stats_train)
