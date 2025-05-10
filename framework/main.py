@@ -301,7 +301,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     return epoch_loss / num_batches, epoch_acc / total_samples
 
-def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma):
+def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma,device):
 
     ddpm.eval()
     diffe.eval()
@@ -416,7 +416,7 @@ def train():
             # Run validation at appropriate intervals
             if epoch > start_test and epoch % test_frequency == 0:
                 metrics_val, val_loss = validate(ddpm, diffe, val_loader, z_stats, proj_head, 
-                                                 supcon_loss,alpha, beta, gamma)
+                                                 supcon_loss,alpha, beta, gamma, device)
                 
                 # Record validation metrics
                 val_acc = metrics_val["accuracy"]
