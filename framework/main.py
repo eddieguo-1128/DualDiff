@@ -579,6 +579,12 @@ if __name__ == "__main__":
     #     print(f"Could not plot training progress: {e}")
 
     best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
+    try:
+        # Use the previously defined function to recompute z_stats_train
+        z_stats_train = get_subjectwise_z_stats_from_loader(train_loader, ddpm, diffe.encoder, device)
+        print("Recomputed z_stats_train using training data.")
+    except Exception as e:
+        print(f"Error computing z_stats_train: {e}")
     
     # Test best model
     test_results = test_best_model(best_metrics, z_stats_train)
