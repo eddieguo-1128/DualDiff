@@ -563,20 +563,20 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     
     # Run training
-    best_metrics, z_stats_train = train()
+    # best_metrics, z_stats_train = train()
 
     # Load training history from the saved CSV
-    try:
-        history_df = pd.read_csv(os.path.join(log_dir, 'training_history.csv'))
-        history = {
-            'train_loss': history_df['train_loss'].tolist(),
-            'train_acc': history_df['train_acc'].tolist(),
-            'val_loss': history_df['val_loss'].dropna().tolist(),
-            'val_acc': history_df['val_acc'].dropna().tolist()}
-        # Plot training progress
-        plot_training_progress(history, log_dir)
-    except Exception as e:
-        print(f"Could not plot training progress: {e}")
+    # try:
+    #     history_df = pd.read_csv(os.path.join(log_dir, 'training_history.csv'))
+    #     history = {
+    #         'train_loss': history_df['train_loss'].tolist(),
+    #         'train_acc': history_df['train_acc'].tolist(),
+    #         'val_loss': history_df['val_loss'].dropna().tolist(),
+    #         'val_acc': history_df['val_acc'].dropna().tolist()}
+    #     # Plot training progress
+    #     plot_training_progress(history, log_dir)
+    # except Exception as e:
+    #     print(f"Could not plot training progress: {e}")
     
     # Test best model
     test_results = test_best_model(best_metrics, z_stats_train)
