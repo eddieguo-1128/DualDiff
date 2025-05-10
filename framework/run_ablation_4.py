@@ -49,7 +49,7 @@ for classifier_variant in classifier_variants:
             current_z_norm = "option2"
         elif classifier_input == "decoder_out":
             # For decoder_out input, we need decoder but no DDPM
-            ddpm_variant = "no_ddpm" 
+            ddpm_variant = "use_ddpm" 
             decoder_variant = "use_decoder"
             current_z_norm = "option2"
         else:  # classifier_input == "z"
