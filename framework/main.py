@@ -364,7 +364,7 @@ def train():
     val_loader = loaders["val"]
     
     # Initialize models
-    ddpm, diffe = initialize_models()
+    ddpm, diffe = initialize_models(ddpm_variant)
     
     # Setup optimizers and schedulers
     optim1, optim2, fc_ema, scheduler1, scheduler2 = setup_optimizers(ddpm, diffe)
@@ -479,7 +479,7 @@ def train():
 def test_best_model(best_metrics, z_stats_train):
 
     # Load best model
-    ddpm, diffe = initialize_models()
+    ddpm, diffe = initialize_models(ddpm_variant)
 
     if best_metrics["model_path"] is not None:
         try:
