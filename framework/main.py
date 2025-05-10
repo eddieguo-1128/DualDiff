@@ -69,9 +69,14 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     x_hat, down, up, t = ddpm(x_sub)
                     encoder_in = x_hat.detach()
                     ddpm_out = (x_hat, down, up, t)
-                else:
+                elif encoder_input == "x" and ddpm is not None:
+                    x_hat, down, up, t = ddpm(x_sub)
+                    ddpm_out = (x_hat, down, up, t)
+                    encoder_in = x_sub
+                elif ddpm is None:
                     encoder_in = x_sub
                     ddpm_out = (None, None, None, None)
+                    x_hat = None
 
                 # Get embeddings for z-normalization
                 z = diffe.encoder(encoder_in)[1]
@@ -122,9 +127,14 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     x_hat, down, up, t = ddpm(x)
                     encoder_in = x_hat.detach()
                     ddpm_out = (x_hat, down, up, t)
-                else:
+                elif encoder_input == "x" and ddpm is not None:
+                    x_hat, down, up, t = ddpm(x)
+                    ddpm_out = (x_hat, down, up, t)
+                    encoder_in = x
+                elif ddpm is None:
                     encoder_in = x
                     ddpm_out = (None, None, None, None)
+                    x_hat = None
 
                 # Get embeddings and apply z-normalization
                 _, z = diffe.encoder(encoder_in)
