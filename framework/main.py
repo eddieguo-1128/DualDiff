@@ -7,7 +7,7 @@ from viz import *
 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")
 decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")
-encoder_input = os.environ.get("ENCODER_INPUT", "x_hat")
+encoder_input = os.environ.get("ENCODER_INPUT", "x")
 z_norm_mode = os.environ.get("Z_NORM_MODE", "option2")
 
 def evaluate(encoder, fc, ddpm, generator, device):
