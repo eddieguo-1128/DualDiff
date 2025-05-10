@@ -577,6 +577,8 @@ if __name__ == "__main__":
     #     plot_training_progress(history, log_dir)
     # except Exception as e:
     #     print(f"Could not plot training progress: {e}")
+
+   best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
     
     # Test best model
     test_results = test_best_model(best_metrics, z_stats_train)
