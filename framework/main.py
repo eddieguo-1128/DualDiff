@@ -122,8 +122,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                "precision": precision, "auc": auc}
     return metrics
 
-def initialize_models(ddpm_variant):
+
+def initialize_models():
     # DDPM model
+    os.environ["DDPM_VARIANT"] = ddpm_variant
+    
     if ddpm_variant == "use_ddpm":
         ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
         ddpm = DDPM(nn_model=ddpm_model, betas=(1e-6, 1e-2), n_T=n_T, device=device).to(device)
@@ -364,7 +367,7 @@ def train():
     val_loader = loaders["val"]
     
     # Initialize models
-    ddpm, diffe = initialize_models(ddpm_variant)
+    ddpm, diffe = initialize_models()
     
     # Setup optimizers and schedulers
     optim1, optim2, fc_ema, scheduler1, scheduler2 = setup_optimizers(ddpm, diffe)
@@ -479,7 +482,7 @@ def train():
 def test_best_model(best_metrics, z_stats_train):
 
     # Load best model
-    ddpm, diffe = initialize_models(ddpm_variant)
+    ddpm, diffe = initialize_models()
 
     if best_metrics["model_path"] is not None:
         try:
