@@ -370,10 +370,14 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
 
     if ddpm_variant == "use_ddpm" and ddpm is not None:
         ddpm.eval()
+    
     diffe.eval()
     
     # Get metrics using the evaluate function
-    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+    #metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+    
+    metrics_val = evaluate_with_subjectwise_znorm(diffe, val_loader, device, name="Val", unseen=False, 
+                                                  z_stats_train=z_stats, ddpm=ddpm, encoder_input=encoder_input)
     
     # Calculate validation loss
     val_loss = 0
