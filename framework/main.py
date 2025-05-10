@@ -580,7 +580,7 @@ if __name__ == "__main__":
 
     best_metrics = {"model_path": "/content/drive/MyDrive/project/model/ssvep/run9/checkpoints/diffe_best_acc.pth"}  
     try:
-        z_stats = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
+        z_stats_train = get_subjectwise_z_stats(train_loader, diffe.encoder, device)
         print("Recomputed z_stats_train using training data.")
     except Exception as e:
         print(f"Error computing z_stats_train: {e}")
