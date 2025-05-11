@@ -64,31 +64,27 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
             all_y = torch.cat(all_y, dim=0).to(device)
             all_sid = torch.cat(all_sid, dim=0)
 
-            # subjects = all_sid.unique(sorted=True)
-            # for s in subjects:
-            #     indices = (all_sid == s)
-            #     x_sub = all_x[indices]
-            #     y_sub = all_y[indices]
+            subjects = all_sid.unique(sorted=True)
+            for s in subjects:
+                indices = (all_sid == s)
+                x_sub = all_x[indices]
+                y_sub = all_y[indices]
 
-            samples_per_subject = num_sessions * 26  # Each subject has 6 sessions × 26 samples = 156
-            for i in range(num_subjects):
-                start = i * samples_per_subject
-                end = (i + 1) * samples_per_subject
-                x_sub = all_x[start:end]
-                y_sub = all_y[start:end]
-
-                if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
-                    x_hat, *_ = ddpm(x_sub)
-                    # if x_hat.shape[-1] != x_sub.shape[-1]:
-                    #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
-                    encoder_in = x_hat.detach()
-                else:
-                    encoder_in = x_sub
+                # if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
+                #     x_hat, *_ = ddpm(x_sub)
+                #     # if x_hat.shape[-1] != x_sub.shape[-1]:
+                #     #     x_hat = F.interpolate(x_hat, size=x_sub.shape[-1])
+                #     encoder_in = x_hat.detach()
+                # else:
+                #     encoder_in = x_sub
 
                 # print(f"x_sub.shape: {x_sub.shape}")
                 # print(f"x_hat.shape: {x_hat.shape}")
 
-                z = diffe.encoder(encoder_in)[1]
+                # z = diffe.encoder(encoder_in)[1]
+                x_hat, down, up, noise, t = ddpm(x_sub)
+                encoder_out = diffe.encoder(x_hat)
+                z = encoder_out[1]
 
                 z_mean = z[:104].mean(dim=0, keepdim=True)
                 z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
@@ -105,20 +101,24 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
             for x, y, sid in loader:
                 x, y = x.to(device), y.to(device)
 
-                if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
-                    x_hat, *_ = ddpm(x)
-                    # if x_hat.shape[-1] != x.shape[-1]:
-                    #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
-                    encoder_in = x_hat.detach()
-                else:
-                    encoder_in = x
+                # if encoder_input == "x_hat" and ddpm_variant == "use_ddpm":
+                #     x_hat, *_ = ddpm(x)
+                #     # if x_hat.shape[-1] != x.shape[-1]:
+                #     #     x_hat = F.interpolate(x_hat, size=x.shape[-1])
+                #     encoder_in = x_hat.detach()
+                # else:
+                #     encoder_in = x
 
                 # print(f"x.shape: {x.shape}")
                 # print(f"x_hat.shape: {x_hat.shape}")
                 # print(f"x_hat mean: {x_hat.mean()}, std: {x_hat.std()}")
                 # print(f"x mean: {x.mean()}, std: {x.std()}")
 
-                _, z = diffe.encoder(encoder_in)
+                # _, z = diffe.encoder(encoder_in)
+
+                x_hat, down, up, noise, t = ddpm(x)
+                encoder_out = diffe.encoder(x_hat.detach())
+                z = encoder_out[1]
                 
                 z = torch.stack([
                     (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
@@ -137,6 +137,8 @@ def evaluate_with_subjectwise_znorm(diffe, ddpm,loader, device, name="Test", num
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
+
+    print(f" {name} Accuracy: {accuracy:.2%}")
 
     metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
