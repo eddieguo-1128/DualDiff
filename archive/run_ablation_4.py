@@ -12,10 +12,10 @@ encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["z only"]
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
 z_norm_mode = ["option1", "option2"] # "option2" is the default
-classifier_variants = ["eegnet_classifier", "fc_classifier"] # sweep 4
-classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # sweep 4 // later add an option for "input_mixup"
+classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
+classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
 mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
-                  "prior embeddings weighted average", "later embeddings weighted average"] # ablate later 
+                  "prior embeddings weighted average", "later embeddings weighted average"] # ablate later
 ddpm_loss = [True, False] # ablate later 
 total_loss_combinations = ["alpha*{classification_loss} + beta*{reconstruction2_loss} + gamma*{contrastive_loss}", # default for sweep 3
                            "alpha*{classification_loss}",                                                    
