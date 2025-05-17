@@ -5,7 +5,7 @@ from models import *
 from utils import *
 from viz import *
 
-def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"):
+def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # not used
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
@@ -366,7 +366,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     return epoch_loss / num_batches, epoch_acc / total_samples
 
-# Review this function, no need the code after metrics_val
 def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma):
 
     if ddpm_variant == "use_ddpm" and ddpm is not None:
@@ -375,12 +374,8 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
     diffe.eval()
     
     # Get metrics using the evaluate function
-    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input)
-    
-    """
-    metrics_val = evaluate_with_subjectwise_znorm(diffe, val_loader, device, name="Val", unseen=False, 
-                                                  z_stats_train=z_stats, ddpm=ddpm, encoder_input=encoder_input)
-    """
+    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input) # metrics_val = evaluate_with_subjectwise_znorm(diffe, val_loader, device, name="Val", unseen=False, z_stats_train=z_stats, ddpm=ddpm, encoder_input=encoder_input)
+
     # Calculate validation loss
     val_loss = 0
     with torch.no_grad():
@@ -639,11 +634,10 @@ if __name__ == "__main__":
     # Load training history from the saved CSV
     try:
         history_df = pd.read_csv(os.path.join(log_dir, 'training_history.csv'))
-        history = {
-            'train_loss': history_df['train_loss'].tolist(),
-            'train_acc': history_df['train_acc'].tolist(),
-            'val_loss': history_df['val_loss'].dropna().tolist(),
-            'val_acc': history_df['val_acc'].dropna().tolist()}
+        history = {'train_loss': history_df['train_loss'].tolist(),
+                   'train_acc': history_df['train_acc'].tolist(),
+                   'val_loss': history_df['val_loss'].dropna().tolist(),
+                   'val_acc': history_df['val_acc'].dropna().tolist()}
         # Plot training progress
         plot_training_progress(history, log_dir)
     except Exception as e:

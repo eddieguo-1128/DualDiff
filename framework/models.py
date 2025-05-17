@@ -689,8 +689,7 @@ class EEGNetClassifier(nn.Module):
 
     def forward(self, x):  # expected input -> (N, 1, Chans, Samples)
         
-        if len(x.shape) == 2: # or just pass to the dense layer 
-            # Project z into a compatible 3D shape to pass through conv layers
+        if len(x.shape) == 2: # Project z into a compatible 3D shape to pass through conv layers
             x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, 1, 128)  # [B, 256, 1, 128] → simulate EEG shape
         
         if len(x.shape) == 3:  # (N, Chans, Samples) -> [B, 64, 250]

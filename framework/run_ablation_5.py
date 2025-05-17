@@ -11,7 +11,7 @@ ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["z only"]
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
-z_norm_mode = ["option1", "option2"] # "option2" is the default
+z_norm_mode = "option2" 
 #classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
 #classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
 
@@ -55,34 +55,33 @@ for classifier_variant in classifier_variants:
             # For decoder_out input, we need decoder but no DDPM
             ddpm_variant = "use_ddpm" 
             decoder_variant = "use_decoder"
-        else:  # classifier_input == "z"
+        elif classifier_input == "z":
             # For z input (embedding), we use default config
-            ddpm_variant = "use_ddpm"  
+            ddpm_variant = "use_ddpm" 
             decoder_variant = "use_decoder"
         
         # Fixed parameters
         dec_input = decoder_inputs[0]  # fixed to z only
         encoder_input = encoder_inputs[0]  # fixed to x
-        current_z_norm = z_norm_mode[1]
 
         acc_seen_list = []
         acc_unseen_list = []
         
         for seed in seeds: 
-            print(f"\nRunning: classifier_variant={classifier_variant}, classifier_input={classifier_input}, seed={seed}, z_norm={current_z_norm}")
+            print(f"\nRunning: classifier_variant={classifier_variant}, classifier_input={classifier_input}, seed={seed}, z_norm={z_norm_mode}")
             
             # Set environment variables
             os.environ["CLASSIFIER_VARIANT"] = classifier_variant
             os.environ["CLASSIFIER_INPUT"] = classifier_input
             os.environ["DECODER_INPUT"] = dec_input
             os.environ["SEED"] = str(seed)
-            os.environ["Z_NORM_MODE"] = current_z_norm
+            os.environ["Z_NORM_MODE"] = z_norm_mode
             os.environ["DDPM_VARIANT"] = ddpm_variant
             os.environ["ENCODER_INPUT"] = encoder_input
             os.environ["DECODER_VARIANT"] = decoder_variant
 
             # Construct run name
-            run_name = f"{dec_input.replace(' ', '').replace('+', '_')}__classifier_variant_{classifier_variant}__classifier_input_{classifier_input}__s{seed}_z{current_z_norm}"
+            run_name = f"{dec_input.replace(' ', '').replace('+', '_')}__classifier_variant_{classifier_variant}__classifier_input_{classifier_input}__s{seed}_z{z_norm_mode}"
             os.environ["RUN_NAME"] = run_name
             log_dir = os.path.join(work_dir, run_name, "logs")
 
@@ -116,7 +115,7 @@ for classifier_variant in classifier_variants:
             "ddpm_variant": ddpm_variant,
             "encoder_input": encoder_input,
             "decoder_variant": decoder_variant,
-            "z_norm_mode": current_z_norm,
+            "z_norm_mode": z_norm_mode,
             "test_seen_mean": seen_mean * 100,
             "test_seen_std": seen_std * 100,
             "test_unseen_mean": unseen_mean * 100,
@@ -129,13 +128,3 @@ os.makedirs(ablation_dir, exist_ok=True)
 results_path = os.path.join(ablation_dir, f"ablation_classifier_{timestamp}.csv")
 results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
-
-# This runs 
-## classifier_variant=eegnet_classifier, classifier_input=x -> "no_decoder" + "no_ddpm" + z_norm_mode "option1"
-## classifier_variant=eegnet_classifier, classifier_input=x_hat -> "no_decoder" + z_norm_mode "option1"
-## classifier_variant=eegnet_classifier, classifier_input=decoder_out -> "no_ddpm" + z_norm_mode "option1"
-## classifier_variant=eegnet_classifier, classifier_input=z -> skip this case + z_norm_mode "option2"
-## classifier_variant=fc_classifier, classifier_input=x -> "no_decoder" + "no_ddpm" + z_norm_mode "option1"
-## classifier_variant=fc_classifier, classifier_input=x_hat -> "no_decoder" + z_norm_mode "option1"
-## classifier_variant=fc_classifier, classifier_input=decoder_out -> "no_ddpm" + z_norm_mode "option1"
-## classifier_variant=fc_classifier, classifier_input=z -> + z_norm_mode "option2"
