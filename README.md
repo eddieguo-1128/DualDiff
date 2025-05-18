@@ -12,7 +12,7 @@ This project implements a joint EEG generation and classification model using de
 
 *Updated: April 30, 2025*
 
-## Paper to-do list (interim ddl - May 11; final ddl - May 15, 2025)
+## Paper to-do list (interim ddl - May 11; final ddl - May 20, 2025)
 - [x] Prep all code as framework to be run/reproduced quickly @Kate
 - [x] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format @Mengchun
 - [x] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments --> uses weighted avg for now
