@@ -16,7 +16,7 @@ This project implements a joint EEG generation and classification model using de
 - [x] Prep all code as framework to be run/reproduced quickly @Kate
 - [x] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format @Mengchun
 - [x] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments --> uses weighted avg for now
-- [ ] Run a reproducibility study and report mean/std across all tasks (for P300, just pick one dataset): 
+- [ ] Run a reproducibility study and report mean/std across all tasks (SSVEP, P300, MI, FEIS): 
   - [ ] EEGNet
   - [ ] DualDiff-Latent v3
   - [ ] SOTA for using synthetic subjects/channels (can be done as part of Ben's experiments)
@@ -38,8 +38,8 @@ This project implements a joint EEG generation and classification model using de
   - [x] Impact of classifier
   - [x] Impact of classifier inputs
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
-  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) @Kate 
-  - [ ] (skip for now, already explained it in other parts) Role of z (for future: how exactly it does both generation and classification)
+  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) 
+  - [ ] (skip) Role of z (for future: how exactly it does both generation and classification)
 - [ ] Think about changing the title: dual-task + key insight about the latent z
 
 ## Experiments to-do list
