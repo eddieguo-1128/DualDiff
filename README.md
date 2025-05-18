@@ -20,7 +20,7 @@ This project implements a joint EEG generation and classification model using de
   - [ ] Model 1: EEGNet
   - [ ] Model 2: Best DualDiff-Latent
   - [ ] Model 3: Best mixing strategy 
-- [ ] Run ablation of mixing strategies - generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**: @Ben
+- [ ] Run ablation on mixing strategies - generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**: @Ben
   - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
   - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
