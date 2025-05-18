@@ -21,9 +21,9 @@ This project implements a joint EEG generation and classification model using de
   - [ ] DualDiff-Latent v3
   - [ ] SOTA for using synthetic subjects/channels (can be done as part of Ben's experiments)
 - [ ] Generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**:
-  - [ ] Only `x`
-  - [ ] Only `x_hat`
-  - [ ] Only `decoder_out`
+  - [x] Only `x`
+  - [x] Only `x_hat`
+  - [x] Only `decoder_out`
   - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average @Ben
   - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams) @Ben
   - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z) @Ben
@@ -35,8 +35,8 @@ This project implements a joint EEG generation and classification model using de
   - [X] Impact of encoder inputs (`x` vs `x_hat`) 
   - [X] Impact of decoder (what if we remove the decoder)
   - [ ] Impact of losses 
-  - [ ] Impact of classifier
-  - [ ] Impact of classifier inputs
+  - [x] Impact of classifier
+  - [x] Impact of classifier inputs
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
   - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) @Kate 
   - [ ] (skip for now, already explained it in other parts) Role of z (for future: how exactly it does both generation and classification)
