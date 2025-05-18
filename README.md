@@ -16,17 +16,14 @@ This project implements a joint EEG generation and classification model using de
 - [x] Prep all code as framework to be run/reproduced quickly @Kate
 - [x] Check the variance of EEG response for the same channel across many subjects --> prove the need for a set instead of a vector format @Mengchun
 - [x] Find a SOTA for creating synthetic subjects/channels (e.g., weighted average on input/embeddings/latent) and include it in Ben's experiments --> uses weighted avg for now
-- [ ] Run a reproducibility study and report mean/std across all tasks (SSVEP, P300, MI, FEIS): 
-  - [ ] EEGNet
-  - [ ] DualDiff-Latent v3
-  - [ ] SOTA for using synthetic subjects/channels (can be done as part of Ben's experiments)
-- [ ] Generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**:
-  - [x] Only `x`
-  - [x] Only `x_hat`
-  - [x] Only `decoder_out`
-  - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average @Ben
-  - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams) @Ben
-  - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z) @Ben
+- [ ] Run a reproducibility study and report mean/std across many tasks: (1) SSVEP, (2) P300, (3) MI, (4) FEIS: 
+  - [ ] Model 1: EEGNet
+  - [ ] Model 2: Best DualDiff-Latent
+  - [ ] Model 3: Best mixing strategy 
+- [ ] Run ablation of mixing strategies - generate `x_hat` and `decoder_out` using **DualDiff-Latent v3**, apply different mixup strategies, and test on the **EEGNet classifier**: @Ben
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using weighted average 
+  - [ ] `x`, `x_hat`, `decoder_out` mixup using temporal mixup (+ 2-3 ablations on hyperparams)
+  - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
   - [x] Find the best testing procedure using subjectwise z-norm (just train, or test also) -> start with **run6**
   - [x] Impact of decoder inputs (~ table 3, 500 epochs, 3 random seeds, **run6**) @Kate
@@ -34,13 +31,14 @@ This project implements a joint EEG generation and classification model using de
   - [x] Impact of DDPM (what if we remove DDPM entirely, and just feed `x` directly to the encoder)
   - [X] Impact of encoder inputs (`x` vs `x_hat`) 
   - [X] Impact of decoder (what if we remove the decoder)
-  - [ ] Impact of losses 
-  - [x] Impact of classifier
-  - [x] Impact of classifier inputs
+  - [x] Impact of classifiers (FC vs EEGNet)
+  - [x] Impact of classifier inputs (`x`, `x_hat`, `decoder_out`, `z`)
+  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder)
+  - [ ] Impact of losses
+- [ ] Edit the report
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
-  - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder) 
-  - [ ] (skip) Role of z (for future: how exactly it does both generation and classification)
-- [ ] Think about changing the title: dual-task + key insight about the latent z
+  - [ ] Role of z (for future: how exactly it does both generation and classification)
+  - [ ] Think about changing the title: dual-task + key insight about the latent z
 
 ## Experiments to-do list
 
