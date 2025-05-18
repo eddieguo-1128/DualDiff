@@ -272,8 +272,7 @@ def setup_optimizers(ddpm, diffe):
     
     return optim1, optim2, fc_ema, scheduler1, scheduler2
 
-def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2, 
-                fc_ema, epoch, z_stats, proj_head, supcon_loss):
+def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2, fc_ema, epoch, z_stats, proj_head, supcon_loss):
 
     # Only put DDPM in train mode if it exists
     if ddpm_variant == "use_ddpm" and ddpm is not None:
@@ -434,7 +433,7 @@ def train():
     os.makedirs(checkpoints_dir, exist_ok=True)
 
     # Setup data loaders
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=33, seed=seed)
+    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
     
@@ -450,12 +449,8 @@ def train():
     proj_head = ProjectionHead(input_dim=encoder_dim, proj_dim=128).to(device)
     
     # Initialize tracking variables
-    best_metrics = {"acc": 0, "f1": 0, "recall": 0, "precision": 0, "auc": 0,
-                    "epoch": 0, "model_path": None}
-    
-    history = {"train_loss": [], "train_acc": [], "val_loss": [], 
-               "val_acc": [], "timestamps": []}
-    
+    best_metrics = {"acc": 0, "f1": 0, "recall": 0, "precision": 0, "auc": 0, "epoch": 0, "model_path": None}
+    history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": [], "timestamps": []}
     val_acc = 0.0
 
     # Training loop
@@ -465,9 +460,8 @@ def train():
             epoch_start = time.time()
             
             # Train for one epoch
-            train_loss, train_acc = train_epoch(
-                ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2,
-                fc_ema, epoch, z_stats, proj_head, supcon_loss)
+            train_loss, train_acc = train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2,
+                                                fc_ema, epoch, z_stats, proj_head, supcon_loss)
             
             # Record training metrics
             history["train_loss"].append(train_loss)
@@ -567,7 +561,7 @@ def test_best_model(best_metrics, z_stats_train):
         print("No best model was saved (validation accuracy didn't improve). Using final model state.")
     
     # Load test data
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=33, seed=seed)
+    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     test1_loader = loaders["test1"]
     test2_loader = loaders["test2"]
     
@@ -575,28 +569,20 @@ def test_best_model(best_metrics, z_stats_train):
     diffe.eval()
 
     # Determine which normalization strategy to use based on config
-    z_norm_mode = use_subject_wise_z_norm.get("mode", "option1")
+    z_norm_mode = use_subject_wise_z_norm.get("mode", "option2")
     print(f"Using Z-normalization mode: {z_norm_mode}")
 
-    if z_norm_mode == "option1":
-        # Option 1: Z-norm in train only; standard test eval
+    if z_norm_mode == "option1": # Option 1: Z-norm in train only; standard test eval
         test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
         test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device, ddpm=ddpm, encoder_input=encoder_input)
     
-    elif z_norm_mode == "option2":
-        # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
-        test1_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train,
-            ddpm=ddpm, encoder_input=encoder_input)
-        test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True, 
-            ddpm=ddpm, encoder_input=encoder_input)
+    elif z_norm_mode == "option2": # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+        test1_metrics = evaluate_with_subjectwise_znorm(diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True, ddpm=ddpm, encoder_input=encoder_input)
     
-    elif z_norm_mode == "option3":
-        # Option 3: Standard test_seen; test_unseen uses calibration
+    elif z_norm_mode == "option3": # Option 3: Standard test_seen; test_unseen uses calibration
         test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
-        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True,
-                                                        ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True, ddpm=ddpm, encoder_input=encoder_input)
     else:
         print(f"Unknown Z-normalization mode: {z_norm_mode}. Using default evaluation.")
         test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)

@@ -35,6 +35,7 @@ if option == "local":
 elif option == "drive":
     data_dir = "/content/drive/MyDrive/Communikate//IDL-research/dataset/ssvep/chars/"
 num_subjects = 35
+num_seen = 33
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run10")
@@ -93,7 +94,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 2 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
