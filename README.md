@@ -26,12 +26,12 @@ This project implements a joint EEG generation and classification model using de
   - [ ] Embeddings mixup using weighted average (+ 2-3 ablations after which encoder layer we apply the mixup: before or after the projection layer before z)
 - [ ] Run explainability study of **DualDiff-Latent v3** to understand **why, what, and how** each part is learning 
   - [x] Find the best testing procedure using subjectwise z-norm (just train, or test also) -> start with **run6**
-  - [x] Impact of decoder inputs (~ table 3, 500 epochs, 3 random seeds, **run6**) @Kate
-  - [x] Impact of the way we normalize: `z_norm_modes = ["option1", "option2"]` @Kate
+  - [x] Impact of decoder inputs (~ table 3, 500 epochs, 3 random seeds, **run6**) 
+  - [x] Impact of the way we normalize: `z_norm_modes = ["option1", "option2"]` 
   - [x] Impact of DDPM (what if we remove DDPM entirely, and just feed `x` directly to the encoder)
   - [X] Impact of encoder inputs (`x` vs `x_hat`) 
   - [X] Impact of decoder (what if we remove the decoder)
-  - [x] Impact of classifiers (FC vs EEGNet)
+  - [x] Impact of classifiers (`FC` vs `EEGNet`)
   - [x] Impact of classifier inputs (`x`, `x_hat`, `decoder_out`, `z`)
   - [ ] Impact of how z is derived (DDPM vs inside encoder-decoder)
   - [ ] Impact of losses
