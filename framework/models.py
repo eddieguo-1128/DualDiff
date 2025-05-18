@@ -7,6 +7,7 @@ from torch.nn import Conv2d, BatchNorm2d, AvgPool2d, Dropout
 import torch.nn.functional as F
 from einops import reduce
 from dataset import *
+from config import *
 
 # Padding utility
 def get_padding(kernel_size, dilation=1):
@@ -318,7 +319,6 @@ class EEGNet(nn.Module):
         down = (dn1_out, dn2_out, dn3_out)
         return (down, z)
 
-
 # Decoder
 class Decoder(nn.Module):
     def __init__(self, in_channels, n_feat=256, encoder_dim=512, n_classes=13):
@@ -344,32 +344,48 @@ class Decoder(nn.Module):
         self.up1 = UnetUp(self.d3_out + self.e3_out, self.u2_out, 1, gn=8, factor=2)
         self.up2 = UnetUp(self.d2_out + self.u2_out, self.u3_out, 1, gn=8, factor=2)
         
-        ## case 1:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0),)
-
-        ## case 2:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(in_channels * 2, in_channels, 1, 1, 0),)
-
-        ## case 3:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 4:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 5:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out, in_channels, 1, 1, 0),)
-        
-        ## case 6:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out, in_channels, 1, 1, 0),)
-
-        ## case 7:
-        self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 8:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0),)
-
-        ## case 9:
-        #self.up3 = nn.Sequential(nn.Upsample(scale_factor=2, mode="nearest"), nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0),)
+        # Configure the upsampling layer based on decoder_input configuration
+        if decoder_input == "x + x_hat + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels * 2, in_channels, 1, 1, 0))
+        elif decoder_input == "x + x_hat":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(in_channels * 2, in_channels, 1, 1, 0))
+        elif decoder_input == "x_hat + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "x + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out, in_channels, 1, 1, 0))
+        elif decoder_input == "z only":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out, in_channels, 1, 1, 0))
+        elif decoder_input == "z + x":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "z + x_hat":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
+        elif decoder_input == "z + skips":
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + self.u3_out + self.d1_out, in_channels, 1, 1, 0))
+        else:
+            print(f"Warning: Unknown decoder_input config '{decoder_input}'. Defaulting to 'z + x'")
+            self.up3 = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="nearest"), 
+                nn.Conv1d(self.d1_out + in_channels, in_channels, 1, 1, 0))
 
         self.pool = nn.AvgPool1d(2)
 
@@ -379,54 +395,120 @@ class Decoder(nn.Module):
         dn1, dn2, dn3 = down
 
         # DDPM output
-        x_hat, down_ddpm, up, t = diffusion_out
-        dn11, dn22, dn33 = down_ddpm
-
-        # print("z shape:", z.shape) #[32, 256]
-        # print("x0 shape:", x0.shape) #[32, 64, 248]
-        # print("x_hat shape:", x_hat.shape) #[32, 64, 248]
-
-        # Up sampling
-        up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
-        up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
-
-        ## case 1: x + x_hat + skips (default)
-        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
-
-        ## case 2: x + x_hat
-        # out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach())], 1))
-
-        ## case 3: x_hat + skips
-        # out = self.up3(torch.cat([self.pool(x_hat.detach()), up2, dn11.detach()], 1))
-
-        ## case 4: x + skips
-        # out = self.up3(torch.cat([self.pool(x0), up2, dn11.detach()], 1))
-
-        ## case 5: skips
-        # out = self.up3(torch.cat([up2, dn11.detach()], 1))
-
-        ## case 6: z only
-        # B, _, T = dn11.shape  
-        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3(z_proj)
-
-        ## case 7: z + x
-        B, _, T = dn11.shape 
-        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
+        if diffusion_out is None:
+            # Create dummy tensors with appropriate shapes
+            B, C, T = x0.shape
+            x_hat = x0.clone()  # Use input as a placeholder
+            
+            # Don't use encoder features directly - create properly sized placeholders
+            # Get the right channel sizes that match what'd come from the DDPM
+            B, C_dn3, T_dn3 = dn3.shape
+            B, C_dn2, T_dn2 = dn2.shape
+            B, C_dn1, T_dn1 = dn1.shape
+            
+            # Calculate expected channel dimensions for DDPM features
+            expected_ch_dn1 = self.d1_out  # Likely 256
+            expected_ch_dn2 = self.d2_out  # Likely 512 
+            expected_ch_dn3 = self.d3_out  # Likely 768
+            
+            dn11 = torch.zeros(B, expected_ch_dn1, T_dn1, device=dn1.device)
+            dn22 = torch.zeros(B, expected_ch_dn2, T_dn2, device=dn2.device)
+            dn33 = torch.zeros(B, expected_ch_dn3, T_dn3, device=dn3.device)
+        else:
+            # DDPM output
+            x_hat, down_ddpm, up, t = diffusion_out
+            dn11, dn22, dn33 = down_ddpm
         
-        ## case 8: z + x_hat
-        #B, _, T = dn11.shape 
-        #z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        #out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+        # Calculate expected input channels for up1 layer
+        expected_up1_channels = self.d3_out + self.e3_out
+        
+        # Check if we need to adjust the channels
+        if dn3.shape[1] + dn33.shape[1] != expected_up1_channels:
+            print(f"Shape mismatch in up1: dn3 {dn3.shape}, dn33 {dn33.shape}, expected total {expected_up1_channels}")
+            
+            # Safely adjust the channels for the dummy case
+            if diffusion_out is None:
+                # Create a concatenated tensor with the right number of channels
+                concat_in = torch.cat([dn3, dn33], dim=1)
+                
+                # Create a new tensor with the correct number of channels needed by up1
+                if concat_in.shape[1] < expected_up1_channels:
+                    # Need to add channels
+                    missing_channels = expected_up1_channels - concat_in.shape[1]
+                    padding = torch.zeros(B, missing_channels, T_dn3, device=dn3.device)
+                    concat_in = torch.cat([concat_in, padding], dim=1)
+                else:
+                    # Need to reduce channels
+                    concat_in = concat_in[:, :expected_up1_channels, :]
+                    
+                # Pass the properly sized tensor to up1
+                up1 = self.up1(concat_in)
+            else:
+                # This shouldn't happen with real DDPM output
+                raise ValueError(f"Channel mismatch with real DDPM: {dn3.shape[1]} + {dn33.shape[1]} != {expected_up1_channels}")
+        else:
+            # Normal case - shapes match
+            up1 = self.up1(torch.cat([dn3, dn33.detach()], 1))
+        
+        # Rest of the function remains the same...
+        # Calculate expected input channels for up2 layer
+        expected_up2_channels = self.u2_out + self.d2_out
+        
+        # Check if we need to adjust the channels
+        if up1.shape[1] + dn22.shape[1] != expected_up2_channels:
+            print(f"Shape mismatch in up2: up1 {up1.shape}, dn22 {dn22.shape}, expected total {expected_up2_channels}")
+            
+            # Safely adjust the channels for the dummy case
+            if diffusion_out is None:
+                # Create a concatenated tensor with the right number of channels
+                concat_in = torch.cat([up1, dn22], dim=1)
+                
+                # Create a new tensor with the correct number of channels needed by up2
+                if concat_in.shape[1] < expected_up2_channels:
+                    # Need to add channels
+                    missing_channels = expected_up2_channels - concat_in.shape[1]
+                    padding = torch.zeros(B, missing_channels, T_dn2, device=dn2.device)
+                    concat_in = torch.cat([concat_in, padding], dim=1)
+                else:
+                    # Need to reduce channels
+                    concat_in = concat_in[:, :expected_up2_channels, :]
+                    
+                # Pass the properly sized tensor to up2
+                up2 = self.up2(concat_in)
+            else:
+                # This shouldn't happen with real DDPM output
+                raise ValueError(f"Channel mismatch with real DDPM: {up1.shape[1]} + {dn22.shape[1]} != {expected_up2_channels}")
+        else:
+            # Normal case - shapes match
+            up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
 
-        ## case 9: z + skips
-        # B, _, T = dn11.shape 
-        # z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
-        # out = self.up3(torch.cat([z_proj, up2, dn11.detach()], 1))
+        # Project z vector to feature space if needed
+        B, _, T = dn11.shape
+        z_proj = self.z_proj(z).unsqueeze(-1).expand(-1, -1, T)  # [B, 256] → [B, 256, T]
+    
+        if decoder_input == "x + x_hat + skips":
+            out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+        elif decoder_input == "x + x_hat":
+            out = self.up3(torch.cat([self.pool(x0), self.pool(x_hat.detach())], 1))
+        elif decoder_input == "x_hat + skips":
+            out = self.up3(torch.cat([self.pool(x_hat.detach()), up2, dn11.detach()], 1))
+        elif decoder_input == "x + skips":
+            out = self.up3(torch.cat([self.pool(x0), up2, dn11.detach()], 1))
+        elif decoder_input == "skips":
+            out = self.up3(torch.cat([up2, dn11.detach()], 1))
+        elif decoder_input == "z only":
+            out = self.up3(z_proj)
+        elif decoder_input == "z + x":
+            out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
+        elif decoder_input == "z + x_hat":
+            out = self.up3(torch.cat([z_proj, self.pool(x_hat.detach())], 1))
+        elif decoder_input == "z + skips":
+            out = self.up3(torch.cat([z_proj, up2, dn11.detach()], 1))
+        else:
+            out = self.up3(torch.cat([z_proj, self.pool(x0)], 1))
 
         return out
-    
+
 class DiffE(nn.Module):
     def __init__(self, encoder, decoder, fc):
         super(DiffE, self).__init__()
@@ -437,28 +519,28 @@ class DiffE(nn.Module):
 
     def forward(self, x0, ddpm_out):
         encoder_out = self.encoder(x0)
-        z = encoder_out[1] #return z
-        decoder_out = self.decoder(x0, encoder_out, ddpm_out)
-        fc_out = self.fc(encoder_out[1])
-        return decoder_out, fc_out,z
-    
-# Final classification head
-class LinearClassifier(nn.Module):
-    def __init__(self, in_dim, latent_dim, emb_dim):
-        super().__init__()
-        self.linear_out = nn.Sequential(
-            nn.Linear(in_features=in_dim, out_features=latent_dim),
-            nn.GroupNorm(4, latent_dim),
-            nn.PReLU(),
-            nn.Linear(in_features=latent_dim, out_features=latent_dim),
-            nn.GroupNorm(4, latent_dim),
-            nn.PReLU(),
-            nn.Linear(in_features=latent_dim, out_features=emb_dim),
-        )
+        z = encoder_out[1]  
+        
+        # Only call decoder if it exists
+        if self.decoder is not None:
+            decoder_out = self.decoder(x0, encoder_out, ddpm_out)
+        else:
+            decoder_out = None # If no decoder, return None for decoder output
 
-    def forward(self, x):
-        x = self.linear_out(x)
-        return x
+        # Pass the appropriate input type directly to the classifier
+        if classifier_input == "z":
+            fc_in = z  # [B, 256]
+        elif classifier_input == "x":
+            fc_in = x0  # [B, 64, 250] 
+        elif classifier_input == "x_hat" and ddpm_out is not None:
+            fc_in = ddpm_out[0].detach()  # [B, 64, 250]
+        elif classifier_input == "decoder_out" and decoder_out is not None:
+            fc_in = decoder_out.detach()  # [B, 64, 250]
+        else:
+            fc_in = z  # Default fallback
+
+        fc_out = self.fc(fc_in)
+        return decoder_out, fc_out, z
     
 def cosine_beta_schedule(timesteps, s=0.008):
     """
@@ -471,7 +553,6 @@ def cosine_beta_schedule(timesteps, s=0.008):
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0, 0.999)
-
 
 def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     """
@@ -488,7 +569,6 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0, 0.999)
-
 
 def ddpm_schedules(beta1, beta2, T):
     # assert beta1 < beta2 < 1.0, "beta1 and beta2 must be in (0, 1)"
@@ -510,7 +590,6 @@ def ddpm_schedules(beta1, beta2, T):
         "sqrtmab": sqrtmab,  # \sqrt{1-\bar{\alpha_t}}
     }
 
-#DDPM
 class DDPM(nn.Module):
     def __init__(self, nn_model, betas, n_T, device):
         super(DDPM, self).__init__()
@@ -543,3 +622,95 @@ class ProjectionHead(nn.Module):
 
     def forward(self, z):
         return F.normalize(self.net(z), dim=1)
+    
+# Final classification head
+class LinearClassifier(nn.Module):
+    def __init__(self, in_dim, latent_dim, emb_dim):
+        super().__init__()
+        self.linear_out = nn.Sequential(
+            nn.Linear(in_features=in_dim, out_features=latent_dim),
+            nn.GroupNorm(4, latent_dim),
+            nn.PReLU(),
+            nn.Linear(in_features=latent_dim, out_features=latent_dim),
+            nn.GroupNorm(4, latent_dim),
+            nn.PReLU(),
+            nn.Linear(in_features=latent_dim, out_features=emb_dim))
+        self.eeg_proj = nn.Conv1d(64, 256, kernel_size=1)  # assumes input is [B, 64, T]
+        self.att_pool = AttentionPool1d(256)
+
+    def forward(self, x):
+        if x.dim() == 2:
+            return self.linear_out(x)
+        elif x.dim() == 3: # [B, 64, T]
+            x = self.eeg_proj(x)  # [B, 256, T]
+            x = self.att_pool(x)  # [B, in_dim]
+            return self.linear_out(x)
+        else:
+            raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
+        
+class EEGNetClassifier(nn.Module):
+    def __init__(self, nb_classes, Chans=64, Samples=128, dropoutRate=0.5,
+                 kernLength=64, F1=8, D=2, F2=16, norm_rate=0.25, dropoutType='Dropout'):
+        super(EEGNetClassifier, self).__init__()
+        if dropoutType == 'Dropout':
+            DropoutClass = nn.Dropout
+        elif dropoutType == 'SpatialDropout2D':
+            DropoutClass = lambda p: nn.Dropout2d(p)
+        else:
+            raise ValueError("dropoutType must be 'Dropout' or 'SpatialDropout2D'")
+
+        # Block 1
+        self.conv1 = nn.Conv2d(1, F1, kernel_size=(1, kernLength), padding='same', bias=False)
+        self.bn1 = nn.BatchNorm2d(F1)
+
+        self.depthwiseConv = nn.Conv2d(
+            F1, F1 * D, kernel_size=(Chans, 1), groups=F1, bias=False
+        )
+        self.bn2 = nn.BatchNorm2d(F1 * D)
+        self.activation1 = nn.ELU()
+        self.avgpool1 = nn.AvgPool2d(kernel_size=(1, 4))
+        self.drop1 = DropoutClass(dropoutRate)
+
+        # Block 2
+        self.separable_depthwise = nn.Conv2d(
+            F1 * D, F1 * D, kernel_size=(1, 16), groups=F1 * D, padding='same', bias=False
+        )
+        self.separable_pointwise = nn.Conv2d(
+            F1 * D, F2, kernel_size=1, bias=False
+        )
+        self.bn3 = nn.BatchNorm2d(F2)
+        self.activation2 = nn.ELU()
+        self.avgpool2 = nn.AvgPool2d(kernel_size=(1, 8))
+        self.drop2 = DropoutClass(dropoutRate)
+
+        # Final dense layer
+        self.flatten = nn.Flatten()
+        self.dense = nn.Linear(F2 * ((Samples // 4) // 8), nb_classes)
+
+    def forward(self, x):  # expected input -> (N, 1, Chans, Samples)
+        
+        if len(x.shape) == 2: # Project z into a compatible 3D shape to pass through conv layers
+            x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, 1, 128)  # [B, 256, 1, 128] → simulate EEG shape
+        
+        if len(x.shape) == 3:  # (N, Chans, Samples) -> [B, 64, 250]
+            x = x.unsqueeze(1) # Add the channel dimension -> (N, 1, Chans, Samples)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.depthwiseConv(x)
+        x = self.bn2(x)
+        x = self.activation1(x)
+        x = self.avgpool1(x)
+        x = self.drop1(x)
+
+        x = self.separable_depthwise(x)
+        x = self.separable_pointwise(x)
+        x = self.bn3(x)
+        x = self.activation2(x)
+        x = self.avgpool2(x)
+        x = self.drop2(x)
+
+        x = self.flatten(x)
+        x = self.dense(x) # produced result -> (N, nb_classes) -> [B, 26]
+
+        return x

@@ -26,7 +26,7 @@ elif option == "drive":
     work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"
 
 # --------- Reproducibility  ---------
-seed = 44
+seed = int(os.environ.get("SEED", "44"))
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # --------- Dataset  ---------
@@ -35,9 +35,10 @@ if option == "local":
 elif option == "drive":
     data_dir = "/content/drive/MyDrive/Communikate//IDL-research/dataset/ssvep/chars/"
 num_subjects = 35
+num_seen = 33
 
 # --------- Logging  ---------
-run_name = "run9" 
+run_name = os.environ.get("RUN_NAME", "run10")
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -54,27 +55,43 @@ num_classes = 26
 channels = 64 
 timepoints = 250  # From EEGNet parameters
 
-# DDPM parameters
+# DDPM 
+ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
 n_T = 1000
 ddpm_dim = 128
 encoder_dim = 256
 fc_dim = 512
 
 # Encoder parameters
+encoder_input = os.environ.get("ENCODER_INPUT", "x")       # "x" or "x_hat"
 eegnet_params = {"dropout_rate": 0.2, "kernel_length": 64,
                  "F1": 16, "D": 2, "F2": 32, "dropout_type": "Dropout"}
 
-# Decoder parameters (to implement)
-deconder_input = "z + x" # Choose from: 
-                                ## "x + x_hat + skips"
-                                ## "x + x_hat"
-                                ## "x_hat + skips"
-                                ## "x + skips"
-                                ## "skips"
-                                ## "z only"
-                                ## "z + x"
-                                ## "z + x_hat"
-                                ## "z + skips"
+# Decoder parameters
+decoder_variant = os.environ.get("DECODER_VARIANT", "use_decoder")  # "use_decoder" or "no_decoder"
+decoder_input = os.environ.get("DECODER_INPUT", "z only") # Choose from: 
+                                                            ## "x + x_hat + skips"
+                                                            ## "x + x_hat"
+                                                            ## "x_hat + skips"
+                                                            ## "x + skips"
+                                                            ## "skips"
+                                                            ## "z only"
+                                                            ## "z + x"
+                                                            ## "z + x_hat"
+                                                            ## "z + skips"
+
+# Classifier parameters
+classifier_variant = os.environ.get("CLASSIFIER_VARIANT", "fc_classifier")  # "eegnet_classifier" or "fc_classifier"
+classifier_input = os.environ.get("CLASSIFIER_INPUT", "z")  # "x", "x_hat", "decoder_out", "input_mixup", or "z"
+eegnet_classifier_params = {"nb_classes": num_classes,
+                            "Chans": channels,
+                            "Samples": timepoints,
+                            "dropoutRate": eegnet_params["dropout_rate"],
+                            "kernLength": eegnet_params["kernel_length"],
+                            "F1": eegnet_params["F1"], 
+                            "D": eegnet_params["D"], 
+                            "F2": eegnet_params["F2"],
+                            "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
 num_epochs = 500 # for all ablations, do 500 epochs
@@ -106,10 +123,8 @@ supcon_temperature = 0.07
 test_frequency = 1
 
 # --------- Testing ---------
-use_subject_wise_z_norm = {
-    "mode": "option1",  # Choose from:
-                        # "option1": Z-norm in train only; standard test eval
-                        # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
-                        # "option3": Standard test_seen; test_unseen uses calibration
-    "train": True       # This is used during training regardless of test mode
-}
+use_subject_wise_z_norm = {"mode": os.environ.get("Z_NORM_MODE", "option2"), "train": True} # Choose from:
+                                            # "option1": Z-norm in train only; standard test eval
+                                            # "option2": Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+                                            # "option3": Standard test_seen; test_unseen uses calibration
+                                            # "none"

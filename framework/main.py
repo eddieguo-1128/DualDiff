@@ -5,13 +5,21 @@ from models import *
 from utils import *
 from viz import *
 
-def evaluate(encoder, fc, generator, device):
+def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # not used
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
     for x, y, sid in generator:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
-        encoder_out = encoder(x)
+
+        if encoder_input == "x_hat" and ddpm is not None:
+            x_hat, *_ = ddpm(x)
+            encoder_in = x_hat.detach()
+        else:
+            encoder_in = x
+
+        encoder_out = encoder(encoder_in)
+
         y_hat = fc(encoder_out[1])
         y_hat = F.softmax(y_hat, dim=1)
         Y.append(y.detach().cpu())
@@ -32,7 +40,8 @@ def evaluate(encoder, fc, generator, device):
                "precision": precision, "auc": auc}
     return metrics
 
-def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, unseen=False, z_stats_train=None):
+def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, 
+                                    unseen=False, z_stats_train=None, ddpm=None, encoder_input="x"):
     diffe.eval()
     labels = np.arange(0, 26)
     Y, Y_hat = [], []
@@ -54,49 +63,118 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 indices = (all_sid == s)
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
-                z = diffe.encoder(x_sub)[1]
 
+                # Generate DDPM output if needed
+                if encoder_input == "x_hat" and ddpm is not None:
+                    x_hat, down, up, noise, t = ddpm(x_sub)
+                    encoder_in = x_hat.detach()
+                    ddpm_out = (x_hat, down, up, t)
+                elif encoder_input == "x" and ddpm is not None:
+                    x_hat, down, up, noise, t = ddpm(x_sub)
+                    ddpm_out = (x_hat, down, up, t)
+                    encoder_in = x_sub
+                elif ddpm is None:
+                    encoder_in = x_sub
+                    ddpm_out = (None, None, None, None)
+                    x_hat = None
+
+                # Get embeddings for z-normalization
+                z = diffe.encoder(encoder_in)[1]
+                
+                # Apply z-normalization
                 z_mean = z[:104].mean(dim=0, keepdim=True)
                 z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
-                z = (z - z_mean) / z_std
+                z_norm = (z - z_mean) / z_std
 
-                y_hat = F.softmax(diffe.fc(z), dim=1)
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
+                elif classifier_input == "x":
+                    y_hat = F.softmax(diffe.fc(x_sub), dim=1)
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                else:
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
         else:
             # For seen subjects: use provided z_stats_train from training data
-            if z_stats_train is None:
-                raise ValueError("z_stats_train must be provided for seen subject evaluation.")
+            if z_stats_train is None and classifier_input == "z":
+                raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
             for x, y, sid in loader:
                 x, y = x.to(device), y.to(device)
-                _, z = diffe.encoder(x)
-                z = torch.stack([
+
+                # Generate DDPM output if needed
+                if encoder_input == "x_hat" and ddpm is not None:
+                    x_hat, down, up, noise, t = ddpm(x)
+                    encoder_in = x_hat.detach()
+                    ddpm_out = (x_hat, down, up, t)
+                elif encoder_input == "x" and ddpm is not None:
+                    x_hat, down, up, noise, t = ddpm(x)
+                    ddpm_out = (x_hat, down, up, t)
+                    encoder_in = x
+                elif ddpm is None:
+                    encoder_in = x
+                    ddpm_out = (None, None, None, None)
+                    x_hat = None
+
+                # Get embeddings and apply z-normalization
+                _, z = diffe.encoder(encoder_in)
+                
+                # Apply subject-wise z-normalization using training statistics
+                z_norm = torch.stack([
                     (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
-                    for i in range(z.size(0))
-                ])
-                y_hat = F.softmax(diffe.fc(z), dim=1)
+                    for i in range(z.size(0))])
+
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
+                elif classifier_input == "x":
+                    y_hat = F.softmax(diffe.fc(x), dim=1)
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    decoder_out, _, _ = diffe(x, ddpm_out)
+                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                else:
+                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
 
     Y = torch.cat(Y).numpy()
     Y_hat = torch.cat(Y_hat).numpy()
 
+    # Calculate metrics (unchanged)
     accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
 
-    metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
+    metrics = {"accuracy": accuracy, "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
     return metrics
 
 def initialize_models():
     # DDPM model
-    ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
-    ddpm = DDPM(nn_model=ddpm_model, betas=(1e-6, 1e-2), n_T=n_T, device=device).to(device)
+    if ddpm_variant == "use_ddpm":
+        ddpm_model = ConditionalUNet(in_channels=channels, n_feat=ddpm_dim).to(device)
+        ddpm = DDPM(nn_model=ddpm_model, betas=(1e-6, 1e-2), n_T=n_T, device=device).to(device)
+    else:
+        ddpm = None
     
     # Encoder 
     encoder = EEGNet(nb_classes=num_classes, 
@@ -109,9 +187,27 @@ def initialize_models():
                      F2=eegnet_params["F2"],
                      dropoutType=eegnet_params["dropout_type"]).to(device)
     
-    # Decoder and classifier
-    decoder = Decoder(in_channels=channels, n_feat=ddpm_dim, encoder_dim=encoder_dim).to(device)
-    fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
+    # Decoder
+    if decoder_variant == "use_decoder":
+        decoder = Decoder(in_channels=channels, n_feat=ddpm_dim, encoder_dim=encoder_dim).to(device)
+    else:
+        decoder = None
+    
+    # Classifier
+    if classifier_variant == "eegnet_classifier":
+        fc = EEGNetClassifier(nb_classes=eegnet_classifier_params["nb_classes"],
+                              Chans=eegnet_classifier_params["Chans"],
+                              Samples=eegnet_classifier_params["Samples"],
+                              dropoutRate=eegnet_classifier_params["dropoutRate"],
+                              kernLength=eegnet_classifier_params["kernLength"],
+                              F1=eegnet_classifier_params["F1"],
+                              D=eegnet_classifier_params["D"],
+                              F2=eegnet_classifier_params["F2"],
+                              dropoutType=eegnet_classifier_params["dropoutType"]).to(device)
+    elif classifier_variant == "fc_classifier":
+        fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
+    else:
+        raise ValueError(f"Unknown classifier variant: {classifier_variant}")
     
     # DiffE combines everything
     diffe = DiffE(encoder, decoder, fc).to(device)
@@ -120,9 +216,21 @@ def initialize_models():
     print("\n--------- Model Summary ---------")
     print("Input channels    :", channels)
     print("Timepoints        :", timepoints)
-    print("DDPM parameters   :", sum(p.numel() for p in ddpm.parameters()))
+    
+    # Print DDPM parameters if it exists
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        print("DDPM parameters   :", sum(p.numel() for p in ddpm.parameters()))
+    else:
+        print("DDPM parameters   : 0 (no DDPM used)")
+    
     print("Encoder parameters:", sum(p.numel() for p in encoder.parameters()))
-    print("Decoder parameters:", sum(p.numel() for p in decoder.parameters()))
+    
+    # Print decoder parameters if it exists
+    if decoder_variant == "use_decoder" and decoder is not None:
+        print("Decoder parameters:", sum(p.numel() for p in decoder.parameters()))
+    else:
+        print("Decoder parameters: 0 (no decoder used)")
+    
     print("Classifier params :", sum(p.numel() for p in fc.parameters()))
     print("Total DiffE params:", sum(p.numel() for p in diffe.parameters()))
     print("-------------------------------\n")
@@ -130,9 +238,21 @@ def initialize_models():
     return ddpm, diffe
 
 def setup_optimizers(ddpm, diffe):
-
     # Optimizers
-    optim1 = optim.RMSprop(ddpm.parameters(), lr=base_lr)
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        optim1 = optim.RMSprop(ddpm.parameters(), lr=base_lr)
+        scheduler1 = optim.lr_scheduler.CyclicLR(optimizer=optim1, 
+                                             base_lr=base_lr,
+                                             max_lr=max_lr, 
+                                             step_size_up=scheduler_step_size,
+                                             mode="exp_range", 
+                                             cycle_momentum=False,
+                                             gamma=scheduler_gamma)
+    else:
+        # Create dummy optimizer and scheduler when DDPM is not used
+        optim1 = None
+        scheduler1 = None
+    
     optim2 = optim.RMSprop(diffe.parameters(), lr=base_lr)
     
     # EMA
@@ -140,30 +260,23 @@ def setup_optimizers(ddpm, diffe):
                  beta=ema_beta, 
                  update_after_step=ema_update_after, 
                  update_every=ema_update_every)
-            
-    # Learning rate schedulers
-    scheduler1 = optim.lr_scheduler.CyclicLR(optimizer=optim1, 
-                                             base_lr=base_lr,
-                                             max_lr=max_lr, 
-                                             step_size_up=scheduler_step_size,
-                                             mode="exp_range", 
-                                             cycle_momentum=False,
-                                             gamma=scheduler_gamma)
     
+    # Learning rate scheduler for DiffE
     scheduler2 = optim.lr_scheduler.CyclicLR(optimizer=optim2, 
-                                             base_lr=base_lr,
-                                             max_lr=max_lr, 
-                                             step_size_up=scheduler_step_size,
-                                             mode="exp_range", 
-                                             cycle_momentum=False,
-                                             gamma=scheduler_gamma)
+                                         base_lr=base_lr,
+                                         max_lr=max_lr, 
+                                         step_size_up=scheduler_step_size,
+                                         mode="exp_range", 
+                                         cycle_momentum=False,
+                                         gamma=scheduler_gamma)
     
     return optim1, optim2, fc_ema, scheduler1, scheduler2
 
-def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2, 
-                fc_ema, epoch, z_stats, proj_head, supcon_loss):
+def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2, fc_ema, epoch, z_stats, proj_head, supcon_loss):
 
-    ddpm.train()
+    # Only put DDPM in train mode if it exists
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        ddpm.train()
     diffe.train()
     
     # Initialize tracking variables
@@ -180,36 +293,51 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
-        
+
         # Train DDPM
-        optim1.zero_grad()
-        x_hat, down, up, noise, t = ddpm(x)
-        
-        # Align dimensions if needed
-        if x_hat.shape[-1] != x.shape[-1]:
-            target_len = min(x_hat.shape[-1], x.shape[-1])
-            x_hat = F.interpolate(x_hat, size=target_len)
-            x = F.interpolate(x, size=target_len)
-        
-        # DDPM loss and update
-        loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
-        loss_ddpm.mean().backward()
-        optim1.step()
-        ddpm_out = x_hat, down, up, t
+        if ddpm_variant == "use_ddpm" and ddpm is not None and optim1 is not None:
+            optim1.zero_grad()
+            x_hat, down, up, noise, t = ddpm(x)
+
+            # Align dimensions if needed
+            if x_hat.shape[-1] != x.shape[-1]:
+                target_len = min(x_hat.shape[-1], x.shape[-1])
+                x_hat = F.interpolate(x_hat, size=target_len)
+                x = F.interpolate(x, size=target_len)
+
+            loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
+            loss_ddpm.mean().backward()
+            optim1.step()
+            ddpm_out = x_hat, down, up, t
+        else:
+            x_hat = None
+            ddpm_out = None
       
         # Train DiffE
         optim2.zero_grad()
-        decoder_out, fc_out, z = diffe(x, ddpm_out)
+
+        if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
+            encoder_in = x
+        else:
+            encoder_in = x_hat.detach() if encoder_input == "x_hat" else x
+
+        if decoder_variant == "no_decoder":
+            _, fc_out, z = diffe(encoder_in, ddpm_out)
+            loss_decoder = 0.0
+        else:
+            decoder_out, fc_out, z = diffe(encoder_in, ddpm_out)
+            if ddpm_variant == "use_ddpm":
+                loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
+            else:
+                loss_decoder = F.l1_loss(decoder_out, x)
         
         # Normalize by subject
-        z = torch.stack([
-            (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-            z_stats[int(sid[i].item())][1].squeeze(0) 
-            for i in range(z.size(0))])
+        if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
+            z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                z_stats[int(sid[i].item())][1].squeeze(0) 
+                for i in range(z.size(0))])
         
         # Compute losses
-        #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm.detach())
-        loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
         loss_c = nn.CrossEntropyLoss()(fc_out, y)
         z_proj = proj_head(z)
         loss_supcon = supcon_loss(z_proj, y)
@@ -220,7 +348,8 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         optim2.step()
         
         # Update schedulers and EMA
-        scheduler1.step()
+        if scheduler1 is not None:
+            scheduler1.step()
         scheduler2.step()
         fc_ema.update()
         
@@ -238,12 +367,14 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
 
 def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, beta, gamma):
 
-    ddpm.eval()
+    if ddpm_variant == "use_ddpm" and ddpm is not None:
+        ddpm.eval()
+    
     diffe.eval()
     
     # Get metrics using the evaluate function
-    metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device)
-    
+    metrics_val = evaluate_with_subjectwise_znorm(diffe, val_loader, device, name="Val", unseen=False, z_stats_train=z_stats, ddpm=ddpm, encoder_input=encoder_input) # metrics_val = evaluate(diffe.encoder, diffe.fc, val_loader, device, ddpm=ddpm, encoder_input=encoder_input) 
+
     # Calculate validation loss
     val_loss = 0
     with torch.no_grad():
@@ -251,24 +382,40 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
             x, y = x.to(device), y.type(torch.LongTensor).to(device)
             y_cat = F.one_hot(y, num_classes=num_classes).float().to(device)
             
-            x_hat, down, up, noise, t = ddpm(x)
-            ddpm_out = x_hat, down, up, t
+            if ddpm_variant == "use_ddpm":
+                x_hat, down, up, noise, t = ddpm(x)
+                ddpm_out = x_hat, down, up, t
+
+                if x_hat.shape[-1] != x.shape[-1]:
+                    target_len = min(x_hat.shape[-1], x.shape[-1])
+                    x_hat = F.interpolate(x_hat, size=target_len)
+                    x = F.interpolate(x, size=target_len)
+
+                loss_ddpm = F.l1_loss(x_hat, x, reduction="none") 
+            else:
+                x_hat = None
+                ddpm_out = None
+
+            if encoder_input == "x_hat" and ddpm_variant != "use_ddpm":
+                encoder_in = x
+            else:
+                encoder_in = x_hat.detach() if encoder_input == "x_hat" else x
+
+            if decoder_variant == "no_decoder":
+                _, fc_out, z = diffe(encoder_in, ddpm_out)
+                loss_decoder = 0.0
+            else:
+                decoder_out, fc_out, z = diffe(encoder_in, ddpm_out)
+                if ddpm_variant == "use_ddpm":
+                    loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
+                else:
+                    loss_decoder = F.l1_loss(decoder_out, x)
             
-            if x_hat.shape[-1] != x.shape[-1]:
-                target_len = min(x_hat.shape[-1], x.shape[-1])
-                x_hat = F.interpolate(x_hat, size=target_len)
-                x = F.interpolate(x, size=target_len)
+            if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
+                z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                    z_stats[int(sid[i].item())][1].squeeze(0) 
+                    for i in range(z.size(0))])
             
-            loss_ddpm = F.l1_loss(x_hat, x, reduction="none")
-            decoder_out, fc_out, z = diffe(x, ddpm_out)
-            
-            z = torch.stack([
-                (z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-                z_stats[int(sid[i].item())][1].squeeze(0) 
-                for i in range(z.size(0))])
-            
-            #loss_gap = nn.L1Loss()(decoder_out, loss_ddpm)
-            loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
             loss_c = nn.CrossEntropyLoss()(fc_out, y)
             z_proj = proj_head(z)
             loss_supcon = supcon_loss(z_proj, y)
@@ -286,7 +433,7 @@ def train():
     os.makedirs(checkpoints_dir, exist_ok=True)
 
     # Setup data loaders
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=33, seed=seed)
+    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
     
@@ -302,12 +449,8 @@ def train():
     proj_head = ProjectionHead(input_dim=encoder_dim, proj_dim=128).to(device)
     
     # Initialize tracking variables
-    best_metrics = {"acc": 0, "f1": 0, "recall": 0, "precision": 0, "auc": 0,
-                    "epoch": 0, "model_path": None}
-    
-    history = {"train_loss": [], "train_acc": [], "val_loss": [], 
-               "val_acc": [], "timestamps": []}
-    
+    best_metrics = {"acc": 0, "f1": 0, "recall": 0, "precision": 0, "auc": 0, "epoch": 0, "model_path": None}
+    history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": [], "timestamps": []}
     val_acc = 0.0
 
     # Training loop
@@ -317,9 +460,8 @@ def train():
             epoch_start = time.time()
             
             # Train for one epoch
-            train_loss, train_acc = train_epoch(
-                ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2,
-                fc_ema, epoch, z_stats, proj_head, supcon_loss)
+            train_loss, train_acc = train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler2,
+                                                fc_ema, epoch, z_stats, proj_head, supcon_loss)
             
             # Record training metrics
             history["train_loss"].append(train_loss)
@@ -419,7 +561,7 @@ def test_best_model(best_metrics, z_stats_train):
         print("No best model was saved (validation accuracy didn't improve). Using final model state.")
     
     # Load test data
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=33, seed=seed)
+    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     test1_loader = loaders["test1"]
     test2_loader = loaders["test2"]
     
@@ -427,31 +569,24 @@ def test_best_model(best_metrics, z_stats_train):
     diffe.eval()
 
     # Determine which normalization strategy to use based on config
-    z_norm_mode = use_subject_wise_z_norm.get("mode", "option1")
+    z_norm_mode = use_subject_wise_z_norm.get("mode", "option2")
     print(f"Using Z-normalization mode: {z_norm_mode}")
 
-    if z_norm_mode == "option1":
-        # Option 1: Z-norm in train only; standard test eval
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+    if z_norm_mode == "option1": # Option 1: Z-norm in train only; standard test eval
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device, ddpm=ddpm, encoder_input=encoder_input)
     
-    elif z_norm_mode == "option2":
-        # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
-        test1_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train)
-        test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
+    elif z_norm_mode == "option2": # Option 2: Z-norm in train + test; test_seen uses train stats, test_unseen uses calibration
+        test1_metrics = evaluate_with_subjectwise_znorm(diffe, test1_loader, device, name="Test1", unseen=False, z_stats_train=z_stats_train, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True, ddpm=ddpm, encoder_input=encoder_input)
     
-    elif z_norm_mode == "option3":
-        # Option 3: Standard test_seen; test_unseen uses calibration
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate_with_subjectwise_znorm(
-            diffe, test2_loader, device, name="Test2", unseen=True)
-    
+    elif z_norm_mode == "option3": # Option 3: Standard test_seen; test_unseen uses calibration
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate_with_subjectwise_znorm(diffe, test2_loader, device, name="Test2", unseen=True, ddpm=ddpm, encoder_input=encoder_input)
     else:
         print(f"Unknown Z-normalization mode: {z_norm_mode}. Using default evaluation.")
-        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device)
-        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device)
+        test1_metrics = evaluate(diffe.encoder, diffe.fc, test1_loader, device, ddpm=ddpm, encoder_input=encoder_input)
+        test2_metrics = evaluate(diffe.encoder, diffe.fc, test2_loader, device, ddpm=ddpm, encoder_input=encoder_input)
 
     print("\n===== Test Results =====")
     print(f"Test1 accuracy: {test1_metrics['accuracy']*100:.2f}%")
@@ -485,11 +620,10 @@ if __name__ == "__main__":
     # Load training history from the saved CSV
     try:
         history_df = pd.read_csv(os.path.join(log_dir, 'training_history.csv'))
-        history = {
-            'train_loss': history_df['train_loss'].tolist(),
-            'train_acc': history_df['train_acc'].tolist(),
-            'val_loss': history_df['val_loss'].dropna().tolist(),
-            'val_acc': history_df['val_acc'].dropna().tolist()}
+        history = {'train_loss': history_df['train_loss'].tolist(),
+                   'train_acc': history_df['train_acc'].tolist(),
+                   'val_loss': history_df['val_loss'].dropna().tolist(),
+                   'val_acc': history_df['val_acc'].dropna().tolist()}
         # Plot training progress
         plot_training_progress(history, log_dir)
     except Exception as e:
