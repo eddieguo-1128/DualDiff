@@ -94,7 +94,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 3 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
@@ -106,8 +106,16 @@ max_lr = 1.5e-3
 scheduler_step_size = 150
 scheduler_gamma = 0.9998
 
-# Loss weights
-initial_alpha = 1.0
+# Loss 
+ddpm_reconstruction_loss = os.environ.get("DDPM_RECONSTRUCTION_LOSS", "True") == "True"
+classification_loss = os.environ.get("CLASSIFICATION_LOSS", "CE")
+contrastive_loss = os.environ.get("CONTRASTIVE_LOSS", "SupCon")
+decoder_reconstruction_loss = os.environ.get("DECODER_RECONSTRUCTION_LOSS", "L1")
+
+alpha = float(os.environ.get("ALPHA", 1.0))
+beta = os.environ.get("BETA", "scheduler to 0.05")
+gamma = os.environ.get("GAMMA", "scheduler to 0.2")
+
 beta_scale = 0.2  # Multiplied by min(1.0, epoch/50)
 gamma_scale = 0.05  # Multiplied by min(1.0, epoch/100)
 

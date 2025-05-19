@@ -285,11 +285,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     epoch_acc = 0
     total_samples = 0
     
-    # Set loss weights based on current epoch
-    alpha = initial_alpha
-    beta = min(1.0, epoch / 50) * beta_scale
-    gamma = min(1.0, epoch / 100) * gamma_scale
-    
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
@@ -337,13 +332,36 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                 z_stats[int(sid[i].item())][1].squeeze(0) 
                 for i in range(z.size(0))])
         
-        # Compute losses
-        loss_c = nn.CrossEntropyLoss()(fc_out, y)
-        z_proj = proj_head(z)
-        loss_supcon = supcon_loss(z_proj, y)
+        # Losses 
         
-        # Combined loss
-        loss = alpha * loss_c + beta * loss_supcon + gamma * loss_decoder
+        # --- Classification loss
+        if classification_loss == "CE":
+            loss_c = nn.CrossEntropyLoss()(fc_out, y)
+        elif classification_loss == "MSE":
+            loss_c = nn.MSELoss()(fc_out, y_cat)
+        else:
+            raise ValueError(f"Unknown classification loss: {classification_loss}")
+
+        # --- Contrastive loss
+        if contrastive_loss == "SupCon":
+            z_proj = proj_head(z)
+            loss_supcon = supcon_loss(z_proj, y)
+        else:
+            loss_supcon = 0.0  # Add more options if needed
+        
+        # --- Combined loss
+        # Loss weights (scheduler logic)
+        alpha_val = alpha  # always float
+        if isinstance(beta, str) and beta.startswith("scheduler"):
+            beta = min(1.0, epoch / 50) * beta_scale
+        else:
+            beta = float(beta)
+        if isinstance(gamma, str) and gamma.startswith("scheduler"):
+            gamma = min(1.0, epoch / 100) * gamma_scale
+        else:
+            gamma = float(gamma)
+
+        loss = alpha_val * loss_c + beta * loss_supcon + gamma * loss_decoder
         loss.backward()
         optim2.step()
         
@@ -415,11 +433,23 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                 z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
                     z_stats[int(sid[i].item())][1].squeeze(0) 
                     for i in range(z.size(0))])
+
+            # --- Classification loss
+            if classification_loss == "CE":
+                loss_c = nn.CrossEntropyLoss()(fc_out, y)
+            elif classification_loss == "MSE":
+                loss_c = nn.MSELoss()(fc_out, y_cat)
+            else:
+                raise ValueError(f"Unknown classification loss: {classification_loss}")
             
-            loss_c = nn.CrossEntropyLoss()(fc_out, y)
-            z_proj = proj_head(z)
-            loss_supcon = supcon_loss(z_proj, y)
+            # --- Contrastive loss
+            if contrastive_loss == "SupCon":
+                z_proj = proj_head(z)
+                loss_supcon = supcon_loss(z_proj, y)
+            else:
+                loss_supcon = 0.0  # Add more options if needed
             
+            # --- Combined loss
             val_loss += (alpha * loss_c + beta * loss_supcon + gamma * loss_decoder).item()
     
     val_loss = val_loss / len(val_loader)
@@ -468,14 +498,20 @@ def train():
             history["train_acc"].append(train_acc)
             
             # Validate model
-            alpha = initial_alpha
-            beta = min(1.0, epoch / 50) * beta_scale
-            gamma = min(1.0, epoch / 100) * gamma_scale
+            # Loss weights (scheduler logic)
+            if isinstance(beta, str) and beta.startswith("scheduler"):
+                beta = min(1.0, epoch / 50) * beta_scale
+            else:
+                beta = float(beta)
+            if isinstance(gamma, str) and gamma.startswith("scheduler"):
+                gamma = min(1.0, epoch / 100) * gamma_scale
+            else:
+                gamma = float(gamma)
             
             # Run validation at appropriate intervals
             if epoch > start_test and epoch % test_frequency == 0:
                 metrics_val, val_loss = validate(ddpm, diffe, val_loader, z_stats, proj_head, 
-                                                 supcon_loss,alpha, beta, gamma)
+                                                 supcon_loss, alpha, beta, gamma)
                 
                 # Record validation metrics
                 val_acc = metrics_val["accuracy"]
