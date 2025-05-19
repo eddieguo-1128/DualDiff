@@ -82,26 +82,26 @@ for classification_loss in classification_losses:
                             acc_seen_list.append(acc_seen)
                             acc_unseen_list.append(acc_unseen)
 
-    # Calculate means and standard deviations after all seeds are processed
-    seen_mean, seen_std = np.mean(acc_seen_list), np.std(acc_seen_list)
-    unseen_mean, unseen_std = np.mean(acc_unseen_list), np.std(acc_unseen_list)
+                # Calculate means and standard deviations after all seeds are processed
+                seen_mean, seen_std = np.mean(acc_seen_list), np.std(acc_seen_list)
+                unseen_mean, unseen_std = np.mean(acc_unseen_list), np.std(acc_unseen_list)
 
-    results.append({
-                "classification_loss": classification_loss, 
-                "alpha": alpha,
-                "beta": beta,
-                "gamma": gamma,
-                "classifier_variant": os.environ["CLASSIFIER_VARIANT"],
-                "classifier_input": os.environ["CLASSIFIER_INPUT"],
-                "ddpm_variant": os.environ["DDPM_VARIANT"],
-                "encoder_input": os.environ["ENCODER_INPUT"],
-                "decoder_variant": os.environ["DECODER_VARIANT"],
-                "decoder_input": os.environ["DECODER_INPUT"],
-                "z_norm_mode": z_norm_mode,
-                "test_seen_mean": seen_mean * 100,
-                "test_seen_std": seen_std * 100,
-                "test_unseen_mean": unseen_mean * 100,
-                "test_unseen_std": unseen_std * 100})
+                results.append({
+                            "classification_loss": classification_loss, 
+                            "alpha": alpha,
+                            "beta": beta,
+                            "gamma": gamma,
+                            "classifier_variant": os.environ["CLASSIFIER_VARIANT"],
+                            "classifier_input": os.environ["CLASSIFIER_INPUT"],
+                            "ddpm_variant": os.environ["DDPM_VARIANT"],
+                            "encoder_input": os.environ["ENCODER_INPUT"],
+                            "decoder_variant": os.environ["DECODER_VARIANT"],
+                            "decoder_input": os.environ["DECODER_INPUT"],
+                            "z_norm_mode": z_norm_mode,
+                            "test_seen_mean": seen_mean * 100,
+                            "test_seen_std": seen_std * 100,
+                            "test_unseen_mean": unseen_mean * 100,
+                            "test_unseen_std": unseen_std * 100})
 
 results_df = pd.DataFrame(results)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
