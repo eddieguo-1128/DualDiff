@@ -353,15 +353,15 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         # Loss weights (scheduler logic)
         alpha_val = alpha  # always float
         if isinstance(beta, str) and beta.startswith("scheduler"):
-            beta = min(1.0, epoch / 50) * beta_scale
+            beta_val = min(1.0, epoch / 50) * beta_scale
         else:
-            beta = float(beta)
+            beta_val = float(beta)
         if isinstance(gamma, str) and gamma.startswith("scheduler"):
-            gamma = min(1.0, epoch / 100) * gamma_scale
+            gamma_val = min(1.0, epoch / 100) * gamma_scale
         else:
-            gamma = float(gamma)
+            gamma_val = float(gamma)
 
-        loss = alpha_val * loss_c + beta * loss_supcon + gamma * loss_decoder
+        loss = alpha_val * loss_c + beta_val * loss_supcon + gamma_val * loss_decoder
         loss.backward()
         optim2.step()
         
@@ -500,18 +500,18 @@ def train():
             # Validate model
             # Loss weights (scheduler logic)
             if isinstance(beta, str) and beta.startswith("scheduler"):
-                beta = min(1.0, epoch / 50) * beta_scale
+                beta_val = min(1.0, epoch / 50) * beta_scale
             else:
-                beta = float(beta)
+                beta_val = float(beta)
             if isinstance(gamma, str) and gamma.startswith("scheduler"):
-                gamma = min(1.0, epoch / 100) * gamma_scale
+                gamma_val = min(1.0, epoch / 100) * gamma_scale
             else:
-                gamma = float(gamma)
+                gamma_val = float(gamma)
             
             # Run validation at appropriate intervals
             if epoch > start_test and epoch % test_frequency == 0:
                 metrics_val, val_loss = validate(ddpm, diffe, val_loader, z_stats, proj_head, 
-                                                 supcon_loss, alpha, beta, gamma)
+                                                 supcon_loss, alpha, beta_val, gamma_val)
                 
                 # Record validation metrics
                 val_acc = metrics_val["accuracy"]
