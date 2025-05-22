@@ -347,7 +347,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
             z_proj = proj_head(z)
             loss_supcon = supcon_loss(z_proj, y)
         else:
-            loss_supcon = 0.0  # Add more options if needed
+            loss_supcon = 0.0 
         
         # --- Combined loss
         # Loss weights (scheduler logic)
