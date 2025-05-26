@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-import mne
+import mne #1.9.0, need 1.24.4 version of numpy
 import gdown
 import scipy.io
 
