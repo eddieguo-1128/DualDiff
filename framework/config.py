@@ -33,9 +33,11 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # --------- Dataset  ---------
 if option == "local":
-    data_dir = os.path.join(work_dir, "SSVEP-CHAR")
+    data_dir = os.path.join(work_dir, "cleaned_data")
+    label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
     data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
+    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels"
 num_subjects = 35
 num_seen = 33
 

@@ -490,7 +490,13 @@ def train():
     os.makedirs(checkpoints_dir, exist_ok=True)
 
     # Setup data loaders
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+    if task == "SSVEP":
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+    elif task == "MI":
+        loaders = MI_load_data_by_session(root_dir=data_dir, num_seen=num_seen, seed=seed, label_dir=label_dir) 
+    else:
+        print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
     
