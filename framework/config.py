@@ -38,8 +38,8 @@ if option == "local":
 elif option == "drive":
     data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
     label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels"
-num_subjects = 35
-num_seen = 33
+num_subjects = 9 #SSVEP:35; MI:9
+num_seen = 7 #SSVEP:33; MI:7
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
