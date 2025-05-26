@@ -7,6 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 import mne #1.9.0, need 1.24.4 version of numpy
 import gdown
 import scipy.io
+from config import *
 
 def zscore_norm(data):
     mean = torch.mean(data, dim=(1, 2))
@@ -199,7 +200,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
 
     for sid in seen_subjects:
         for session in ["first_session", "second_session"]:
-            X, Y = MI_load_data_by_session(root_dir, sid, [session])
+            X, Y = MI_load_data_by_session(root_dir, sid, [session], label_dir)
             train_idx, val_idx, test_idx = split_by_class_and_run(
                 Y, seed=seed, num_sessions=1
             )
@@ -237,7 +238,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
     # Process unseen subjects: use all trials
     X_all, Y_all, subject_ids = [], [], []
     for sid in unseen_subjects:
-        X, Y = MI_load_data_by_session(root_dir, sid, ["first_session", "second_session"])
+        X, Y = MI_load_data_by_session(root_dir, sid, ["first_session", "second_session"],label_dir)
         X_all.append(X)
         Y_all.append(Y)
         subject_ids.extend([sid] * len(Y))
