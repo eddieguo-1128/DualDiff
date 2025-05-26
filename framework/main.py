@@ -81,10 +81,37 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 # Get embeddings for z-normalization
                 z = diffe.encoder(encoder_in)[1]
                 
-                # Apply z-normalization
-                z_mean = z[:104].mean(dim=0, keepdim=True)
-                z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
-                z_norm = (z - z_mean) / z_std
+                if task == "SSVEP": 
+                    # Apply z-normalization
+                    z_mean = z[:104].mean(dim=0, keepdim=True)
+                    z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
+                    z_norm = (z - z_mean) / z_std
+                elif task == "MI":
+                    samples_per_subject = 576  # 2 sessions × 288 samples
+                    half = samples_per_subject // 2  # 288
+                    quarter = half // 2  # 144
+
+                    # Use only half from each session for stats
+                    z_sess0_half = z[:half][:quarter]
+                    z_sess1_half = z[half:][:quarter]
+
+                    z_mean0 = z_sess0_half.mean(dim=0, keepdim=True)
+                    z_std0 = z_sess0_half.std(dim=0, keepdim=True) + 1e-6
+
+                    z_mean1 = z_sess1_half.mean(dim=0, keepdim=True)
+                    z_std1 = z_sess1_half.std(dim=0, keepdim=True) + 1e-6
+
+                    # Average stats
+                    avg_mean = (z_mean0 + z_mean1) / 2
+                    avg_std = (z_std0 + z_std1) / 2
+
+                    z_normed = (z - avg_mean) / avg_std
+                else:
+                    print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+                    z_mean = z[:104].mean(dim=0, keepdim=True)
+                    z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
+                    z_norm = (z - z_mean) / z_std
+
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":

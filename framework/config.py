@@ -18,12 +18,14 @@ warnings.filterwarnings("ignore", category=UserWarning,
 
 # --------- Command-line arguments (optional) ---------
 
+task = "MI" #"SSVEP","MI" or "FEIS"
+
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"
+    work_dir = "/content/drive/MyDrive/project/model/MI"
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -33,12 +35,12 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 if option == "local":
     data_dir = os.path.join(work_dir, "SSVEP-CHAR")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/Communikate//IDL-research/dataset/ssvep/chars/"
+    data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
 num_subjects = 35
 num_seen = 33
 
 # --------- Logging  ---------
-run_name = os.environ.get("RUN_NAME", "run10")
+run_name = os.environ.get("RUN_NAME", "run1")
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -51,9 +53,9 @@ wandb_project = "DualDiff"
 wandb_run_name = run_name
 
 # --------- Model ---------
-num_classes = 26
-channels = 64 
-timepoints = 250  # From EEGNet parameters
+num_classes = 4 #SSVEP:26; MI:4
+channels = 22 #SSVEP:64; MI:22
+timepoints = 1001  # From EEGNet parameters. SSVEP:250; MI:1001 
 
 # DDPM 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
