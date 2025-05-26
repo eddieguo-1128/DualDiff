@@ -43,7 +43,13 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # no
 def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, 
                                     unseen=False, z_stats_train=None, ddpm=None, encoder_input="x"):
     diffe.eval()
-    labels = np.arange(0, 26)
+    if task == "SSVEP":
+        labels = np.arange(0, 26)
+    elif task == "MI":
+        labels = np.arange(0, 4)
+    else:
+        print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+        labels = np.arange(0, 26) 
     Y, Y_hat = [], []
 
     with torch.no_grad():
