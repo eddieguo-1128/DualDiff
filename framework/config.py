@@ -39,7 +39,7 @@ elif option == "drive":
     data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
     label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels"
 num_subjects = 9 #SSVEP:35; MI:9
-num_seen = 7 #SSVEP:33; MI:7
+num_seen = 7 #SSVEP:35; MI:9
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
@@ -98,7 +98,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 5 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1

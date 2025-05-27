@@ -501,7 +501,7 @@ def train():
     elif task == "MI":
         loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     else:
-        print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
