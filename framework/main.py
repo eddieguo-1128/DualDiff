@@ -636,7 +636,15 @@ def test_best_model(best_metrics, z_stats_train):
         print("No best model was saved (validation accuracy didn't improve). Using final model state.")
     
     # Load test data
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    if task == "SSVEP":
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "MI":
+        loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    else:
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+
+    
     test1_loader = loaders["test1"]
     test2_loader = loaders["test2"]
     
