@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import subprocess
 from datetime import datetime
-from config import work_dir, use_subject_wise_z_norm
+from config import work_dir, use_subject_wise_z_norm, task
 
 # Define ablation axes
 seeds = [42, 43, 44]
@@ -56,7 +56,7 @@ for ddpm_variant in ddpm_variants:
                 os.environ["DECODER_VARIANT"] = decoder_variant
 
                 # Construct run name
-                run_name = f"ddpm_{ddpm_variant}__encoder_{encoder_input}__decoder_{decoder_variant}__s{seed}_z{z_norm_mode}"
+                run_name = f"task_{task}__ddpm_{ddpm_variant}__encoder_{encoder_input}__decoder_{decoder_variant}__s{seed}_z{z_norm_mode}"
                 os.environ["RUN_NAME"] = run_name
                 log_dir = os.path.join(work_dir, run_name, "logs")
 
