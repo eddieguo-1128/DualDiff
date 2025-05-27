@@ -357,6 +357,10 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
             if ddpm_variant == "use_ddpm":
                 loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
             else:
+                if decoder_out.shape[-1] != x.shape[-1]:
+                    target_len = min(decoder_out.shape[-1], x.shape[-1])
+                    decoder_out = F.interpolate(decoder_out, size=target_len)
+                    x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
         
         # Normalize by subject

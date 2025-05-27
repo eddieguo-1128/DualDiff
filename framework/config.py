@@ -15,6 +15,8 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, 
                        module="sklearn.metrics._classification")
+warnings.filterwarnings("ignore", message="This filename .* does not conform to MNE naming conventions.*",
+                        category=RuntimeWarning, module="mne.io")
 
 # --------- Command-line arguments (optional) ---------
 

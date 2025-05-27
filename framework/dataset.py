@@ -253,11 +253,11 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
         subj_tensor = subject_id_dict[split]
         total_trials = subj_tensor.shape[0]
         unique_subjects = subj_tensor.unique()
-        print(f"\n[Check] Split: {split}")
-        print(f"  Total trials: {total_trials}")
-        print(f"  Unique subjects: {list(unique_subjects.numpy())}")
+        #print(f"\n[Check] Split: {split}")
+        #print(f"  Total trials: {total_trials}")
+        #print(f"  Unique subjects: {list(unique_subjects.numpy())}")
         for sid in unique_subjects:
             sid_count = (subj_tensor == sid).sum().item()
-            print(f"    Subject {sid.item()}: {sid_count} trials")
+            #print(f"    Subject {sid.item()}: {sid_count} trials")
 
     return loaders

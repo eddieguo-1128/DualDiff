@@ -6,7 +6,7 @@ from datetime import datetime
 from config import work_dir, use_subject_wise_z_norm, task
 
 # Define ablation axes
-seeds = [42, 43, 44]
+seeds = [42] #[42, 43, 44]
 ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
@@ -100,6 +100,6 @@ results_df = pd.DataFrame(results)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
 ablation_dir = os.path.join(work_dir, "ablation_results")
 os.makedirs(ablation_dir, exist_ok=True)
-results_path = os.path.join(ablation_dir, f"ablation_ddpm_encoder_decoder_{timestamp}.csv")
+results_path = os.path.join(ablation_dir, f"task_{task}_ablation_ddpm_encoder_decoder_{timestamp}.csv")
 results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")
