@@ -25,7 +25,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/MI"
+    work_dir = "/content/drive/MyDrive/project/model/MI/sweep2_2"
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -98,7 +98,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 5 # for all ablations, do 500 epochs
+num_epochs = 500 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
