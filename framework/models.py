@@ -160,7 +160,7 @@ class ConditionalUNet(nn.Module):
         elif task == "MI":
             self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=1, factor=2)
         else:
-            print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+            print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
             self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=8, factor=2) 
         self.out = nn.Conv1d(self.u4_out + in_channels, in_channels, 1)
 

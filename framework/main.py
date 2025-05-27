@@ -48,7 +48,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
     elif task == "MI":
         labels = np.arange(0, 4)
     else:
-        print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         labels = np.arange(0, 26) 
     Y, Y_hat = [], []
 
@@ -111,9 +111,9 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     avg_mean = (z_mean0 + z_mean1) / 2
                     avg_std = (z_std0 + z_std1) / 2
 
-                    z_normed = (z - avg_mean) / avg_std
+                    z_norm = (z - avg_mean) / avg_std
                 else:
-                    print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+                    print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
                     z_mean = z[:104].mean(dim=0, keepdim=True)
                     z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
                     z_norm = (z - z_mean) / z_std

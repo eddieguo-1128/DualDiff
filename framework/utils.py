@@ -57,7 +57,7 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
             print(f"[Check] Subject {sid}: total={n}, sess0={half}, sess1={n-half}")
             z_stats[sid] = (avg_mean, avg_std)
         else:
-            print(f"Warning: Unknown task config '{taks}'. Defaulting to 'SSVEP'")
+            print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
             #print(f"[Check] Subject {sid}: z samples = {z_cat.shape[0]} (expected: {26 * 4})")
             assert z_cat.shape[0] >= 104, f"Subject {sid} z count < 104 — check loader input!"
             z_4session = z_cat[:26 * 4]  # only take the first 104 
