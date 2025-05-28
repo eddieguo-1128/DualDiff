@@ -464,6 +464,10 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                 if ddpm_variant == "use_ddpm":
                     loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
                 else:
+                    if decoder_out.shape[-1] != x.shape[-1]:
+                        target_len = min(decoder_out.shape[-1], x.shape[-1])
+                        decoder_out = F.interpolate(decoder_out, size=target_len)
+                        x = F.interpolate(x, size=target_len)
                     loss_decoder = F.l1_loss(decoder_out, x)
             
             if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
