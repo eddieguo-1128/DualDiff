@@ -100,7 +100,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 5 # for all ablations, do 500 epochs
+num_epochs = 500 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
