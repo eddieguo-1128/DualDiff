@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"  
+    work_dir = "/content/drive/MyDrive/project/model/MI/sweep6"  
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -38,8 +38,8 @@ if option == "local":
     data_dir = os.path.join(work_dir, "cleaned_data")
     label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/Communikate/IDL-research/dataset/MI/cleaned_data"
-    label_dir = "/content/drive/MyDrive/Communikate/IDL-research/dataset/MI/second_session_labels"
+    data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
+    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels"
 num_subjects = 9 #SSVEP:35; MI:9
 num_seen = 7 #SSVEP:35; MI:9
 
@@ -100,7 +100,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 5 # for all ablations, do 500 epochs
 batch_size = 32
 batch_size_eval = 260
 test_period = 1
