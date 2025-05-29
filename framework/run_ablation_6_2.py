@@ -17,11 +17,11 @@ classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" i
 classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
 
 ddpm_reconstruction_loss = True # keep always True
-classification_losses = ["CE"] # try both, default is CE
+classification_losses = ["MSE"] # try both, default is CE
 contrastive_loss = "SupCon" # default is SupCon 
 decoder_reconstruction_loss = "L1" # default is L1
 
-alphas = [1] # default is 1
+alphas = [0.5, 1] # default is 1
 betas = [0, "scheduler to 0.05"] # default is "scheduler to 0.05"
 gammas = [0, "scheduler to 0.2"] # default is "scheduler to 0.2"
 
