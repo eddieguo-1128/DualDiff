@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/MI/sweep4"  
+    work_dir = "/content/drive/MyDrive/project/model/MI/sweep6"  
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
