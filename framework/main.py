@@ -320,6 +320,8 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
+        print(f"[DEBUG-input-x] raw x shape={x.shape}, mean={x.mean().item():.4f}, std={x.std().item():.4f}", flush=True)
+
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
         # Train DDPM
@@ -362,7 +364,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                     decoder_out = F.interpolate(decoder_out, size=target_len)
                     x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
-                
+
         
         # Normalize by subject
         if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):

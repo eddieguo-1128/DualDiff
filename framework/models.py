@@ -545,8 +545,8 @@ class DiffE(nn.Module):
         else:
             fc_in = z  # Default fallback
 
-        import sys
-        print(f"[DEBUG-before-fc] classifier_input={classifier_input}, fc_in shape={fc_in.shape}, mean={fc_in.mean().item():.4f}, std={fc_in.std().item():.4f}", file=sys.stderr, flush=True)
+        # import sys
+        # print(f"[DEBUG-before-fc] classifier_input={classifier_input}, fc_in shape={fc_in.shape}, mean={fc_in.mean().item():.4f}, std={fc_in.std().item():.4f}", file=sys.stderr, flush=True)
 
 
         fc_out = self.fc(fc_in)
