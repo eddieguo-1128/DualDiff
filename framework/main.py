@@ -362,6 +362,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                     decoder_out = F.interpolate(decoder_out, size=target_len)
                     x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
+                
         
         # Normalize by subject
         if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
