@@ -474,16 +474,16 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                     loss_decoder = F.l1_loss(decoder_out, x)
             
             with torch.no_grad():
-                x_mean, x_std = x.mean().item(), x.std().item()
-                x_hat_mean, x_hat_std = (x_hat.mean().item(), x_hat.std().item()) if x_hat is not None else (0.0, 0.0)
-                decoder_out_mean, decoder_out_std = (decoder_out.mean().item(), decoder_out.std().item()) if decoder_variant != "no_decoder" else (0.0, 0.0)
-                z_mean, z_std = z.mean().item(), z.std().item()
-                
-                print(f"[DEBUG STATS] epoch={epoch} | "
-                    f"x: mean={x_mean:.6f}, std={x_std:.6f} | "
-                    f"x_hat: mean={x_hat_mean:.6f}, std={x_hat_std:.6f} | "
-                    f"decoder_out: mean={decoder_out_mean:.6f}, std={decoder_out_std:.6f} | "
-                    f"z: mean={z_mean:.6f}, std={z_std:.6f}")
+            x_mean, x_std = x.mean().item(), x.std().item()
+            x_hat_mean, x_hat_std = (x_hat.mean().item(), x_hat.std().item()) if x_hat is not None else (0.0, 0.0)
+            decoder_out_mean, decoder_out_std = (decoder_out.mean().item(), decoder_out.std().item()) if decoder_variant != "no_decoder" else (0.0, 0.0)
+            z_mean, z_std = z.mean().item(), z.std().item()
+            
+            print(f"[DEBUG STATS] epoch={epoch} | "
+                f"x: mean={x_mean:.6f}, std={x_std:.6f} | "
+                f"x_hat: mean={x_hat_mean:.6f}, std={x_hat_std:.6f} | "
+                f"decoder_out: mean={decoder_out_mean:.6f}, std={decoder_out_std:.6f} | "
+                f"z: mean={z_mean:.6f}, std={z_std:.6f}")
 
             
             if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
