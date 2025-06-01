@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from einops import reduce
 from dataset import *
 from config import *
+import sys
 
 # Padding utility
 def get_padding(kernel_size, dilation=1):
@@ -550,7 +551,7 @@ class DiffE(nn.Module):
         else:
             fc_in = z  # Default fallback
 
-        import sys
+        # import sys
         # print(f"[DEBUG-before-fc] classifier_input={classifier_input}, fc_in shape={fc_in.shape}, mean={fc_in.mean().item():.4f}, std={fc_in.std().item():.4f}", file=sys.stderr, flush=True)
         # print(f"[DEBUG-diffe] classifier_input={classifier_input}, fc_in.shape={fc_in.shape}, mean={fc_in.mean().item():.6f}, std={fc_in.std().item():.6f}",  file=sys.stderr,flush=True)
 
