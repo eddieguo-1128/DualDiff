@@ -365,17 +365,17 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                     x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
 
-        with torch.no_grad():
-            x_mean, x_std = x.mean().item(), x.std().item()
-            x_hat_mean, x_hat_std = (x_hat.mean().item(), x_hat.std().item()) if x_hat is not None else (0.0, 0.0)
-            decoder_out_mean, decoder_out_std = (decoder_out.mean().item(), decoder_out.std().item()) if decoder_variant != "no_decoder" else (0.0, 0.0)
-            z_mean, z_std = z.mean().item(), z.std().item()
+        # with torch.no_grad():
+        #     x_mean, x_std = x.mean().item(), x.std().item()
+        #     x_hat_mean, x_hat_std = (x_hat.mean().item(), x_hat.std().item()) if x_hat is not None else (0.0, 0.0)
+        #     decoder_out_mean, decoder_out_std = (decoder_out.mean().item(), decoder_out.std().item()) if decoder_variant != "no_decoder" else (0.0, 0.0)
+        #     z_mean, z_std = z.mean().item(), z.std().item()
             
-            print(f"[DEBUG STATS] epoch={epoch} | "
-                f"x: mean={x_mean:.6f}, std={x_std:.6f} | "
-                f"x_hat: mean={x_hat_mean:.6f}, std={x_hat_std:.6f} | "
-                f"decoder_out: mean={decoder_out_mean:.6f}, std={decoder_out_std:.6f} | "
-                f"z: mean={z_mean:.6f}, std={z_std:.6f}")
+        #     print(f"[DEBUG STATS] epoch={epoch} | "
+        #         f"x: mean={x_mean:.6f}, std={x_std:.6f} | "
+        #         f"x_hat: mean={x_hat_mean:.6f}, std={x_hat_std:.6f} | "
+        #         f"decoder_out: mean={decoder_out_mean:.6f}, std={decoder_out_std:.6f} | "
+        #         f"z: mean={z_mean:.6f}, std={z_std:.6f}")
 
 
         
