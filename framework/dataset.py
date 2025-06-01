@@ -201,9 +201,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
     for sid in seen_subjects:
         for session in ["first_session", "second_session"]:
             X, Y = MI_load_data_by_session(root_dir, sid, [session], label_dir)
-            import sys
-            print(f"[DEBUG-dataset] sid={sid}, session={session}, X shape={X.shape}, mean={X.mean().item():.4f}, std={X.std().item():.4f}", file=sys.stderr,flush=True)
-
+            
             train_idx, val_idx, test_idx = split_by_class_and_run(
                 Y, seed=seed, num_sessions=1
             )

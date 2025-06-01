@@ -533,6 +533,11 @@ class DiffE(nn.Module):
         else:
             decoder_out = None # If no decoder, return None for decoder output
 
+        print(f"[CHECK] classifier_input={classifier_input}, "
+        f"x0 mean={x0.mean().item():.6f}, std={x0.std().item():.6f}, "
+        f"decoder_out={'None' if decoder_out is None else f'{decoder_out.mean().item():.6f}, std={decoder_out.std().item():.6f}'}")
+
+
         # Pass the appropriate input type directly to the classifier
         if classifier_input == "z":
             fc_in = z  # [B, 256]
