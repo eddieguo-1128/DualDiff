@@ -119,22 +119,23 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     z_norm = (z - z_mean) / z_std
 
 
-                # Choose appropriate input based on classifier_input setting
-                if classifier_input == "z":
-                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                # # Choose appropriate input based on classifier_input setting
+                # if classifier_input == "z":
+                #     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
-                elif classifier_input == "x":
-                    y_hat = F.softmax(diffe.fc(x_sub), dim=1)
+                # elif classifier_input == "x":
+                #     y_hat = F.softmax(diffe.fc(x_sub), dim=1)
                         
-                elif classifier_input == "x_hat" and ddpm is not None:
-                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                # elif classifier_input == "x_hat" and ddpm is not None:
+                #     y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
-                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
-                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
-                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
-                else:
-                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-
+                # elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                #     decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                #     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                # else:
+                #     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                decoder_out, fc_out, z = diffe(x, ddpm_out)
+                y_hat = F.softmax(fc_out, dim=1)
                 
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
@@ -169,24 +170,27 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     z_stats_train[int(sid[i].item())][1].squeeze(0)
                     for i in range(z.size(0))])
 
-                # Choose appropriate input based on classifier_input setting
-                if classifier_input == "z":
-                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                # # Choose appropriate input based on classifier_input setting
+                # if classifier_input == "z":
+                #     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
-                elif classifier_input == "x":
-                    y_hat = F.softmax(diffe.fc(x), dim=1)
+                # elif classifier_input == "x":
+                #     y_hat = F.softmax(diffe.fc(x), dim=1)
                         
-                elif classifier_input == "x_hat" and ddpm is not None:
-                    y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
+                # elif classifier_input == "x_hat" and ddpm is not None:
+                #     y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
-                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
-                    decoder_out, _, _ = diffe(x, ddpm_out)
-                    y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
-                else:
-                    y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+                # elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                #     decoder_out, _, _ = diffe(x, ddpm_out)
+                #     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
+                # else:
+                #     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
-                print(f"[DEBUG] y_hat shape: {y_hat.shape}")
-                print(f"[DEBUG] y_hat first sample: {y_hat[0]}")
+                # print(f"[DEBUG] y_hat shape: {y_hat.shape}")
+                # print(f"[DEBUG] y_hat first sample: {y_hat[0]}")
+
+                decoder_out, fc_out, z = diffe(x, ddpm_out)
+                y_hat = F.softmax(fc_out, dim=1)
 
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
