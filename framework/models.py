@@ -552,9 +552,7 @@ class DiffE(nn.Module):
 
         import sys
         # print(f"[DEBUG-before-fc] classifier_input={classifier_input}, fc_in shape={fc_in.shape}, mean={fc_in.mean().item():.4f}, std={fc_in.std().item():.4f}", file=sys.stderr, flush=True)
-        print(f"[DEBUG-diffe] classifier_input={classifier_input}, fc_in.shape={fc_in.shape}, mean={fc_in.mean().item():.6f}, std={fc_in.std().item():.6f}",  file=sys.stderr,flush=True)
-
-
+        # print(f"[DEBUG-diffe] classifier_input={classifier_input}, fc_in.shape={fc_in.shape}, mean={fc_in.mean().item():.6f}, std={fc_in.std().item():.6f}",  file=sys.stderr,flush=True)
 
         fc_out = self.fc(fc_in)
         return decoder_out, fc_out, z
@@ -656,15 +654,29 @@ class LinearClassifier(nn.Module):
         self.att_pool = AttentionPool1d(256)
 
     def forward(self, x):
+        # if x.dim() == 2:
+        #     return self.linear_out(x)
+        # elif x.dim() == 3: # [B, 64, T]
+        #     x = self.eeg_proj(x)  # [B, 256, T]
+        #     x = self.att_pool(x)  # [B, in_dim]
+        #     return self.linear_out(x)
+        # else:
+        #     raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
+        
         if x.dim() == 2:
+            print(f"[DEBUG-linear] input from z, mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             return self.linear_out(x)
-        elif x.dim() == 3: # [B, 64, T]
+        elif x.dim() == 3:
+            print(f"[DEBUG-linear] input from eeg_proj, before proj mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             x = self.eeg_proj(x)  # [B, 256, T]
+            print(f"[DEBUG-linear] after eeg_proj mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             x = self.att_pool(x)  # [B, in_dim]
+            print(f"[DEBUG-linear] after att_pool mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             return self.linear_out(x)
         else:
             raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
         
+             
 class EEGNetClassifier(nn.Module):
     def __init__(self, nb_classes, Chans=64, Samples=128, dropoutRate=0.5,
                  kernLength=64, F1=8, D=2, F2=16, norm_rate=0.25, dropoutType='Dropout'):
