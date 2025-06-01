@@ -320,7 +320,7 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
-        print(f"[DEBUG-input-x] raw x shape={x.shape}, mean={x.mean().item():.4f}, std={x.std().item():.4f}", flush=True)
+        #print(f"[DEBUG-input-x] raw x shape={x.shape}, mean={x.mean().item():.4f}, std={x.std().item():.4f}", flush=True)
 
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
