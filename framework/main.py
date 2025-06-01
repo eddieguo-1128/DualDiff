@@ -134,7 +134,25 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 #     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 # else:
                 #     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-                decoder_out, fc_out, z = diffe(classifier_input, ddpm_out)
+                
+
+
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    fc_input = z_norm
+
+                elif classifier_input == "x":
+                    fc_input = x_sub
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    fc_input = x_hat.detach() 
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                    fc_input = decoder_out.detach() 
+                else:
+                    fc_input = z_norm
+                decoder_out, fc_out, z = diffe(fc_input, ddpm_out)
                 y_hat = F.softmax(fc_out, dim=1)
                 
                 Y.append(y_sub.detach().cpu())
@@ -189,7 +207,22 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 # print(f"[DEBUG] y_hat shape: {y_hat.shape}")
                 # print(f"[DEBUG] y_hat first sample: {y_hat[0]}")
 
-                decoder_out, fc_out, z = diffe(classifier_input, ddpm_out)
+                # Choose appropriate input based on classifier_input setting
+                if classifier_input == "z":
+                    fc_input = z_norm
+
+                elif classifier_input == "x":
+                    fc_input = x_sub
+                        
+                elif classifier_input == "x_hat" and ddpm is not None:
+                    fc_input = x_hat.detach() 
+                        
+                elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
+                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                    fc_input = decoder_out.detach() 
+                else:
+                    fc_input = z_norm
+                decoder_out, fc_out, z = diffe(fc_input, ddpm_out)
                 y_hat = F.softmax(fc_out, dim=1)
 
                 Y.append(y.detach().cpu())
