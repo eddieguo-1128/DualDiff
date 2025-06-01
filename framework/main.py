@@ -135,6 +135,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 else:
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
+                
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
         else:
@@ -183,6 +184,9 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
+
+                print(f"[DEBUG] y_hat shape: {y_hat.shape}")
+                print(f"[DEBUG] y_hat first sample: {y_hat[0]}")
 
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
