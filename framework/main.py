@@ -169,23 +169,27 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
+                    print(f"[DEBUG] z_norm mean: {z_norm.mean().item():.4f}, std: {z_norm.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 elif classifier_input == "x":
+                    print(f"[DEBUG] x_sub mean: {x_sub.mean().item():.4f}, std: {x_sub.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(x), dim=1)
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
+                    print(f"[DEBUG] x_hat mean: {x_hat.detach().mean().item():.4f}, std: {x_hat.detach().std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
                 elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
                     decoder_out, _, _ = diffe(x, ddpm_out)
+                    print(f"[DEBUG] decoder_out mean: {decoder_out.detach().mean().item():.4f}, std: {decoder_out.detach().std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
+                    print(f"[DEBUG] fallback z_norm mean: {z_norm.mean().item():.4f}, std: {z_norm.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 print("\n=== DEBUG ===")
                 print(f"[DEBUG] classifier_input: {classifier_input}")
-                print(f"[DEBUG] fc_input mean: {fc_input.mean().item():.4f}, std: {fc_input.std().item():.4f}")
                 print(f"[DEBUG] y_hat shape: {y_hat.shape}")
                 print(f"[DEBUG] y_hat[0]: {y_hat[0].cpu().numpy()}")
                 print(f"[DEBUG] true label[0]: {y[0].item()}")
