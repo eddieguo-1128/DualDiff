@@ -173,7 +173,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 elif classifier_input == "x":
-                    print(f"[DEBUG] x_sub mean: {x_sub.mean().item():.4f}, std: {x_sub.std().item():.4f}")
+                    print(f"[DEBUG] x mean: {x.mean().item():.4f}, std: {x.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(x), dim=1)
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
