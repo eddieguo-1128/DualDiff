@@ -212,13 +212,13 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     fc_input = z_norm
 
                 elif classifier_input == "x":
-                    fc_input = x_sub
+                    fc_input = x
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
                     fc_input = x_hat.detach() 
                         
                 elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
-                    decoder_out, _, _ = diffe(x_sub, ddpm_out)
+                    decoder_out, _, _ = diffe(x, ddpm_out)
                     fc_input = decoder_out.detach() 
                 else:
                     fc_input = z_norm
