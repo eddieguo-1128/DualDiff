@@ -537,8 +537,9 @@ def train():
     start_time = time.time()
     with tqdm(total=num_epochs, desc=f"Training") as pbar:
         for epoch in range(num_epochs):
-            if epoch == 0 and batch_idx == 0:
-                print(f"[DEBUG x check] input x mean: {x.mean():.6f}, std: {x.std():.6f}")
+            for batch_idx, (x, y, sid) in enumerate(train_loader):
+                if epoch == 0 and batch_idx == 0:
+                    print(f"[DEBUG] input x mean: {x.mean():.6f}, std: {x.std():.6f}")
 
             epoch_start = time.time()
             
