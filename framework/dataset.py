@@ -267,4 +267,16 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
             sid_count = (subj_tensor == sid).sum().item()
             #print(f"    Subject {sid.item()}: {sid_count} trials")
 
+    for split in ["train", "val", "test1", "test2"]:
+        all_data = []
+        for x, _, _ in loaders[split]:
+            all_data.append(x)  # x.shape: (B, C, T)
+        X_all = torch.cat(all_data, dim=0)  # (N, C, T)
+
+        # reshape to (N×C, T) → z-score 是在每个 channel 上做的
+        X_reshaped = X_all.reshape(-1, X_all.shape[-1])
+        mean = X_reshaped.mean().item()
+        std = X_reshaped.std().item()
+        print(f"[{split.upper()}] mean: {mean:.6f}, std: {std:.6f}")
+
     return loaders
