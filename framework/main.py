@@ -516,9 +516,6 @@ def train():
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
-
-    x, _, _ = next(iter(loaders["val"]))
-    tqdm.write(f"[Z-score check] mean: {x.mean():.6f}, std: {x.std():.6f}")
     
     # Initialize models
     ddpm, diffe = initialize_models()
@@ -540,6 +537,9 @@ def train():
     start_time = time.time()
     with tqdm(total=num_epochs, desc=f"Training") as pbar:
         for epoch in range(num_epochs):
+            if epoch == 0 and batch_idx == 0:
+            print(f"[DEBUG x check] input x mean: {x.mean():.6f}, std: {x.std():.6f}")
+
             epoch_start = time.time()
             
             # Train for one epoch
