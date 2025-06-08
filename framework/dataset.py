@@ -220,19 +220,19 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
 
     loaders["train"] = DataLoader(
         EEGDataset(torch.cat(X_train_all), torch.cat(Y_train_all),
-                   subject_ids=torch.tensor(train_subject_ids, dtype=torch.long)),
+                   subject_ids=torch.tensor(train_subject_ids, dtype=torch.long),transform=zscore_norm),
         batch_size=32, shuffle=True)
     subject_id_dict["train"] = torch.tensor(train_subject_ids, dtype=torch.long)
 
     loaders["val"] = DataLoader(
         EEGDataset(torch.cat(X_val_all), torch.cat(Y_val_all),
-                   subject_ids=torch.tensor(val_subject_ids, dtype=torch.long)),
+                   subject_ids=torch.tensor(val_subject_ids, dtype=torch.long),transform=zscore_norm),
         batch_size=32, shuffle=False)
     subject_id_dict["val"] = torch.tensor(val_subject_ids, dtype=torch.long)
 
     loaders["test1"] = DataLoader(
         EEGDataset(torch.cat(X_test1_all), torch.cat(Y_test1_all),
-                   subject_ids=torch.tensor(test1_subject_ids, dtype=torch.long)),
+                   subject_ids=torch.tensor(test1_subject_ids, dtype=torch.long),transform=zscore_norm),
         batch_size=32, shuffle=False)
     subject_id_dict["test1"] = torch.tensor(test1_subject_ids, dtype=torch.long)
 
@@ -246,7 +246,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
 
     loaders["test2"] = DataLoader(
         EEGDataset(torch.cat(X_all), torch.cat(Y_all),
-                   subject_ids=torch.tensor(subject_ids, dtype=torch.long)),
+                   subject_ids=torch.tensor(subject_ids, dtype=torch.long),transform=zscore_norm),
         batch_size=32, shuffle=False)
     subject_id_dict["test2"] = torch.tensor(subject_ids, dtype=torch.long)
 

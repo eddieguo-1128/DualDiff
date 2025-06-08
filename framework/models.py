@@ -551,9 +551,6 @@ class DiffE(nn.Module):
         else:
             fc_in = z  # Default fallback
 
-        # import sys
-        # print(f"[DEBUG-before-fc] classifier_input={classifier_input}, fc_in shape={fc_in.shape}, mean={fc_in.mean().item():.4f}, std={fc_in.std().item():.4f}", file=sys.stderr, flush=True)
-        # print(f"[DEBUG-diffe] classifier_input={classifier_input}, fc_in.shape={fc_in.shape}, mean={fc_in.mean().item():.6f}, std={fc_in.std().item():.6f}",  file=sys.stderr,flush=True)
 
         fc_out = self.fc(fc_in)
         return decoder_out, fc_out, z
@@ -654,25 +651,12 @@ class LinearClassifier(nn.Module):
         self.eeg_proj = nn.Conv1d(channels, 256, kernel_size=1)  # assumes input is [B, 64, T]
         self.att_pool = AttentionPool1d(256)
 
-    def forward(self, x):
-        # if x.dim() == 2:
-        #     return self.linear_out(x)
-        # elif x.dim() == 3: # [B, 64, T]
-        #     x = self.eeg_proj(x)  # [B, 256, T]
-        #     x = self.att_pool(x)  # [B, in_dim]
-        #     return self.linear_out(x)
-        # else:
-        #     raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
-        
+    def forward(self, x): 
         if x.dim() == 2:
-            #print(f"[DEBUG-linear] input from z, mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             return self.linear_out(x)
-        elif x.dim() == 3:
-            #print(f"[DEBUG-linear] input from eeg_proj, before proj mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
+        elif x.dim() == 3: # [B, chans, T]
             x = self.eeg_proj(x)  # [B, 256, T]
-            ##print(f"[DEBUG-linear] after eeg_proj mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             x = self.att_pool(x)  # [B, in_dim]
-            #print(f"[DEBUG-linear] after att_pool mean={x.mean().item():.6f}, std={x.std().item():.6f}",  file=sys.stderr,flush=True)
             return self.linear_out(x)
         else:
             raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")

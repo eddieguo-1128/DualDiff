@@ -169,32 +169,19 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
-                    print(f"[DEBUG] z_norm mean: {z_norm.mean().item():.4f}, std: {z_norm.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
 
                 elif classifier_input == "x":
-                    print(f"[DEBUG] x mean: {x.mean().item():.4f}, std: {x.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(x), dim=1)
                         
                 elif classifier_input == "x_hat" and ddpm is not None:
-                    print(f"[DEBUG] x_hat mean: {x_hat.detach().mean().item():.4f}, std: {x_hat.detach().std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(x_hat.detach()), dim=1)
                         
                 elif classifier_input == "decoder_out" and decoder_variant == "use_decoder":
                     decoder_out, _, _ = diffe(x, ddpm_out)
-                    print(f"[DEBUG] decoder_out mean: {decoder_out.detach().mean().item():.4f}, std: {decoder_out.detach().std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
-                    print(f"[DEBUG] fallback z_norm mean: {z_norm.mean().item():.4f}, std: {z_norm.std().item():.4f}")
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-
-                print("\n=== DEBUG ===")
-                print(f"[DEBUG] classifier_input: {classifier_input}")
-                print(f"[DEBUG] y_hat shape: {y_hat.shape}")
-                print(f"[DEBUG] y_hat[0]: {y_hat[0].cpu().numpy()}")
-                print(f"[DEBUG] true label[0]: {y[0].item()}")
-                print("=== END DEBUG ===\n")
-
 
                 Y.append(y.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
@@ -332,7 +319,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
-        #print(f"[DEBUG-input-x] raw x shape={x.shape}, mean={x.mean().item():.4f}, std={x.std().item():.4f}", flush=True)
 
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
@@ -376,19 +362,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                     decoder_out = F.interpolate(decoder_out, size=target_len)
                     x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
-
-        # with torch.no_grad():
-        #     x_mean, x_std = x.mean().item(), x.std().item()
-        #     x_hat_mean, x_hat_std = (x_hat.mean().item(), x_hat.std().item()) if x_hat is not None else (0.0, 0.0)
-        #     decoder_out_mean, decoder_out_std = (decoder_out.mean().item(), decoder_out.std().item()) if decoder_variant != "no_decoder" else (0.0, 0.0)
-        #     z_mean, z_std = z.mean().item(), z.std().item()
-            
-        #     print(f"[DEBUG STATS] epoch={epoch} | "
-        #         f"x: mean={x_mean:.6f}, std={x_std:.6f} | "
-        #         f"x_hat: mean={x_hat_mean:.6f}, std={x_hat_std:.6f} | "
-        #         f"decoder_out: mean={decoder_out_mean:.6f}, std={decoder_out_std:.6f} | "
-        #         f"z: mean={z_mean:.6f}, std={z_std:.6f}")
-
 
         
         # Normalize by subject
