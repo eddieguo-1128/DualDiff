@@ -9,11 +9,17 @@ import gdown
 import scipy.io
 from config import *
 
+# def zscore_norm(data):
+#     mean = torch.mean(data, dim=(1, 2))
+#     std = torch.std(data, dim=(1, 2))
+#     norm_data = (data - mean[:, None, None]) / std[:, None, None]
+#     return norm_data
+
 def zscore_norm(data):
-    mean = torch.mean(data, dim=(1, 2))
-    std = torch.std(data, dim=(1, 2))
-    norm_data = (data - mean[:, None, None]) / std[:, None, None]
-    return norm_data
+    # data: (C, T)
+    mean = data.mean(dim=1, keepdim=True)  # shape: (C, 1)
+    std = data.std(dim=1, keepdim=True)    # shape: (C, 1)
+    return (data - mean) / (std + 1e-6)
 
 def minmax_norm(data):
     min_vals = torch.min(data, dim=-1)[0]
