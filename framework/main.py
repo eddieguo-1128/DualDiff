@@ -518,7 +518,9 @@ def train():
     val_loader = loaders["val"]
 
     x, _, _ = next(iter(loaders["val"]))
-    print(f"[Z-score check] x mean: {x.mean():.6f}, std: {x.std():.6f}")
+    import sys
+    print(f"[Z-score check] mean: {x.mean():.6f}, std: {x.std():.6f}")
+    sys.stdout.flush()
     
     # Initialize models
     ddpm, diffe = initialize_models()
