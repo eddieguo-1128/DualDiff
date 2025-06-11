@@ -142,7 +142,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
             for x, y, sid in loader:
-                x, y = x.to(device), y.to(device)
+                x, y = x.to(device), y.type(torch.LongTensor).to(device)
 
                 # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
@@ -319,7 +319,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     
     for x, y, sid in train_loader:
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
-
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
         # Train DDPM
@@ -537,9 +536,6 @@ def train():
     start_time = time.time()
     with tqdm(total=num_epochs, desc=f"Training") as pbar:
         for epoch in range(num_epochs):
-            for batch_idx, (x, y, sid) in enumerate(train_loader):
-                if epoch == 0 and batch_idx == 0:
-                    print(f"[DEBUG] input x mean: {x.mean():.6f}, std: {x.std():.6f}")
 
             epoch_start = time.time()
             

@@ -273,7 +273,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
             all_data.append(x)  # x.shape: (B, C, T)
         X_all = torch.cat(all_data, dim=0)  # (N, C, T)
 
-        # reshape to (N×C, T) → z-score 是在每个 channel 上做的
+        # reshape to (N×C, T) for z-score 
         X_reshaped = X_all.reshape(-1, X_all.shape[-1])
         mean = X_reshaped.mean().item()
         std = X_reshaped.std().item()
