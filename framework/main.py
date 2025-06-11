@@ -142,7 +142,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
             for x, y, sid in loader:
-                x, y = x.to(device), y.type(torch.LongTensor).to(device)
+                #x, y = x.to(device), y.type(torch.LongTensor).to(device)
+                x, y = x.to(device), y.to(device)
 
                 # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
