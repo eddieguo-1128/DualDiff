@@ -20,14 +20,14 @@ warnings.filterwarnings("ignore", message="This filename .* does not conform to 
 
 # --------- Command-line arguments (optional) ---------
 
-task = "MI" #"SSVEP","MI" or "FEIS"
+task = "P300" #"SSVEP","MI","P300" or "FEIS"
 
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/MI/sweep2_2-new"  
+    work_dir = "/content/drive/MyDrive/project/model/p300/sweep2_2-new"  
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -38,10 +38,10 @@ if option == "local":
     data_dir = os.path.join(work_dir, "cleaned_data")
     label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
-    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels"
-num_subjects = 9 #SSVEP:35; MI:9
-num_seen = 7 #SSVEP:35; MI:9
+    data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
+    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
+num_subjects = 43 #SSVEP:35; MI:9; P300:43
+num_seen = 36 #SSVEP:33; MI:7; P300:36 
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
@@ -57,9 +57,9 @@ wandb_project = "DualDiff"
 wandb_run_name = run_name
 
 # --------- Model ---------
-num_classes = 4 #SSVEP:26; MI:4
-channels = 22 #SSVEP:64; MI:22
-timepoints = 1001  # From EEGNet parameters. SSVEP:250; MI:1001 
+num_classes = 2 #SSVEP:26; MI:4; P300:2
+channels = 32 #SSVEP:64; MI:22; P300:32
+timepoints = 513  # From EEGNet parameters. SSVEP:250; MI:1001; P300:513
 
 # DDPM 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"

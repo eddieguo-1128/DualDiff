@@ -47,6 +47,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
         labels = np.arange(0, 26)
     elif task == "MI":
         labels = np.arange(0, 4)
+    elif task == "P300":
+        labels = np.arange(0, 2)
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         labels = np.arange(0, 26) 
@@ -510,7 +512,9 @@ def train():
     if task == "SSVEP":
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     elif task == "MI":
-        loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+        loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "P300":
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)  
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
@@ -652,6 +656,8 @@ def test_best_model(best_metrics, z_stats_train):
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     elif task == "MI":
         loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "P300":
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
