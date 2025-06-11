@@ -42,7 +42,7 @@ for z_mode in z_norm_mode:
                 # Set environment variables
                 os.environ["CLASSIFIER_VARIANT"] = "fc_classifier"  
                 os.environ["CLASSIFIER_INPUT"] = "z"
-                os.environ["DECODER_INPUT"] = "z_only"
+                os.environ["DECODER_INPUT"] = "z only"
                 os.environ["SEED"] = str(seed)
                 os.environ["Z_NORM_MODE"] = z_mode
                 os.environ["DDPM_VARIANT"] = "use_ddpm"
