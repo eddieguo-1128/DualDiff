@@ -21,7 +21,6 @@ warnings.filterwarnings("ignore", message="This filename .* does not conform to 
 # --------- Command-line arguments (optional) ---------
 
 task = "P300" #"SSVEP","MI","P300" or "FEIS"
-z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average
 
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
