@@ -239,7 +239,11 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
     Y_hat = torch.cat(Y_hat).numpy()
 
     # Calculate metrics (unchanged)
-    accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+    if task == "P300":
+        y_pred = Y_hat.argmax(axis=1)
+        accuracy = accuracy_score(Y, y_pred)
+    else:
+        accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
