@@ -34,7 +34,7 @@ def minmax_norm(data):
 
 # Dataset class (currently works for SSVEP)
 class EEGDataset(Dataset):
-    def __init__(self, X, Y, subject_ids=None, transform=None):
+    def __init__(self, X, Y, subject_ids=None, transform=None,sessions=None, levels=None, repetitions=None):
         self.X = X
         self.Y = Y
         self.subject_ids = subject_ids if subject_ids is not None else torch.zeros(len(Y), dtype=torch.long)
