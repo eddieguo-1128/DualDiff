@@ -9,7 +9,8 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # no
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
-    for x, y, sid in generator:
+    for batch in loader:
+        x, y, sid = batch[:3]
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
 
         if encoder_input == "x_hat" and ddpm is not None:
@@ -56,9 +57,27 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
     with torch.no_grad():
         if unseen:
-            # For unseen subjects: calculate z-stats on-the-fly from sessions 0-3 (104 samples)
+            if task == "P300" and z_local_norm_mode == "option2":
+                z_by_sid_sess = {}
+                for x_, y_, sid_batch, sess_batch in loader:
+                    x_ = x_.to(device)
+                    sess_batch = sess_batch.to(device)
+                    if encoder_input == "x_hat" and ddpm is not None:
+                        x_hat, *_ = ddpm(x_)
+                        encoder_in_ = x_hat.detach()
+                    elif encoder_input == "x":
+                        encoder_in_ = x_
+                    else:
+                        encoder_in_ = x_
+
+                    z_batch = diffe.encoder(encoder_in_)[1]
+                    for i in range(z_batch.size(0)):
+                        key = (int(sid_batch[i]), int(sess_batch[i]))
+                        z_by_sid_sess.setdefault(key, []).append(z_batch[i].unsqueeze(0))
+
             all_x, all_y, all_sid = [], [], []
-            for x, y, sid in loader:
+            for batch in loader:
+                x, y, sid = batch[:3]
                 all_x.append(x)
                 all_y.append(y)
                 all_sid.append(sid)
@@ -88,7 +107,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Get embeddings for z-normalization
                 z = diffe.encoder(encoder_in)[1]
-                
+
                 if task == "SSVEP": 
                     # Apply z-normalization
                     z_mean = z[:104].mean(dim=0, keepdim=True)
@@ -114,6 +133,31 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     avg_std = (z_std0 + z_std1) / 2
 
                     z_norm = (z - avg_mean) / avg_std
+                elif task == "P300" and z_local_norm_mode == "option1":
+                    samples_per_subject = z.shape[0]
+                    half = samples_per_subject // 2  # use a half for calculating z-stats
+
+                    z_half = z[:half]  
+                    z_mean = z_half.mean(dim=0, keepdim=True)
+                    z_std = z_half.std(dim=0, keepdim=True) + 1e-6
+
+                    z_norm = (z - z_mean) / z_std  
+                elif task == "P300" and z_local_norm_mode == "option2":
+                    sess_means, sess_stds, z_all = [], [], []
+                    for sess_id in range(3):
+                        key = (int(s.item()), sess_id)
+                        if key in z_by_sid_sess:
+                            z_cat = torch.cat(z_by_sid_sess[key])
+                            z_all.append(z_cat)
+                            z_half = z_cat[: z_cat.size(0) // 2]
+                            sess_means.append(z_half.mean(0, keepdim=True))
+                            sess_stds.append(z_half.std(0, keepdim=True) + 1e-6)
+                    if not sess_means:
+                        print(f"[Warning] No session for subject {s.item()}")
+                        continue
+                    avg_mean = torch.stack(sess_means).mean(0)
+                    avg_std = torch.stack(sess_stds).mean(0)
+                    z_norm = (torch.cat(z_all) - avg_mean) / avg_std
                 else:
                     print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
                     z_mean = z[:104].mean(dim=0, keepdim=True)
@@ -143,7 +187,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
             if z_stats_train is None and classifier_input == "z":
                 raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
-            for x, y, sid in loader:
+            for batch in loader:
+                x, y, sid = batch[:3]
                 x, y = x.to(device), y.type(torch.LongTensor).to(device)
                 #x, y = x.to(device), y.to(device)
 

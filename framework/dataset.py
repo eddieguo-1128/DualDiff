@@ -54,7 +54,11 @@ class EEGDataset(Dataset):
         sid = self.subject_ids[index]
         if self.transform:
             x = self.transform(x)
-        return x.squeeze(), y, sid
+        if task == "P300":
+            sess = self.sessions[index]
+            return x.squeeze(), y, sid, sess
+        else:
+            return x.squeeze(), y, sid
 
 # Load one subject's data by session
 def load_data_by_session(root_dir, subject_id, session_idx_list):
