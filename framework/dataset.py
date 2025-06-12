@@ -452,3 +452,21 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
         session_all.extend(data["session"])
         level_all.extend(data["level"])
         repetition_all.extend(data["repetition"])
+
+
+    loaders["test2"] = DataLoader(
+        EEGDataset(torch.cat(X_all), torch.cat(Y_all),
+                   subject_ids=torch.tensor(subject_ids),
+                   sessions=session_all, levels=level_all, repetitions=repetition_all,
+                   transform=zscore_norm),
+        batch_size=32, shuffle=False)
+    subject_id_dict["test2"] = torch.tensor(subject_ids)
+
+    # Summary
+    for split in ["train", "val", "test1", "test2"]:
+        sid_tensor = subject_id_dict[split]
+        print(f"\n[Check] {split}: total {len(sid_tensor)} trials from subjects {sid_tensor.unique().tolist()}")
+        for sid in sid_tensor.unique():
+            print(f"  Subject {sid.item()}: {(sid_tensor == sid).sum().item()} trials")
+
+    return loaders
