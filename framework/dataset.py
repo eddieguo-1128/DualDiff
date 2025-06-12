@@ -358,7 +358,7 @@ def load_subject_data(subject_id, cleaned_data_dir):
         "repetition": meta["repetition"].tolist()
     }
 
-def P300_load_split_dataset(cleaned_data_dir, num_seen=36, seed=43):
+def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
     random.seed(seed)
     all_subjects = sorted([int(f.split('_')[1]) for f in os.listdir(cleaned_data_dir)
                            if f.startswith('subject_') and os.path.isdir(os.path.join(cleaned_data_dir, f))])
