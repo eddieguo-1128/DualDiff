@@ -365,8 +365,9 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     num_batches = 0
     epoch_acc = 0
     total_samples = 0
-    
-    for x, y, sid in train_loader:
+
+    for batch in train_loader:
+        x, y, sid = batch[:3]
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
