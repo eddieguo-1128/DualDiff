@@ -1,3 +1,4 @@
+from sklearn.metrics import accuracy_score
 from config import *
 from dataset import *
 from loss import *
