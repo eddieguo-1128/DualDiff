@@ -322,8 +322,8 @@ def split_repetitions(subject_data, min_reps=3):
 
     return train_idx, val_idx, test1_idx
 
-def load_subject_data(subject_id, cleaned_data_dir):
-    folder = os.path.join(cleaned_data_dir, f"subject_{subject_id:02d}")
+def load_subject_data(subject_id, root_dir):
+    folder = os.path.join(root_dir, f"subject_{subject_id:02d}")
     X = np.load(os.path.join(folder, "X.npy"))                # shape: (n_trials, C, T)
     Y = np.load(os.path.join(folder, "y.npy"))                # shape: (n_trials,)
     Y = np.array([1 if label == 'Target' else 0 for label in Y])
@@ -360,8 +360,8 @@ def load_subject_data(subject_id, cleaned_data_dir):
 
 def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
     random.seed(seed)
-    all_subjects = sorted([int(f.split('_')[1]) for f in os.listdir(cleaned_data_dir)
-                           if f.startswith('subject_') and os.path.isdir(os.path.join(cleaned_data_dir, f))])
+    all_subjects = sorted([int(f.split('_')[1]) for f in os.listdir(root_dir)
+                           if f.startswith('subject_') and os.path.isdir(os.path.join(root_dir, f))])
     all_subjects = [s for s in all_subjects if s not in [1, 27]]
     assert num_seen < len(all_subjects), f"Not enough subjects: requested {num_seen}, available {len(all_subjects)}"
     seen_subjects = random.sample(all_subjects, num_seen)
@@ -383,7 +383,7 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
     test1_sessions, test1_levels, test1_reps = [], [], []
 
     for sid in seen_subjects:
-        data = load_subject_data(sid, cleaned_data_dir)
+        data = load_subject_data(sid, root_dir)
 
         session_arr = np.array(data["session"])
         level_arr = np.array(data["level"])
@@ -442,7 +442,7 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
     session_all, level_all, repetition_all = [], [], []
 
     for sid in unseen_subjects:
-        data = load_subject_data(sid, cleaned_data_dir)
+        data = load_subject_data(sid, root_dir)
         X = torch.tensor(data['X']).float()
         Y = torch.tensor(data['Y']).long()
         X_all.append(X)
