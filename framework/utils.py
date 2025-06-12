@@ -31,7 +31,8 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
                 z_by_sid_sess[key].append(z_batch[i].unsqueeze(0))
         else:
             z_by_sid = {}
-            for x, y, sid in loader:
+            for batch in loader:
+                x, y, sid = batch[:3]
                 _, z = encoder(x)
                 for i in range(z.size(0)):
                     s = int(sid[i].item())
