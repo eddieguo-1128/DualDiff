@@ -4,6 +4,7 @@ from loss import *
 from models import *
 from utils import *
 from viz import *
+z_local_norm_mode = os.environ.get("Z_LOCAL_NORM_MODE", "option1")
 
 def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # not used
     labels = np.arange(0, num_classes)
