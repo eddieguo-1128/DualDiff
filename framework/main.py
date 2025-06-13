@@ -33,11 +33,16 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # no
     Y_hat = torch.cat(Y_hat, dim=0).numpy() 
 
     # Calculate metrics
-    accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+    if task == "P300":
+        y_pred = Y_hat.argmax(axis=1)
+        accuracy = accuracy_score(Y, y_pred)
+        auc = roc_auc_score(Y, Y_hat[:, 1], average="macro")
+    else:
+        accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+        auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
-    auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     
     metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
@@ -243,13 +248,14 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
     if task == "P300":
         y_pred = Y_hat.argmax(axis=1)
         accuracy = accuracy_score(Y, y_pred)
+        auc = roc_auc_score(Y, Y_hat[:, 1], average="macro")
     else:
         accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+        auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
-    auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
-
+    
     metrics = {"accuracy": accuracy, "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
     return metrics
