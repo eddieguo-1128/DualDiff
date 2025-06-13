@@ -43,7 +43,7 @@ for z_local_norm in z_local_norm_mode:
                 # Set environment variables
                 os.environ["CLASSIFIER_VARIANT"] = "fc_classifier"  
                 os.environ["CLASSIFIER_INPUT"] = "z"
-                os.environ["DECODER_INPUT"] = "z_only"
+                os.environ["DECODER_INPUT"] = "z only"
                 os.environ["SEED"] = str(seed)
                 os.environ["Z_LOCAL_NORM_MODE"] = z_local_norm
                 os.environ["Z_NORM_MODE"] = "option2"
