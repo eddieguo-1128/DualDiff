@@ -20,7 +20,7 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
             z_by_sid_sess = {}
             for x, y, sid_batch,sess_batch in loader:
                 x = x.to(device)
-            _, z_batch = encoder(x)  # shape: [B, D]
+                _, z_batch = encoder(x)  # shape: [B, D]
             for i in range(z_batch.size(0)):
                 #print(f"[Check] sid: {sid_batch[i]}, sess: {sess_batch[i]}")
                 sid = int(sid_batch[i].item())

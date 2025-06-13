@@ -423,8 +423,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                     x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
 
-
-        
         # Normalize by subject
         if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
             z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
@@ -432,7 +430,6 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
                 for i in range(z.size(0))])
         
         # Losses 
-        
         # --- Classification loss
         if classification_loss == "CE":
             loss_c = nn.CrossEntropyLoss()(fc_out, y)
