@@ -495,7 +495,8 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
     # Calculate validation loss
     val_loss = 0
     with torch.no_grad():
-        for x, y, sid in val_loader:
+        for batch in val_loader:
+            x, y, sid = batch[:3]
             x, y = x.to(device), y.type(torch.LongTensor).to(device)
             y_cat = F.one_hot(y, num_classes=num_classes).float().to(device)
             
