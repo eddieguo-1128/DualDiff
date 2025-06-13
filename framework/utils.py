@@ -21,14 +21,14 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
             for x, y, sid_batch,sess_batch in loader:
                 x = x.to(device)
                 _, z_batch = encoder(x)  # shape: [B, D]
-            for i in range(z_batch.size(0)):
-                #print(f"[Check] sid: {sid_batch[i]}, sess: {sess_batch[i]}")
-                sid = int(sid_batch[i].item())
-                sess = int(sess_batch[i].item())
-                key = (sid, sess)
-                if key not in z_by_sid_sess:
-                    z_by_sid_sess[key] = []
-                z_by_sid_sess[key].append(z_batch[i].unsqueeze(0))
+                for i in range(z_batch.size(0)):
+                    #print(f"[Check] sid: {sid_batch[i]}, sess: {sess_batch[i]}")
+                    sid = int(sid_batch[i].item())
+                    sess = int(sess_batch[i].item())
+                    key = (sid, sess)
+                    if key not in z_by_sid_sess:
+                        z_by_sid_sess[key] = []
+                    z_by_sid_sess[key].append(z_batch[i].unsqueeze(0))
         else:
             z_by_sid = {}
             for batch in loader:
