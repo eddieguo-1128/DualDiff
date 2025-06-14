@@ -22,7 +22,7 @@ contrastive_loss = "SupCon" # default is SupCon
 decoder_reconstruction_loss = "L1" # default is L1
 
 alphas = [1] # default is 1
-betas = [0, "scheduler to 0.05"] # default is "scheduler to 0.05"
+betas = ["scheduler to 0.05"] # default is "scheduler to 0.05"
 gammas = [0, "scheduler to 0.2"] # default is "scheduler to 0.2"
 
 mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
