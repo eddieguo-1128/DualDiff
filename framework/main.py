@@ -570,7 +570,7 @@ def train():
     elif task == "MI":
         loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     elif task == "P300":
-        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)  
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
@@ -713,7 +713,7 @@ def test_best_model(best_metrics, z_stats_train):
     elif task == "MI":
         loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     elif task == "P300":
-        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 

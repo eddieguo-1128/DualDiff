@@ -101,10 +101,13 @@ eegnet_classifier_params = {"nb_classes": num_classes,
 
 # --------- Training hyperparams ---------
 num_epochs = 500 # for all ablations, do 500 epochs
-batch_size = 32
+batch_size = 256
 batch_size_eval = 260
 test_period = 1
 start_test = test_period
+
+num_workers = 4
+pin_memory = (device.type == "cuda")
 
 # Optimizer settings
 base_lr = 9e-5

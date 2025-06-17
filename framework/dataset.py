@@ -240,19 +240,19 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
     loaders["train"] = DataLoader(
         EEGDataset(torch.cat(X_train_all), torch.cat(Y_train_all),
                    subject_ids=torch.tensor(train_subject_ids, dtype=torch.long),transform=zscore_norm),
-        batch_size=32, shuffle=True)
+        batch_size=batch_size, shuffle=True)
     subject_id_dict["train"] = torch.tensor(train_subject_ids, dtype=torch.long)
 
     loaders["val"] = DataLoader(
         EEGDataset(torch.cat(X_val_all), torch.cat(Y_val_all),
                    subject_ids=torch.tensor(val_subject_ids, dtype=torch.long),transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False)
     subject_id_dict["val"] = torch.tensor(val_subject_ids, dtype=torch.long)
 
     loaders["test1"] = DataLoader(
         EEGDataset(torch.cat(X_test1_all), torch.cat(Y_test1_all),
                    subject_ids=torch.tensor(test1_subject_ids, dtype=torch.long),transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False)
     subject_id_dict["test1"] = torch.tensor(test1_subject_ids, dtype=torch.long)
 
     # Process unseen subjects: use all trials
@@ -266,7 +266,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
     loaders["test2"] = DataLoader(
         EEGDataset(torch.cat(X_all), torch.cat(Y_all),
                    subject_ids=torch.tensor(subject_ids, dtype=torch.long),transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False)
     subject_id_dict["test2"] = torch.tensor(subject_ids, dtype=torch.long)
 
     for split in ["train", "val", "test1", "test2"]:
@@ -358,7 +358,7 @@ def load_subject_data(subject_id, root_dir):
         "repetition": meta["repetition"].tolist()
     }
 
-def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
+def P300_load_split_dataset(root_dir, num_seen=36, seed=43, num_workers=4, pin_memory=False):
     random.seed(seed)
     all_subjects = sorted([int(f.split('_')[1]) for f in os.listdir(root_dir)
                            if f.startswith('subject_') and os.path.isdir(os.path.join(root_dir, f))])
@@ -418,7 +418,8 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
                 subject_ids=torch.tensor(train_sids),
                 sessions=train_sessions, levels=train_levels, repetitions=train_reps,
                 transform=zscore_norm),
-        batch_size=32, shuffle=True)
+        batch_size=batch_size, shuffle=True,
+        num_workers=num_workers, pin_memory=pin_memory)
     subject_id_dict["train"] = torch.tensor(train_sids)
 
     loaders["val"] = DataLoader(
@@ -426,7 +427,8 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
                    subject_ids=torch.tensor(val_sids), 
                    sessions=val_sessions, levels=val_levels, repetitions=val_reps,
                    transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
     subject_id_dict["val"] = torch.tensor(val_sids)
 
     loaders["test1"] = DataLoader(
@@ -434,7 +436,8 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
                    subject_ids=torch.tensor(test1_sids), 
                    sessions=test1_sessions, levels=test1_levels, repetitions=test1_reps,
                    transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
     subject_id_dict["test1"] = torch.tensor(test1_sids)
 
     # Process unseen
@@ -459,7 +462,8 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43):
                    subject_ids=torch.tensor(subject_ids),
                    sessions=session_all, levels=level_all, repetitions=repetition_all,
                    transform=zscore_norm),
-        batch_size=32, shuffle=False)
+        batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
     subject_id_dict["test2"] = torch.tensor(subject_ids)
 
     # Summary
