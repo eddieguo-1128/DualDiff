@@ -31,7 +31,7 @@ elif option == "drive":
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # --------- Dataset  ---------
 if option == "local":
