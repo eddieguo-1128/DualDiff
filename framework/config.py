@@ -27,7 +27,8 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/p300/sweep2_2"  
+    #work_dir = "/content/drive/MyDrive/project/model/p300/sweep2_2" 
+    work_dir = "/root/autodl-tmp/results/p300/sweep2_2"   
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
@@ -38,8 +39,9 @@ if option == "local":
     data_dir = os.path.join(work_dir, "cleaned_data")
     label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
+    #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
     label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
+    data_dir = "/root/autodl-tmp/dataset/p300/bi2015a/cleaned_data"
 num_subjects = 43 #SSVEP:35; MI:9; P300:43
 num_seen = 36 #SSVEP:33; MI:7; P300:36 
 
