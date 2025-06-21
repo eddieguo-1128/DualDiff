@@ -11,6 +11,7 @@ ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["z only"]
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
+z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average 
 z_norm_mode = ["option1", "option2"] # "option2" is the default
 classifier_variants = ["fc_classifier"] # "fc_classifier" is default
 classifier_inputs = ["x"] # "z" is the default 
@@ -64,12 +65,14 @@ for classifier_variant in classifier_variants:
         
         for seed in seeds: 
             print(f"\nRunning: classifier_variant={classifier_variant}, classifier_input={classifier_input}, seed={seed}, z_norm={current_z_norm}")
-            
+            print(f"\nz_local_norm_mode={z_local_norm_mode}")
+
             # Set environment variables
             os.environ["CLASSIFIER_VARIANT"] = classifier_variant
             os.environ["CLASSIFIER_INPUT"] = classifier_input
             os.environ["DECODER_INPUT"] = dec_input
             os.environ["SEED"] = str(seed)
+            os.environ["Z_LOCAL_NORM_MODE"] = z_local_norm_mode
             os.environ["Z_NORM_MODE"] = current_z_norm
             os.environ["DDPM_VARIANT"] = ddpm_variant
             os.environ["ENCODER_INPUT"] = encoder_input
@@ -110,6 +113,7 @@ for classifier_variant in classifier_variants:
             "ddpm_variant": ddpm_variant,
             "encoder_input": encoder_input,
             "decoder_variant": decoder_variant,
+            "z_local_norm_mode": z_local_norm_mode,
             "z_norm_mode": current_z_norm,
             "test_seen_mean": seen_mean * 100,
             "test_seen_std": seen_std * 100,

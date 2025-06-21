@@ -9,8 +9,10 @@ from config import work_dir, use_subject_wise_z_norm
 seeds = [42, 43, 44]
 ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
-decoder_inputs = ["z + x_hat", "z + skips"] # "z only" is the default
-decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
+decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
+                  "skips", "z only", "z + x", "z + x_hat", "z + skips"] # "z only" is the default
+decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated
+z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average 
 z_norm_mode = "option2" 
 classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
 classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
@@ -37,12 +39,14 @@ for dec_input in decoder_inputs:
 
     for seed in seeds: 
                 print(f"\nRunning: decoder_input={dec_input}, seed={seed}")
+                print(f"\nz_local_norm_mode={z_local_norm_mode}")
                 
                 # Set environment variables
                 os.environ["CLASSIFIER_VARIANT"] = "fc_classifier"  
                 os.environ["CLASSIFIER_INPUT"] = "z"
                 os.environ["DECODER_INPUT"] = dec_input
                 os.environ["SEED"] = str(seed)
+                os.environ["Z_LOCAL_NORM_MODE"] = z_local_norm_mode
                 os.environ["Z_NORM_MODE"] = z_norm_mode
                 os.environ["DDPM_VARIANT"] = "use_ddpm"
                 os.environ["ENCODER_INPUT"] = "x"
@@ -83,6 +87,7 @@ for dec_input in decoder_inputs:
                 "ddpm_variant": os.environ["DDPM_VARIANT"],
                 "encoder_input": os.environ["ENCODER_INPUT"],
                 "decoder_variant": os.environ["DECODER_VARIANT"],
+                "z_local_norm_mode": z_local_norm_mode,
                 "z_norm_mode": z_norm_mode,
                 "test_seen_mean": seen_mean * 100,
                 "test_seen_std": seen_std * 100,

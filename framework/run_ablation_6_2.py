@@ -12,16 +12,17 @@ encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
                   "skips", "z only", "z + x", "z + x_hat", "z + skips"] # "z only" is the default
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
+z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average 
 z_norm_mode = "option2" 
 classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
 classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
 
 ddpm_reconstruction_loss = True # keep always True
-classification_losses = ["MSE"] # try both, default is CE
+classification_losses = ["CE", "MSE"] # try both, default is CE
 contrastive_loss = "SupCon" # default is SupCon 
 decoder_reconstruction_loss = "L1" # default is L1
 
-alphas = [1] # default is 1
+alphas = [0.5, 1] # default is 1
 betas = [0, "scheduler to 0.05"] # default is "scheduler to 0.05"
 gammas = [0, "scheduler to 0.2"] # default is "scheduler to 0.2"
 
@@ -40,7 +41,8 @@ for classification_loss in classification_losses:
 
                 for seed in seeds: 
                             print(f"\nRunning: loss={classification_loss}, alpha={alpha}, beta={beta}, gamma={gamma}, seed={seed}")
-                            
+                            print(f"\nz_local_norm_mode={z_local_norm_mode}")
+
                             # Set environment variables
                             os.environ["DDPM_RECONSTRUCTION_LOSS"] = str(ddpm_reconstruction_loss)
                             os.environ["CLASSIFICATION_LOSS"] = classification_loss
@@ -53,6 +55,7 @@ for classification_loss in classification_losses:
                             os.environ["CLASSIFIER_INPUT"] = "z"
                             os.environ["DECODER_INPUT"] =  "z only"
                             os.environ["SEED"] = str(seed)
+                            os.environ["Z_LOCAL_NORM_MODE"] = z_local_norm_mode
                             os.environ["Z_NORM_MODE"] = z_norm_mode
                             os.environ["DDPM_VARIANT"] = "use_ddpm"
                             os.environ["ENCODER_INPUT"] = "x"
@@ -97,6 +100,7 @@ for classification_loss in classification_losses:
                             "encoder_input": os.environ["ENCODER_INPUT"],
                             "decoder_variant": os.environ["DECODER_VARIANT"],
                             "decoder_input": os.environ["DECODER_INPUT"],
+                            "z_local_norm_mode": z_local_norm_mode,
                             "z_norm_mode": z_norm_mode,
                             "test_seen_mean": seen_mean * 100,
                             "test_seen_std": seen_std * 100,
