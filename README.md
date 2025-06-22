@@ -39,7 +39,8 @@ This project implements a joint EEG generation and classification model using de
   - [ ] Impact of EEGNet-style encoder (what changes were made to the EEGNet-style encoder to make it work compared to UNet)
   - [ ] Role of z (for future: how exactly it does both generation and classification)
   - [ ] Think about changing the title: dual-task + key insight about the latent z
-
+  - [ ] Explain that we also added a new contribution about how to systematicaly test the models (subject-agnostic)
+    
 ## Experiments to-do list
 
 We adapted and extended core components of the [DiffE repo](https://github.com/yorgoon/DiffE), which implements a denoising diffusion model for EEG. 
