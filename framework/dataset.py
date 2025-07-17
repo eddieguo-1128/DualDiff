@@ -551,7 +551,7 @@ def ImaginedSpeech_load_split_dataset(root_dir, num_seen=12, seed=43,num_workers
     random.seed(seed)
 
     all_subjects = sorted([
-        re.findall(r'epochs_(.*)\.npy', f)[0]
+        re.findall(r'epochs_(.*)\.npy', f)[0].replace("_notched", "")
         for f in os.listdir(root_dir)
         if f.startswith("epochs_") and f.endswith(".npy")
     ])
