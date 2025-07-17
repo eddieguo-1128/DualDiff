@@ -158,7 +158,7 @@ class ConditionalUNet(nn.Module):
         self.up3 = UnetUp(self.u2_out + self.d2_out, self.u3_out, 1, gn=8, factor=2)
         if task == "SSVEP":
             self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=8, factor=2)
-        elif task == "MI":
+        elif task in ["MI", "Imagined_speech"]:
             self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=1, factor=2)
         else:
             print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
