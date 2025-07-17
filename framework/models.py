@@ -173,6 +173,13 @@ class ConditionalUNet(nn.Module):
         temb = self.sin_emb(t).view(-1, self.n_feat, 1)  # [b, n_feat, 1]
 
         up1 = self.up2(down3)  # 250 -> 500
+        
+        # Align temporal dimension of (up1 + temb) and down2
+        if (up1 + temb).shape[-1] != down2.shape[-1]:
+            target_len = min((up1 + temb).shape[-1], down2.shape[-1])
+            up1 = F.interpolate(up1, size=target_len)
+            down2 = F.interpolate(down2, size=target_len)
+
         up2 = self.up3(torch.cat([up1 + temb, down2], 1))  # 500 -> 1000
 
         # Align the temporal dimension of up2 + temb and down1
