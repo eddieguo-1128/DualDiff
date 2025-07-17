@@ -92,16 +92,25 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 all_sid.append(sid)
             all_x = torch.cat(all_x, dim=0).to(device)
             all_y = torch.cat(all_y, dim=0).to(device)
-            all_sid = torch.cat(all_sid, dim=0)
 
-            if task == "Imagined_speech":
-                all_sid = [str(s) for s in all_sid]
-                subjects = list(set(all_sid))
+            if isinstance(all_sid[0][0], str):  
+                all_sid = sum(all_sid, [])  
+                subjects = sorted(set(all_sid))
             else:
+                all_sid = torch.cat(all_sid, dim=0)
+                all_x = torch.cat(all_x, dim=0).to(device)
+                all_y = torch.cat(all_y, dim=0).to(device)
                 subjects = all_sid.unique(sorted=True)
+            # all_sid = torch.cat(all_sid, dim=0)
+
+            # if task == "Imagined_speech":
+            #     all_sid = [str(s) for s in all_sid]
+            #     subjects = list(set(all_sid))
+            # else:
+            #     subjects = all_sid.unique(sorted=True)
 
             for s in subjects:
-                if task == "Imagined_speech":
+                if isinstance(s, str):
                     indices = [i for i, sid in enumerate(all_sid) if sid == s]
                 else:
                     indices = (all_sid == s)
