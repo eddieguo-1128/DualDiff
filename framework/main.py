@@ -57,6 +57,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
         labels = np.arange(0, 4)
     elif task == "P300":
         labels = np.arange(0, 2)
+    elif task == "Imagined_speech":
+        labels = np.arange(0, 11)
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         labels = np.arange(0, 26) 
@@ -92,9 +94,18 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
             all_y = torch.cat(all_y, dim=0).to(device)
             all_sid = torch.cat(all_sid, dim=0)
 
-            subjects = all_sid.unique(sorted=True)
+            if task == "Imagined_speech":
+                all_sid = [str(s) for s in all_sid]
+                subjects = list(set(all_sid))
+            else:
+                subjects = all_sid.unique(sorted=True)
+
             for s in subjects:
-                indices = (all_sid == s)
+                if task == "Imagined_speech":
+                    indices = [i for i, sid in enumerate(all_sid) if sid == s]
+                else:
+                    indices = (all_sid == s)
+
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
 
@@ -140,7 +151,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     avg_std = (z_std0 + z_std1) / 2
 
                     z_norm = (z - avg_mean) / avg_std
-                elif task == "P300" and z_local_norm_mode == "option1":
+                elif (task == "P300" and z_local_norm_mode == "option1") or task == "Imagined_speech":
                     samples_per_subject = z.shape[0]
                     half = samples_per_subject // 2  # use a half for calculating z-stats
 
@@ -217,10 +228,16 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 _, z = diffe.encoder(encoder_in)
                 
                 # Apply subject-wise z-normalization using training statistics
-                z_norm = torch.stack([
-                    (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
-                    z_stats_train[int(sid[i].item())][1].squeeze(0)
-                    for i in range(z.size(0))])
+                if task == "Imagined_speech":
+                    z_norm = torch.stack([
+                        (z[i] - z_stats_train[sid[i]][0].squeeze(0)) / z_stats_train[sid[i]][1].squeeze(0)
+                        for i in range(z.size(0))
+                    ])
+                else: 
+                    z_norm = torch.stack([
+                        (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
+                        z_stats_train[int(sid[i].item())][1].squeeze(0)
+                        for i in range(z.size(0))])
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
@@ -425,9 +442,15 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
 
         # Normalize by subject
         if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
-            z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-                z_stats[int(sid[i].item())][1].squeeze(0) 
-                for i in range(z.size(0))])
+            if task == "Imagined_speech":
+                z = torch.stack([
+                            (z[i] - z_stats[sid[i]][0].squeeze(0)) / z_stats[sid[i]][1].squeeze(0)
+                            for i in range(z.size(0))
+                        ])
+            else: 
+                z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                    z_stats[int(sid[i].item())][1].squeeze(0) 
+                    for i in range(z.size(0))])
         
         # Losses 
         # --- Classification loss
@@ -532,9 +555,15 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
             
             
             if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
-                z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-                    z_stats[int(sid[i].item())][1].squeeze(0) 
-                    for i in range(z.size(0))])
+                if task == "Imagined_speech":
+                    z = torch.stack([
+                            (z[i] - z_stats[sid[i]][0].squeeze(0)) / z_stats[sid[i]][1].squeeze(0)
+                            for i in range(z.size(0))
+                        ])
+                else:
+                    z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                        z_stats[int(sid[i].item())][1].squeeze(0) 
+                        for i in range(z.size(0))])
 
             # --- Classification loss
             if classification_loss == "CE":
@@ -571,6 +600,8 @@ def train():
         loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
     elif task == "P300":
         loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
+    elif task == "Imagined_speech":
+        loaders = ImaginedSpeech_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
     else:
         print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
         loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 

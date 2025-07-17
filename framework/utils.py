@@ -92,7 +92,7 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
 
                 print(f"[Check] Subject {sid}: total={n}, sess0={half}, sess1={n-half}")
                 z_stats[sid] = (avg_mean, avg_std)
-            elif task == "P300" and z_local_norm_mode == "option1":
+            elif (task == "P300" and z_local_norm_mode == "option1") or task == "Imagined_speech":
                 z_mean = z_cat.mean(dim=0, keepdim=True)
                 z_std = z_cat.std(dim=0, keepdim=True) + 1e-6
                 print(f"[Z STATS] Subject {sid}: {z_cat.shape[0]} samples | mean {z_mean.mean():.4f}, std {z_std.mean():.4f}")

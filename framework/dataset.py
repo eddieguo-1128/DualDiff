@@ -11,6 +11,9 @@ import scipy.io
 from collections import defaultdict
 import pandas as pd
 
+import re
+from collections import Counter
+
 from config import *
 
 # def zscore_norm(data):
@@ -43,6 +46,8 @@ class EEGDataset(Dataset):
         if task == "P300":
             self.sessions = sessions if sessions is not None else [0] * len(Y)
             self.levels = levels if levels is not None else [0] * len(Y)
+            self.repetitions = repetitions if repetitions is not None else [0] * len(Y)
+        if task == "Imagined_speech":
             self.repetitions = repetitions if repetitions is not None else [0] * len(Y)
 
     def __len__(self):
@@ -295,7 +300,7 @@ def MI_load_split_dataset(root_dir, num_seen, seed=43):
     return loaders
 
 # --------- P300 ---------
-def split_repetitions(subject_data, min_reps=3):
+def P300_split_repetitions(subject_data, min_reps=3):
     grouped = defaultdict(lambda: defaultdict(list))  # {(session, level)[repetition] -> trial indices}
     for idx, (sess, lvl, rep) in enumerate(zip(subject_data['session'], subject_data['level'], subject_data['repetition'])):
         grouped[(sess, lvl)][rep].append(idx)
@@ -322,7 +327,7 @@ def split_repetitions(subject_data, min_reps=3):
 
     return train_idx, val_idx, test1_idx
 
-def load_subject_data(subject_id, root_dir):
+def P300_load_subject_data(subject_id, root_dir):
     folder = os.path.join(root_dir, f"subject_{subject_id:02d}")
     X = np.load(os.path.join(folder, "X.npy"))                # shape: (n_trials, C, T)
     Y = np.load(os.path.join(folder, "y.npy"))                # shape: (n_trials,)
@@ -383,14 +388,14 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43, num_workers=4, pin_m
     test1_sessions, test1_levels, test1_reps = [], [], []
 
     for sid in seen_subjects:
-        data = load_subject_data(sid, root_dir)
+        data = P300_load_subject_data(sid, root_dir)
 
         session_arr = np.array(data["session"])
         level_arr = np.array(data["level"])
         repetition_arr = np.array(data["repetition"])
 
         X, Y = torch.tensor(data['X']).float(), torch.tensor(data['Y']).long()
-        train_idx, val_idx, test1_idx = split_repetitions(data)
+        train_idx, val_idx, test1_idx = P300_split_repetitions(data)
         X_train_all.append(X[train_idx])
         Y_train_all.append(Y[train_idx])
         train_sids.extend([sid] * len(train_idx))
@@ -445,7 +450,7 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43, num_workers=4, pin_m
     session_all, level_all, repetition_all = [], [], []
 
     for sid in unseen_subjects:
-        data = load_subject_data(sid, root_dir)
+        data = P300_load_subject_data(sid, root_dir)
         X = torch.tensor(data['X']).float()
         Y = torch.tensor(data['Y']).long()
         X_all.append(X)
@@ -472,5 +477,179 @@ def P300_load_split_dataset(root_dir, num_seen=36, seed=43, num_workers=4, pin_m
         print(f"\n[Check] {split}: total {len(sid_tensor)} trials from subjects {sid_tensor.unique().tolist()}")
         for sid in sid_tensor.unique():
             print(f"  Subject {sid.item()}: {(sid_tensor == sid).sum().item()} trials")
+
+    return loaders
+
+# --------- Imagined_speech ---------
+def ImaginedSpeech_split_repetitions(subject_data):
+    grouped = defaultdict(list)  # rep_id -> trial indices
+    for idx, rep in enumerate(subject_data['repetition']):
+        grouped[rep].append(idx)
+
+    train_idx, val_idx, test1_idx = [], [], []
+
+    reps_sorted = sorted(grouped.keys())
+    total_reps = len(reps_sorted)
+
+    if total_reps not in [12, 15]:
+        return train_idx, val_idx, test1_idx
+
+    # Define split rule
+    train_count = int(total_reps * 0.667)
+    val_count = 3 if total_reps == 15 else 2
+    test1_count = 2  # always take 2 reps for test1
+
+    random.shuffle(reps_sorted)
+
+    train_reps = reps_sorted[:train_count]
+    val_reps = reps_sorted[train_count:train_count + val_count]
+    test1_reps = reps_sorted[train_count + val_count : train_count + val_count + test1_count]
+
+    for r in train_reps:
+        train_idx.extend(grouped[r])
+    for r in val_reps:
+        val_idx.extend(grouped[r])
+    for r in test1_reps:
+        test1_idx.extend(grouped[r])
+
+    return train_idx, val_idx, test1_idx
+
+def ImaginedSpeech_load_subject_data(subject_id, root_dir):
+    x_path = os.path.join(root_dir, f"epochs_{subject_id}_notched.npy")
+    y_path = os.path.join(root_dir, f"labels_{subject_id}.npy")
+
+    X = np.load(x_path)  # shape: (n_trials, C, T)
+    Y_raw = np.load(y_path, allow_pickle=True)  # shape: (n_trials,), string labels
+
+    Y_raw = Y_raw.flatten()
+
+    # Map labels to level indices
+    label_set = sorted(set(Y_raw.tolist()))
+    label2idx = {label: i for i, label in enumerate(label_set)}  # consistent across subjects
+
+    level = [label2idx[label] for label in Y_raw]
+
+    # Build repetition index for each stimulus
+    counter = defaultdict(int)
+    repetition = []
+    for label in Y_raw:
+        repetition.append(counter[label])
+        counter[label] += 1
+
+    # All trials are from a single session
+    session = [0] * len(Y_raw)
+
+    return {
+        "X": X,
+        "Y": np.array(level),
+        "session": session,
+        "level": level,
+        "repetition": repetition
+    }
+
+def ImaginedSpeech_load_split_dataset(root_dir, num_seen=12, seed=43,num_workers=4, pin_memory=False):
+    random.seed(seed)
+
+    all_subjects = sorted([
+        re.findall(r'epochs_(.*)\.npy', f)[0]
+        for f in os.listdir(root_dir)
+        if f.startswith("epochs_") and f.endswith(".npy")
+    ])
+
+    assert num_seen < len(all_subjects), f"Not enough subjects: requested {num_seen}, available {len(all_subjects)}"
+    seen_subjects = random.sample(all_subjects, num_seen)
+    unseen_subjects = [s for s in all_subjects if s not in seen_subjects]
+
+    print(f"[Split] Seen (train/val/test1): {seen_subjects}")
+    print(f"[Split] Unseen (test2):        {unseen_subjects}")
+
+    loaders = {}
+    subject_id_dict = {}
+
+    # Process seen subjects
+    X_train_all, Y_train_all, train_sids = [], [], []
+    X_val_all, Y_val_all, val_sids = [], [], []
+    X_test1_all, Y_test1_all, test1_sids = [], [], []
+    train_reps, val_reps, test1_reps = [], [], []
+
+    for sid in seen_subjects:
+        data = ImaginedSpeech_load_subject_data(sid, root_dir)
+
+        repetition_arr = np.array(data["repetition"])
+
+        X, Y = torch.tensor(data['X']).float(), torch.tensor(data['Y']).long()
+        train_idx, val_idx, test1_idx = ImaginedSpeech_split_repetitions(data)
+        X_train_all.append(X[train_idx])
+        Y_train_all.append(Y[train_idx])
+        train_sids.extend([sid] * len(train_idx))
+        X_val_all.append(X[val_idx])
+        Y_val_all.append(Y[val_idx])
+        val_sids.extend([sid] * len(val_idx))
+        X_test1_all.append(X[test1_idx])
+        Y_test1_all.append(Y[test1_idx])
+        test1_sids.extend([sid] * len(test1_idx))
+
+        train_reps.extend(repetition_arr[train_idx].tolist())
+        val_reps.extend(repetition_arr[val_idx].tolist())
+        test1_reps.extend(repetition_arr[test1_idx].tolist())
+
+    loaders["train"] = DataLoader(
+        EEGDataset(torch.cat(X_train_all), torch.cat(Y_train_all),
+                subject_ids=train_sids, repetitions=train_reps,
+                transform=zscore_norm),
+        batch_size=32, shuffle=True,
+        num_workers=num_workers, pin_memory=pin_memory)
+    #subject_id_dict["train"] = torch.tensor(train_sids)
+
+    loaders["val"] = DataLoader(
+        EEGDataset(torch.cat(X_val_all), torch.cat(Y_val_all),
+                   subject_ids=val_sids, repetitions=val_reps,
+                   transform=zscore_norm),
+        batch_size=32, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
+    #subject_id_dict["val"] = torch.tensor(val_sids)
+
+    loaders["test1"] = DataLoader(
+        EEGDataset(torch.cat(X_test1_all), torch.cat(Y_test1_all),
+                   subject_ids=test1_sids, repetitions=test1_reps,
+                   transform=zscore_norm),
+        batch_size=32, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
+    #subject_id_dict["test1"] = torch.tensor(test1_sids)
+
+    # Process unseen
+    X_all, Y_all, subject_ids = [], [], []
+    repetition_all = []
+
+    for sid in unseen_subjects:
+        data = ImaginedSpeech_load_subject_data(sid, root_dir)
+        X = torch.tensor(data['X']).float()
+        Y = torch.tensor(data['Y']).long()
+        X_all.append(X)
+        Y_all.append(Y)
+        subject_ids.extend([sid] * len(Y))
+
+        repetition_all.extend(data["repetition"])
+
+    loaders["test2"] = DataLoader(
+        EEGDataset(torch.cat(X_all), torch.cat(Y_all),
+                   subject_ids=subject_ids, repetitions=repetition_all,
+                   transform=zscore_norm),
+        batch_size=32, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory)
+    #subject_id_dict["test2"] = torch.tensor(subject_ids)
+
+    # Summary
+    split_sids = {
+        "train": train_sids,
+        "val": val_sids,
+        "test1": test1_sids,
+        "test2": subject_ids,
+    }
+
+    for split, sids in split_sids.items():
+        print(f"\n[Check] {split}: total {len(sids)} trials from {len(set(sids))} subjects")
+        for sid, count in Counter(sids).items():
+            print(f"  Subject {sid}: {count} trials")
 
     return loaders
