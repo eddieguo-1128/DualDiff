@@ -36,7 +36,7 @@ def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
                 x = x.to(device)
                 _, z = encoder(x)
                 for i in range(z.size(0)):
-                    s = int(sid[i].item())
+                    s = sid[i] if isinstance(sid[i], str) else int(sid[i].item())
                     if s not in z_by_sid:
                         z_by_sid[s] = []
                     z_by_sid[s].append(z[i].unsqueeze(0))
