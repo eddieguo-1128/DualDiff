@@ -42,8 +42,8 @@ elif option == "drive":
     #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
     label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
     data_dir = "/content/drive/MyDrive/project/dataset/speech_imagined/KARA_ONE/epochs/notched"
-num_subjects = 43 #SSVEP:35; MI:9; P300:43
-num_seen = 36 #SSVEP:33; MI:7; P300:36 
+num_subjects = 14 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
+num_seen = 12 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
