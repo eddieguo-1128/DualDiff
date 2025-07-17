@@ -494,6 +494,10 @@ class Decoder(nn.Module):
                 raise ValueError(f"Channel mismatch with real DDPM: {up1.shape[1]} + {dn22.shape[1]} != {expected_up2_channels}")
         else:
             # Normal case - shapes match
+            if up1.shape[-1] != dn22.shape[-1]:
+                target_len = min(up1.shape[-1], dn22.shape[-1])
+                up1 = F.interpolate(up1, size=target_len)
+                dn22 = F.interpolate(dn22, size=target_len)
             up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
 
         # Project z vector to feature space if needed
