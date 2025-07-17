@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep2_2" 
+    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep3_2" 
     #work_dir = "/root/autodl-tmp/results/kara_one/sweep2_2"   
 
 # --------- Reproducibility  ---------
@@ -102,7 +102,7 @@ eegnet_classifier_params = {"nb_classes": num_classes,
                             "dropoutType": eegnet_params["dropout_type"]}
 
 # --------- Training hyperparams ---------
-num_epochs = 500 # for all ablations, do 500 epochs
+num_epochs = 5 # for all ablations, do 500 epochs
 batch_size = 256
 batch_size_eval = 260
 test_period = 1
