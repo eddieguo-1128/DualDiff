@@ -13,8 +13,8 @@ decoder_inputs = ["z only"]
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
 z_norm_mode = ["option1", "option2"] # "option2" is the default
 z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average 
-classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
-classifier_inputs = ["x_hat"] # "z" is the default 
+classifier_variants = ["fc_classifier"] # "fc_classifier" is default
+classifier_inputs = ["decoder_out"] # "z" is the default 
 mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
                   "prior embeddings weighted average", "later embeddings weighted average"] # ablate later
 ddpm_loss = [True, False] # ablate later 
