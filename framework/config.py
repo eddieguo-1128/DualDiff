@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/p300/sweep4" 
+    work_dir = "/content/drive/MyDrive/project/model/p300/sweep3_2" 
     #work_dir = "/root/autodl-tmp/results/p300/sweep4"   
 
 # --------- Reproducibility  ---------

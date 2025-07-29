@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", message="This filename .* does not conform to 
 # Define ablation axes
 seeds = [42, 43, 44]
 ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
-encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
+encoder_inputs = ["x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
                   "skips", "z only", "z + x", "z + x_hat", "z + skips"] # "z only" is the default
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
