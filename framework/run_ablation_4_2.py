@@ -14,7 +14,7 @@ decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_o
 z_norm_mode = ["option1", "option2"] # "option2" is the default
 z_local_norm_mode = "option2" # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average 
 classifier_variants = ["fc_classifier"] # "fc_classifier" is default
-classifier_inputs = ["decoder_out"] # "z" is the default 
+classifier_inputs = ["x"] # "z" is the default 
 mixup_strategy = ["none", "inputs weighted average", "inputs temporal mixup", 
                   "prior embeddings weighted average", "later embeddings weighted average"] # ablate later
 ddpm_loss = [True, False] # ablate later 
