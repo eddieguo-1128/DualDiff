@@ -339,8 +339,7 @@ def initialize_models():
         fc = _TIDNet(n_chans=channels, n_times=timepoints, n_outputs=num_classes).to(device)
 
     elif classifier_variant == "eegconformer_classifier":
-        base = _EEGConformer(n_chans=channels, n_times=timepoints, n_outputs=num_classes)
-        fc = nn.Sequential(Unsqueeze(1), base).to(device)
+        fc = _EEGConformer(n_chans=channels, n_times=timepoints, n_outputs=num_classes).to(device)
 
     elif classifier_variant == "fc_classifier":
         fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
