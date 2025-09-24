@@ -347,8 +347,8 @@ def initialize_models():
     elif classifier_variant == "eegtchnet_classifier":
         fc = _EEGTCNet(n_chans=channels, n_outputs=num_classes).to(device)
 
-    elif classifier_variant == "tsception_classifier":
-        fc = _TSception(n_chans=channels, n_outputs=num_classes, n_times=timepoints,n_outputs=num_classes).to(device)
+    # elif classifier_variant == "tsception_classifier":
+    #     fc = _TSception(n_chans=channels, n_outputs=num_classes, n_times=timepoints).to(device)
 
     elif classifier_variant == "deep4net_classifier":
         fc = _Deep4Net(n_chans=channels, n_outputs=num_classes, n_times=timepoints).to(device)
