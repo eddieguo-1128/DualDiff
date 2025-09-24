@@ -4,7 +4,7 @@ import pandas as pd
 import subprocess
 from datetime import datetime
 # from framework.config import work_dir
-from config import work_dir, use_subject_wise_z_norm
+from config import *
 
 # ------------ Settings -------------
 seeds = [42,43,44]  
