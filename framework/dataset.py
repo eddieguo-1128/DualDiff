@@ -14,7 +14,8 @@ import pandas as pd
 import re
 from collections import Counter
 
-from framework.config1 import *
+# from framework.config1 import *
+from config import *
 
 # def zscore_norm(data):
 #     mean = torch.mean(data, dim=(1, 2))

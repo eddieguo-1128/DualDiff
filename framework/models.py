@@ -7,7 +7,8 @@ from torch.nn import Conv2d, BatchNorm2d, AvgPool2d, Dropout
 import torch.nn.functional as F
 from einops import reduce
 from dataset import *
-from framework.config1 import *
+# from framework.config1 import *
+from config import *
 import sys
 
 # Padding utility
