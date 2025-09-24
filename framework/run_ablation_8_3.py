@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import subprocess
 from datetime import datetime
-from framework.config import work_dir
+# from framework.config import work_dir
+from framework.config1 import work_dir, use_subject_wise_z_norm
 
 # ------------ Settings -------------
 seeds = [42,43,44]  
