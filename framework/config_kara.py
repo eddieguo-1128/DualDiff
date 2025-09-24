@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/p300/sweep8" 
+    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep8" 
     #work_dir = "/root/autodl-tmp/results/kara_one/sweep2_2"   
 
 # --------- Reproducibility  ---------
@@ -41,9 +41,9 @@ if option == "local":
 elif option == "drive":
     #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
     label_dir = "/content/drive/MyDrive/project/dataset/ssvep/chars" #only for MI task
-    data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
-num_subjects = 43 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
-num_seen = 36 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
+    data_dir = "/content/drive/MyDrive/project/dataset/speech_imagined/KARA_ONE/epochs/notched"
+num_subjects = 14 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
+num_seen = 12 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
@@ -59,9 +59,9 @@ wandb_project = "DualDiff"
 wandb_run_name = run_name
 
 # --------- Model ---------
-num_classes = 2 #SSVEP:26; MI:4; P300:2; Imagined_speech:11
-channels =32 #SSVEP:64; MI:22; P300:32; Imagined_speech:62
-timepoints = 513 # From EEGNet parameters. SSVEP:250; MI:1001; P300:513; Imagined_speech:4900
+num_classes = 11 #SSVEP:26; MI:4; P300:2; Imagined_speech:11
+channels = 62 #SSVEP:64; MI:22; P300:32; Imagined_speech:62
+timepoints = 4900 # From EEGNet parameters. SSVEP:250; MI:1001; P300:513; Imagined_speech:4900
 
 # DDPM 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
