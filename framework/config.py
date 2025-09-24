@@ -27,7 +27,7 @@ option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep3_2" 
+    work_dir = "/content/drive/MyDrive/project/model/ssvep/sweep8" 
     #work_dir = "/root/autodl-tmp/results/kara_one/sweep2_2"   
 
 # --------- Reproducibility  ---------
@@ -40,8 +40,8 @@ if option == "local":
     label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
     #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
-    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
-    data_dir = "/content/drive/MyDrive/project/dataset/speech_imagined/KARA_ONE/epochs/notched"
+    label_dir = "/content/drive/MyDrive/project/dataset/ssvep/chars" #only for MI task
+    data_dir = "/content/drive/MyDrive/project/dataset/ssvep/chars"
 num_subjects = 14 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
 num_seen = 12 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
 
