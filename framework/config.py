@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore", message="This filename .* does not conform to 
 
 # --------- Command-line arguments (optional) ---------
 
-task = "Imagined_speech" #"SSVEP","MI","P300","FEIS" or "Imagined_speech"
+task = "P300" #"SSVEP","MI","P300","FEIS" or "Imagined_speech"
 
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
