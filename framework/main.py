@@ -109,8 +109,8 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 subjects = sorted(set(all_sid))
             else:
                 all_sid = torch.cat(all_sid, dim=0)
-                all_x = torch.cat(all_x, dim=0).to(device)
-                all_y = torch.cat(all_y, dim=0).to(device)
+                # all_x = torch.cat(all_x, dim=0).to(device)
+                # all_y = torch.cat(all_y, dim=0).to(device)
                 subjects = all_sid.unique(sorted=True)
             # all_sid = torch.cat(all_sid, dim=0)
 
