@@ -20,14 +20,14 @@ warnings.filterwarnings("ignore", message="This filename .* does not conform to 
 
 # --------- Command-line arguments (optional) ---------
 
-task = "Imagined_speech" #"SSVEP","MI","P300","FEIS" or "Imagined_speech"
+task = "MI" #"SSVEP","MI","P300","FEIS" or "Imagined_speech"
 
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep8" 
+    work_dir = "/content/drive/MyDrive/project/model/MI/sweep8" 
     #work_dir = "/root/autodl-tmp/results/kara_one/sweep2_2"   
 
 # --------- Reproducibility  ---------
@@ -40,10 +40,10 @@ if option == "local":
     label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
     #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
-    label_dir = "/content/drive/MyDrive/project/dataset/ssvep/chars" #only for MI task
-    data_dir = "/content/drive/MyDrive/project/dataset/speech_imagined/KARA_ONE/epochs/notched"
-num_subjects = 14 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
-num_seen = 12 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
+    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
+    data_dir = "/content/drive/MyDrive/project/dataset/MI/cleaned_data"
+num_subjects = 9 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
+num_seen = 7 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
 
 # --------- Logging  ---------
 run_name = os.environ.get("RUN_NAME", "run1")
@@ -59,9 +59,9 @@ wandb_project = "DualDiff"
 wandb_run_name = run_name
 
 # --------- Model ---------
-num_classes = 11 #SSVEP:26; MI:4; P300:2; Imagined_speech:11
-channels = 62 #SSVEP:64; MI:22; P300:32; Imagined_speech:62
-timepoints = 4900 # From EEGNet parameters. SSVEP:250; MI:1001; P300:513; Imagined_speech:4900
+num_classes = 4 #SSVEP:26; MI:4; P300:2; Imagined_speech:11
+channels = 22 #SSVEP:64; MI:22; P300:32; Imagined_speech:62
+timepoints = 1001 # From EEGNet parameters. SSVEP:250; MI:1001; P300:513; Imagined_speech:4900
 
 # DDPM 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
