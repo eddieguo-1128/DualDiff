@@ -4,5 +4,6 @@ einops
 pandas
 mne
 gdown
+braindecode
 
 # pip3 install -r experiments/requirements.txt
