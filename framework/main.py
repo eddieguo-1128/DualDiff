@@ -1,5 +1,6 @@
 from sklearn.metrics import accuracy_score
-from framework.config1 import *
+# from framework.config1 import *
+from config import *
 from dataset import *
 from loss import *
 from models import *
