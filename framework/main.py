@@ -5,6 +5,18 @@ from loss import *
 from models import *
 from utils import *
 from viz import *
+
+import torch.nn as nn
+from braindecode.models import TIDNet as _TIDNet
+from braindecode.models import EEGConformer as _EEGConformer
+class Unsqueeze(nn.Module):
+    def __init__(self, dim=1):
+        super().__init__()
+        self.dim = dim
+    def forward(self, x):
+        return x.unsqueeze(self.dim)
+
+
 z_local_norm_mode = os.environ.get("Z_LOCAL_NORM_MODE", "option1")
 
 def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # not used
@@ -322,6 +334,14 @@ def initialize_models():
                               D=eegnet_classifier_params["D"],
                               F2=eegnet_classifier_params["F2"],
                               dropoutType=eegnet_classifier_params["dropoutType"]).to(device)
+    elif classifier_variant == "tidnet_classifier":
+        # TIDNet [B, C, T]
+        fc = _TIDNet(n_chans=channels, n_times=timepoints, n_outputs=num_classes).to(device)
+
+    elif classifier_variant == "eegconformer_classifier":
+        base = _EEGConformer(n_chans=channels, n_times=timepoints, n_outputs=num_classes)
+        fc = nn.Sequential(Unsqueeze(1), base).to(device)
+
     elif classifier_variant == "fc_classifier":
         fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)
     else:
