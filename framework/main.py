@@ -509,6 +509,12 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
         else:
             gamma_val = float(gamma)
 
+        if classifier_input == "x":
+            loss_supcon = 0.0
+            loss_decoder = 0.0
+            beta_val = 0.0
+            gamma_val = 0.0
+
         loss = alpha_val * loss_c + beta_val * loss_supcon + gamma_val * loss_decoder
         loss.backward()
         optim2.step()
@@ -611,6 +617,12 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
             
             # --- Combined loss
             val_loss += (alpha * loss_c + beta * loss_supcon + gamma * loss_decoder).item()
+
+            if classifier_input == "x":
+                loss_supcon = 0.0
+                loss_decoder = 0.0
+                beta = 0.0
+                gamma = 0.0
     
     val_loss = val_loss / len(val_loader)
     return metrics_val, val_loss
