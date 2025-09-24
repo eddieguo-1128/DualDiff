@@ -7,7 +7,7 @@ from datetime import datetime
 from config import *
 
 # ------------ Settings -------------
-seeds = [43,44]  
+seeds = [42,43,44]  
 #classifier_variants = ["tidnet_classifier","eegtchnet_classifier","tsception_classifier","deep4net_classifier","eeginceptionmi_classifier"]  
 #classifier_variants = ["deep4net_classifier","eeginceptionmi_classifier"]  
 classifier_variants = ["tidnet_classifier","eegtchnet_classifier","deep4net_classifier","eeginceptionmi_classifier"]  
