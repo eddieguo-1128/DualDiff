@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import subprocess
 from datetime import datetime
-from framework.config1 import work_dir
+from config import *
 
 # ------------ Settings -------------
 seeds = [42]  
