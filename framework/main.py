@@ -1,5 +1,5 @@
 from sklearn.metrics import accuracy_score
-from config import *
+from framework.config1 import *
 from dataset import *
 from loss import *
 from models import *
@@ -9,12 +9,11 @@ from viz import *
 import torch.nn as nn
 from braindecode.models import TIDNet as _TIDNet
 from braindecode.models import EEGConformer as _EEGConformer
-class Unsqueeze(nn.Module):
-    def __init__(self, dim=1):
-        super().__init__()
-        self.dim = dim
-    def forward(self, x):
-        return x.unsqueeze(self.dim)
+from braindecode.models import ShallowFBCSPNet as _ShallowFBCSPNet
+from braindecode.models import EEGTCNet as _EEGTCNet
+from braindecode.models import TSception as _TSception
+from braindecode.models import Deep4Net as _Deep4Net
+from braindecode.models import EEGInceptionMI as _EEGInceptionMI
 
 
 z_local_norm_mode = os.environ.get("Z_LOCAL_NORM_MODE", "option1")
@@ -340,6 +339,21 @@ def initialize_models():
 
     elif classifier_variant == "eegconformer_classifier":
         fc = _EEGConformer(n_chans=channels, n_times=timepoints, n_outputs=num_classes).to(device)
+
+    elif classifier_variant == "shallowfbcspnet_classifier":
+        fc = _ShallowFBCSPNet(n_chans=channels, n_outputs=num_classes, n_times=timepoints).to(device)
+
+    elif classifier_variant == "eegtchnet_classifier":
+        fc = _EEGTCNet(n_chans=channels, n_outputs=num_classes).to(device)
+
+    elif classifier_variant == "tsception_classifier":
+        fc = _TSception(n_chans=channels, n_outputs=num_classes, n_times=timepoints, freq=sfreq if 'sfreq' in globals() else 250).to(device)
+
+    elif classifier_variant == "deep4net_classifier":
+        fc = _Deep4Net(n_chans=channels, n_outputs=num_classes, n_times=timepoints).to(device)
+
+    elif classifier_variant == "eeginceptionmi_classifier":
+        fc = _EEGInceptionMI(n_chans=channels, n_outputs=num_classes, n_times=timepoints).to(device)
 
     elif classifier_variant == "fc_classifier":
         fc = LinearClassifier(encoder_dim, fc_dim, emb_dim=num_classes).to(device)

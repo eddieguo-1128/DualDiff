@@ -7,7 +7,7 @@ from framework.config1 import work_dir
 
 # ------------ Settings -------------
 seeds = [42,43,44]  
-classifier_variants = ["eegconformer_classifier", "shallowfbcspnet_classifier","eegtchnet_classifier","tsception_classifier","deep4net_classifier","eeginceptionmi_classifier"]  
+classifier_variants = [ "shallowfbcspnet_classifier","eegconformer_classifier"]  
 classifier_input = "x"            # 固定：分类头吃原始 x
 encoder_input = "x"               # 你的主干 encoder 仍吃 x（不影响baseline）
 ddpm_variant = "no_ddpm"          # baseline不需要生成

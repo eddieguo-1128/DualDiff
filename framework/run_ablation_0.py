@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import subprocess
 from datetime import datetime
-from config import work_dir, use_subject_wise_z_norm
+from framework.config1 import work_dir, use_subject_wise_z_norm
 
 # Define ablation axes
 seeds = [42,43,44]

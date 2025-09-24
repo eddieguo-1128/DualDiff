@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from config import *
+from framework.config1 import *
 z_local_norm_mode = os.environ.get("Z_LOCAL_NORM_MODE", "option1")
 
 def get_subjectwise_z_stats(loader, encoder, device, num_sessions=6):
