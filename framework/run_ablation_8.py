@@ -10,7 +10,7 @@ from config import *
 seeds = [44]  
 #classifier_variants = ["tidnet_classifier","eegtchnet_classifier","tsception_classifier","deep4net_classifier","eeginceptionmi_classifier"]  
 #classifier_variants = ["deep4net_classifier","eeginceptionmi_classifier"]  
-classifier_variants = ["tidnet_classifier"]  
+classifier_variants = ["eeginceptionmi_classifier"]  
 classifier_input = "x"            # 固定：分类头吃原始 x
 encoder_input = "x"               # 你的主干 encoder 仍吃 x（不影响baseline）
 ddpm_variant = "no_ddpm"          # baseline不需要生成
