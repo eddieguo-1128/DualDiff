@@ -15,30 +15,38 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, 
                        module="sklearn.metrics._classification")
+warnings.filterwarnings("ignore", message="This filename .* does not conform to MNE naming conventions.*",
+                        category=RuntimeWarning, module="mne.io")
 
 # --------- Command-line arguments (optional) ---------
+
+task = "Imagined_speech" #"SSVEP","MI","P300","FEIS" or "Imagined_speech"
 
 # --------- Work directory  ---------
 option = "drive"  # "local" or "drive"
 if option == "local":
     work_dir = "/Users/kshapovalenko/Desktop/GITHUB/DualDiff-LOCAL"
 elif option == "drive":
-    work_dir = "/content/drive/MyDrive/Communikate/IDL-research/"
+    work_dir = "/content/drive/MyDrive/project/model/kara_one/sweep3_2" 
+    #work_dir = "/root/autodl-tmp/results/kara_one/sweep2_2"   
 
 # --------- Reproducibility  ---------
 seed = int(os.environ.get("SEED", "44"))
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # --------- Dataset  ---------
 if option == "local":
-    data_dir = os.path.join(work_dir, "SSVEP-CHAR")
+    data_dir = os.path.join(work_dir, "cleaned_data")
+    label_dir = os.path.join(work_dir, "second_session_labels")
 elif option == "drive":
-    data_dir = "/content/drive/MyDrive/Communikate//IDL-research/dataset/ssvep/chars/"
-num_subjects = 35
-num_seen = 33
+    #data_dir = "/content/drive/MyDrive/project/dataset/p300/bi2015a/cleaned_data"
+    label_dir = "/content/drive/MyDrive/project/dataset/MI/second_session_labels" #only for MI task
+    data_dir = "/content/drive/MyDrive/project/dataset/speech_imagined/KARA_ONE/epochs/notched"
+num_subjects = 14 #SSVEP:35; MI:9; P300:43; Imagined_speech:14
+num_seen = 12 #SSVEP:33; MI:7; P300:36; Imagined_speech:12
 
 # --------- Logging  ---------
-run_name = os.environ.get("RUN_NAME", "run10")
+run_name = os.environ.get("RUN_NAME", "run1")
 ## Run directory 
 run_dir = os.path.join(work_dir, run_name)
 os.makedirs(run_dir, exist_ok=True)
@@ -51,9 +59,9 @@ wandb_project = "DualDiff"
 wandb_run_name = run_name
 
 # --------- Model ---------
-num_classes = 26
-channels = 64 
-timepoints = 250  # From EEGNet parameters
+num_classes = 11 #SSVEP:26; MI:4; P300:2; Imagined_speech:11
+channels = 62 #SSVEP:64; MI:22; P300:32; Imagined_speech:62
+timepoints = 4900  # From EEGNet parameters. SSVEP:250; MI:1001; P300:513; Imagined_speech:4900
 
 # DDPM 
 ddpm_variant = os.environ.get("DDPM_VARIANT", "use_ddpm")  # "use_ddpm" or "no_ddpm"
@@ -95,10 +103,13 @@ eegnet_classifier_params = {"nb_classes": num_classes,
 
 # --------- Training hyperparams ---------
 num_epochs = 500 # for all ablations, do 500 epochs
-batch_size = 32
+batch_size = 256
 batch_size_eval = 260
 test_period = 1
 start_test = test_period
+
+num_workers = 4
+pin_memory = (device.type == "cuda")
 
 # Optimizer settings
 base_lr = 9e-5
@@ -106,8 +117,16 @@ max_lr = 1.5e-3
 scheduler_step_size = 150
 scheduler_gamma = 0.9998
 
-# Loss weights
-initial_alpha = 1.0
+# Loss 
+ddpm_reconstruction_loss = os.environ.get("DDPM_RECONSTRUCTION_LOSS", "True") == "True"
+classification_loss = os.environ.get("CLASSIFICATION_LOSS", "CE")
+contrastive_loss = os.environ.get("CONTRASTIVE_LOSS", "SupCon")
+decoder_reconstruction_loss = os.environ.get("DECODER_RECONSTRUCTION_LOSS", "L1")
+
+alpha = float(os.environ.get("ALPHA", 1.0))
+beta = os.environ.get("BETA", "scheduler to 0.05")
+gamma = os.environ.get("GAMMA", "scheduler to 0.2")
+
 beta_scale = 0.2  # Multiplied by min(1.0, epoch/50)
 gamma_scale = 0.05  # Multiplied by min(1.0, epoch/100)
 

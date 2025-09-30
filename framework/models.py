@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from einops import reduce
 from dataset import *
 from config import *
+import sys
 
 # Padding utility
 def get_padding(kernel_size, dilation=1):
@@ -155,7 +156,13 @@ class ConditionalUNet(nn.Module):
 
         self.up2 = UnetUp(self.d3_out, self.u2_out, 1, gn=8, factor=2)
         self.up3 = UnetUp(self.u2_out + self.d2_out, self.u3_out, 1, gn=8, factor=2)
-        self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=8, factor=2)
+        if task == "SSVEP":
+            self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=8, factor=2)
+        elif task in ["MI", "Imagined_speech"]:
+            self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=1, factor=2)
+        else:
+            print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+            self.up4 = UnetUp(self.u3_out + self.d1_out, self.u4_out, 1, gn=8, factor=2) 
         self.out = nn.Conv1d(self.u4_out + in_channels, in_channels, 1)
 
     def forward(self, x, t):
@@ -166,6 +173,13 @@ class ConditionalUNet(nn.Module):
         temb = self.sin_emb(t).view(-1, self.n_feat, 1)  # [b, n_feat, 1]
 
         up1 = self.up2(down3)  # 250 -> 500
+        
+        # Align temporal dimension of (up1 + temb) and down2
+        if (up1 + temb).shape[-1] != down2.shape[-1]:
+            target_len = min((up1 + temb).shape[-1], down2.shape[-1])
+            up1 = F.interpolate(up1, size=target_len)
+            down2 = F.interpolate(down2, size=target_len)
+
         up2 = self.up3(torch.cat([up1 + temb, down2], 1))  # 500 -> 1000
 
         # Align the temporal dimension of up2 + temb and down1
@@ -480,6 +494,10 @@ class Decoder(nn.Module):
                 raise ValueError(f"Channel mismatch with real DDPM: {up1.shape[1]} + {dn22.shape[1]} != {expected_up2_channels}")
         else:
             # Normal case - shapes match
+            if up1.shape[-1] != dn22.shape[-1]:
+                target_len = min(up1.shape[-1], dn22.shape[-1])
+                up1 = F.interpolate(up1, size=target_len)
+                dn22 = F.interpolate(dn22, size=target_len)
             up2 = self.up2(torch.cat([up1, dn22.detach()], 1))
 
         # Project z vector to feature space if needed
@@ -527,6 +545,11 @@ class DiffE(nn.Module):
         else:
             decoder_out = None # If no decoder, return None for decoder output
 
+        # print(f"[CHECK] classifier_input={classifier_input}, "
+        # f"x0 mean={x0.mean().item():.6f}, std={x0.std().item():.6f}, "
+        # f"decoder_out={'None' if decoder_out is None else f'{decoder_out.mean().item():.6f}, std={decoder_out.std().item():.6f}'}")
+
+
         # Pass the appropriate input type directly to the classifier
         if classifier_input == "z":
             fc_in = z  # [B, 256]
@@ -538,6 +561,7 @@ class DiffE(nn.Module):
             fc_in = decoder_out.detach()  # [B, 64, 250]
         else:
             fc_in = z  # Default fallback
+
 
         fc_out = self.fc(fc_in)
         return decoder_out, fc_out, z
@@ -635,19 +659,20 @@ class LinearClassifier(nn.Module):
             nn.GroupNorm(4, latent_dim),
             nn.PReLU(),
             nn.Linear(in_features=latent_dim, out_features=emb_dim))
-        self.eeg_proj = nn.Conv1d(64, 256, kernel_size=1)  # assumes input is [B, 64, T]
+        self.eeg_proj = nn.Conv1d(channels, 256, kernel_size=1)  # assumes input is [B, 64, T]
         self.att_pool = AttentionPool1d(256)
 
-    def forward(self, x):
+    def forward(self, x): 
         if x.dim() == 2:
             return self.linear_out(x)
-        elif x.dim() == 3: # [B, 64, T]
+        elif x.dim() == 3: # [B, chans, T]
             x = self.eeg_proj(x)  # [B, 256, T]
             x = self.att_pool(x)  # [B, in_dim]
             return self.linear_out(x)
         else:
             raise ValueError(f"Unexpected input shape to LinearClassifier: {x.shape}")
         
+             
 class EEGNetClassifier(nn.Module):
     def __init__(self, nb_classes, Chans=64, Samples=128, dropoutRate=0.5,
                  kernLength=64, F1=8, D=2, F2=16, norm_rate=0.25, dropoutType='Dropout'):

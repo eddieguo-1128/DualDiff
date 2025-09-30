@@ -1,15 +1,18 @@
+from sklearn.metrics import accuracy_score
 from config import *
 from dataset import *
 from loss import *
 from models import *
 from utils import *
 from viz import *
+z_local_norm_mode = os.environ.get("Z_LOCAL_NORM_MODE", "option1")
 
 def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # not used
     labels = np.arange(0, num_classes)
     Y = []
     Y_hat = []
-    for x, y, sid in generator:
+    for batch in loader:
+        x, y, sid = batch[:3]
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
 
         if encoder_input == "x_hat" and ddpm is not None:
@@ -30,11 +33,16 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # no
     Y_hat = torch.cat(Y_hat, dim=0).numpy() 
 
     # Calculate metrics
-    accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+    if task == "P300":
+        y_pred = Y_hat.argmax(axis=1)
+        accuracy = accuracy_score(Y, y_pred)
+        auc = roc_auc_score(Y, Y_hat[:, 1], average="macro")
+    else:
+        accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+        auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
-    auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     
     metrics = {"accuracy": accuracy,  "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
@@ -43,24 +51,70 @@ def evaluate(encoder, fc, generator, device, ddpm=None, encoder_input="x"): # no
 def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sessions=6, 
                                     unseen=False, z_stats_train=None, ddpm=None, encoder_input="x"):
     diffe.eval()
-    labels = np.arange(0, 26)
+    if task == "SSVEP":
+        labels = np.arange(0, 26)
+    elif task == "MI":
+        labels = np.arange(0, 4)
+    elif task == "P300":
+        labels = np.arange(0, 2)
+    elif task == "Imagined_speech":
+        labels = np.arange(0, 11)
+    else:
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+        labels = np.arange(0, 26) 
     Y, Y_hat = [], []
 
     with torch.no_grad():
         if unseen:
-            # For unseen subjects: calculate z-stats on-the-fly from sessions 0-3 (104 samples)
+            if task == "P300" and z_local_norm_mode == "option2":
+                z_by_sid_sess = {}
+                for x_, y_, sid_batch, sess_batch in loader:
+                    x_ = x_.to(device)
+                    sess_batch = sess_batch.to(device)
+                    if encoder_input == "x_hat" and ddpm is not None:
+                        x_hat, *_ = ddpm(x_)
+                        encoder_in_ = x_hat.detach()
+                    elif encoder_input == "x":
+                        encoder_in_ = x_
+                    else:
+                        encoder_in_ = x_
+
+                    z_batch = diffe.encoder(encoder_in_)[1]
+                    for i in range(z_batch.size(0)):
+                        key = (int(sid_batch[i]), int(sess_batch[i]))
+                        z_by_sid_sess.setdefault(key, []).append(z_batch[i].unsqueeze(0))
+
             all_x, all_y, all_sid = [], [], []
-            for x, y, sid in loader:
+            for batch in loader:
+                x, y, sid = batch[:3]
                 all_x.append(x)
                 all_y.append(y)
                 all_sid.append(sid)
             all_x = torch.cat(all_x, dim=0).to(device)
             all_y = torch.cat(all_y, dim=0).to(device)
-            all_sid = torch.cat(all_sid, dim=0)
 
-            subjects = all_sid.unique(sorted=True)
+            if isinstance(all_sid[0][0], str):  
+                all_sid = sum(all_sid, [])  
+                subjects = sorted(set(all_sid))
+            else:
+                all_sid = torch.cat(all_sid, dim=0)
+                all_x = torch.cat(all_x, dim=0).to(device)
+                all_y = torch.cat(all_y, dim=0).to(device)
+                subjects = all_sid.unique(sorted=True)
+            # all_sid = torch.cat(all_sid, dim=0)
+
+            # if task == "Imagined_speech":
+            #     all_sid = [str(s) for s in all_sid]
+            #     subjects = list(set(all_sid))
+            # else:
+            #     subjects = all_sid.unique(sorted=True)
+
             for s in subjects:
-                indices = (all_sid == s)
+                if isinstance(s, str):
+                    indices = [i for i, sid in enumerate(all_sid) if sid == s]
+                else:
+                    indices = (all_sid == s)
+
                 x_sub = all_x[indices]
                 y_sub = all_y[indices]
 
@@ -80,11 +134,62 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
 
                 # Get embeddings for z-normalization
                 z = diffe.encoder(encoder_in)[1]
-                
-                # Apply z-normalization
-                z_mean = z[:104].mean(dim=0, keepdim=True)
-                z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
-                z_norm = (z - z_mean) / z_std
+
+                if task == "SSVEP": 
+                    # Apply z-normalization
+                    z_mean = z[:104].mean(dim=0, keepdim=True)
+                    z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
+                    z_norm = (z - z_mean) / z_std
+                elif task == "MI":
+                    samples_per_subject = 576  # 2 sessions × 288 samples
+                    half = samples_per_subject // 2  # 288
+                    quarter = half // 2  # 144
+
+                    # Use only half from each session for stats
+                    z_sess0_half = z[:half][:quarter]
+                    z_sess1_half = z[half:][:quarter]
+
+                    z_mean0 = z_sess0_half.mean(dim=0, keepdim=True)
+                    z_std0 = z_sess0_half.std(dim=0, keepdim=True) + 1e-6
+
+                    z_mean1 = z_sess1_half.mean(dim=0, keepdim=True)
+                    z_std1 = z_sess1_half.std(dim=0, keepdim=True) + 1e-6
+
+                    # Average stats
+                    avg_mean = (z_mean0 + z_mean1) / 2
+                    avg_std = (z_std0 + z_std1) / 2
+
+                    z_norm = (z - avg_mean) / avg_std
+                elif (task == "P300" and z_local_norm_mode == "option1") or task == "Imagined_speech":
+                    samples_per_subject = z.shape[0]
+                    half = samples_per_subject // 2  # use a half for calculating z-stats
+
+                    z_half = z[:half]  
+                    z_mean = z_half.mean(dim=0, keepdim=True)
+                    z_std = z_half.std(dim=0, keepdim=True) + 1e-6
+
+                    z_norm = (z - z_mean) / z_std  
+                elif task == "P300" and z_local_norm_mode == "option2":
+                    sess_means, sess_stds, z_all = [], [], []
+                    for sess_id in range(3):
+                        key = (int(s.item()), sess_id)
+                        if key in z_by_sid_sess:
+                            z_cat = torch.cat(z_by_sid_sess[key])
+                            z_all.append(z_cat)
+                            z_half = z_cat[: z_cat.size(0) // 2]
+                            sess_means.append(z_half.mean(0, keepdim=True))
+                            sess_stds.append(z_half.std(0, keepdim=True) + 1e-6)
+                    if not sess_means:
+                        print(f"[Warning] No session for subject {s.item()}")
+                        continue
+                    avg_mean = torch.stack(sess_means).mean(0)
+                    avg_std = torch.stack(sess_stds).mean(0)
+                    z_norm = (torch.cat(z_all) - avg_mean) / avg_std
+                else:
+                    print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+                    z_mean = z[:104].mean(dim=0, keepdim=True)
+                    z_std = z[:104].std(dim=0, keepdim=True) + 1e-6
+                    z_norm = (z - z_mean) / z_std
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
@@ -101,7 +206,7 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                     y_hat = F.softmax(diffe.fc(decoder_out.detach()), dim=1)
                 else:
                     y_hat = F.softmax(diffe.fc(z_norm), dim=1)
-
+                
                 Y.append(y_sub.detach().cpu())
                 Y_hat.append(y_hat.detach().cpu())
         else:
@@ -109,8 +214,10 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
             if z_stats_train is None and classifier_input == "z":
                 raise ValueError("z_stats_train must be provided for seen subject evaluation with z input.")
 
-            for x, y, sid in loader:
-                x, y = x.to(device), y.to(device)
+            for batch in loader:
+                x, y, sid = batch[:3]
+                x, y = x.to(device), y.type(torch.LongTensor).to(device)
+                #x, y = x.to(device), y.to(device)
 
                 # Generate DDPM output if needed
                 if encoder_input == "x_hat" and ddpm is not None:
@@ -130,10 +237,16 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
                 _, z = diffe.encoder(encoder_in)
                 
                 # Apply subject-wise z-normalization using training statistics
-                z_norm = torch.stack([
-                    (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
-                    z_stats_train[int(sid[i].item())][1].squeeze(0)
-                    for i in range(z.size(0))])
+                if task == "Imagined_speech":
+                    z_norm = torch.stack([
+                        (z[i] - z_stats_train[sid[i]][0].squeeze(0)) / z_stats_train[sid[i]][1].squeeze(0)
+                        for i in range(z.size(0))
+                    ])
+                else: 
+                    z_norm = torch.stack([
+                        (z[i] - z_stats_train[int(sid[i].item())][0].squeeze(0)) /
+                        z_stats_train[int(sid[i].item())][1].squeeze(0)
+                        for i in range(z.size(0))])
 
                 # Choose appropriate input based on classifier_input setting
                 if classifier_input == "z":
@@ -158,12 +271,17 @@ def evaluate_with_subjectwise_znorm(diffe, loader, device, name="Test", num_sess
     Y_hat = torch.cat(Y_hat).numpy()
 
     # Calculate metrics (unchanged)
-    accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+    if task == "P300":
+        y_pred = Y_hat.argmax(axis=1)
+        accuracy = accuracy_score(Y, y_pred)
+        auc = roc_auc_score(Y, Y_hat[:, 1], average="macro")
+    else:
+        accuracy = top_k_accuracy_score(Y, Y_hat, k=1, labels=labels)
+        auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
     f1 = f1_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     recall = recall_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
     precision = precision_score(Y, Y_hat.argmax(axis=1), average="macro", labels=labels)
-    auc = roc_auc_score(Y, Y_hat, average="macro", multi_class="ovo", labels=labels)
-
+    
     metrics = {"accuracy": accuracy, "f1": f1, "recall": recall, 
                "precision": precision, "auc": auc}
     return metrics
@@ -284,13 +402,9 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
     num_batches = 0
     epoch_acc = 0
     total_samples = 0
-    
-    # Set loss weights based on current epoch
-    alpha = initial_alpha
-    beta = min(1.0, epoch / 50) * beta_scale
-    gamma = min(1.0, epoch / 100) * gamma_scale
-    
-    for x, y, sid in train_loader:
+
+    for batch in train_loader:
+        x, y, sid = batch[:3]
         x, y = x.to(device), y.type(torch.LongTensor).to(device)
         y_cat = F.one_hot(y, num_classes=num_classes).type(torch.FloatTensor).to(device)
 
@@ -329,21 +443,53 @@ def train_epoch(ddpm, diffe, train_loader, optim1, optim2, scheduler1, scheduler
             if ddpm_variant == "use_ddpm":
                 loss_decoder = F.l1_loss(decoder_out, x_hat.detach()) # we detached x_hat, cause we don't want to backprop through the DDPM
             else:
+                if decoder_out.shape[-1] != x.shape[-1]:
+                    target_len = min(decoder_out.shape[-1], x.shape[-1])
+                    decoder_out = F.interpolate(decoder_out, size=target_len)
+                    x = F.interpolate(x, size=target_len)
                 loss_decoder = F.l1_loss(decoder_out, x)
-        
+
         # Normalize by subject
         if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
-            z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-                z_stats[int(sid[i].item())][1].squeeze(0) 
-                for i in range(z.size(0))])
+            if task == "Imagined_speech":
+                z = torch.stack([
+                            (z[i] - z_stats[sid[i]][0].squeeze(0)) / z_stats[sid[i]][1].squeeze(0)
+                            for i in range(z.size(0))
+                        ])
+            else: 
+                z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                    z_stats[int(sid[i].item())][1].squeeze(0) 
+                    for i in range(z.size(0))])
         
-        # Compute losses
-        loss_c = nn.CrossEntropyLoss()(fc_out, y)
-        z_proj = proj_head(z)
-        loss_supcon = supcon_loss(z_proj, y)
+        # Losses 
+        # --- Classification loss
+        if classification_loss == "CE":
+            loss_c = nn.CrossEntropyLoss()(fc_out, y)
+        elif classification_loss == "MSE":
+            loss_c = nn.MSELoss()(fc_out, y_cat)
+        else:
+            raise ValueError(f"Unknown classification loss: {classification_loss}")
+
+        # --- Contrastive loss
+        if contrastive_loss == "SupCon":
+            z_proj = proj_head(z)
+            loss_supcon = supcon_loss(z_proj, y)
+        else:
+            loss_supcon = 0.0 
         
-        # Combined loss
-        loss = alpha * loss_c + beta * loss_supcon + gamma * loss_decoder
+        # --- Combined loss
+        # Loss weights (scheduler logic)
+        alpha_val = alpha  # always float
+        if isinstance(beta, str) and beta.startswith("scheduler"):
+            beta_val = min(1.0, epoch / 50) * beta_scale
+        else:
+            beta_val = float(beta)
+        if isinstance(gamma, str) and gamma.startswith("scheduler"):
+            gamma_val = min(1.0, epoch / 100) * gamma_scale
+        else:
+            gamma_val = float(gamma)
+
+        loss = alpha_val * loss_c + beta_val * loss_supcon + gamma_val * loss_decoder
         loss.backward()
         optim2.step()
         
@@ -378,7 +524,8 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
     # Calculate validation loss
     val_loss = 0
     with torch.no_grad():
-        for x, y, sid in val_loader:
+        for batch in val_loader:
+            x, y, sid = batch[:3]
             x, y = x.to(device), y.type(torch.LongTensor).to(device)
             y_cat = F.one_hot(y, num_classes=num_classes).float().to(device)
             
@@ -409,17 +556,40 @@ def validate(ddpm, diffe, val_loader, z_stats, proj_head, supcon_loss, alpha, be
                 if ddpm_variant == "use_ddpm":
                     loss_decoder = F.l1_loss(decoder_out, x_hat.detach())
                 else:
+                    if decoder_out.shape[-1] != x.shape[-1]:
+                        target_len = min(decoder_out.shape[-1], x.shape[-1])
+                        decoder_out = F.interpolate(decoder_out, size=target_len)
+                        x = F.interpolate(x, size=target_len)
                     loss_decoder = F.l1_loss(decoder_out, x)
             
+            
             if isinstance(use_subject_wise_z_norm, dict) and use_subject_wise_z_norm.get("train", True):
-                z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
-                    z_stats[int(sid[i].item())][1].squeeze(0) 
-                    for i in range(z.size(0))])
+                if task == "Imagined_speech":
+                    z = torch.stack([
+                            (z[i] - z_stats[sid[i]][0].squeeze(0)) / z_stats[sid[i]][1].squeeze(0)
+                            for i in range(z.size(0))
+                        ])
+                else:
+                    z = torch.stack([(z[i] - z_stats[int(sid[i].item())][0].squeeze(0)) / 
+                        z_stats[int(sid[i].item())][1].squeeze(0) 
+                        for i in range(z.size(0))])
+
+            # --- Classification loss
+            if classification_loss == "CE":
+                loss_c = nn.CrossEntropyLoss()(fc_out, y)
+            elif classification_loss == "MSE":
+                loss_c = nn.MSELoss()(fc_out, y_cat)
+            else:
+                raise ValueError(f"Unknown classification loss: {classification_loss}")
             
-            loss_c = nn.CrossEntropyLoss()(fc_out, y)
-            z_proj = proj_head(z)
-            loss_supcon = supcon_loss(z_proj, y)
+            # --- Contrastive loss
+            if contrastive_loss == "SupCon":
+                z_proj = proj_head(z)
+                loss_supcon = supcon_loss(z_proj, y)
+            else:
+                loss_supcon = 0.0  # Add more options if needed
             
+            # --- Combined loss
             val_loss += (alpha * loss_c + beta * loss_supcon + gamma * loss_decoder).item()
     
     val_loss = val_loss / len(val_loader)
@@ -433,7 +603,17 @@ def train():
     os.makedirs(checkpoints_dir, exist_ok=True)
 
     # Setup data loaders
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+    if task == "SSVEP":
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+    elif task == "MI":
+        loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "P300":
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
+    elif task == "Imagined_speech":
+        loaders = ImaginedSpeech_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
+    else:
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
     
@@ -457,6 +637,7 @@ def train():
     start_time = time.time()
     with tqdm(total=num_epochs, desc=f"Training") as pbar:
         for epoch in range(num_epochs):
+
             epoch_start = time.time()
             
             # Train for one epoch
@@ -468,14 +649,20 @@ def train():
             history["train_acc"].append(train_acc)
             
             # Validate model
-            alpha = initial_alpha
-            beta = min(1.0, epoch / 50) * beta_scale
-            gamma = min(1.0, epoch / 100) * gamma_scale
+            # Loss weights (scheduler logic)
+            if isinstance(beta, str) and beta.startswith("scheduler"):
+                beta_val = min(1.0, epoch / 50) * beta_scale
+            else:
+                beta_val = float(beta)
+            if isinstance(gamma, str) and gamma.startswith("scheduler"):
+                gamma_val = min(1.0, epoch / 100) * gamma_scale
+            else:
+                gamma_val = float(gamma)
             
             # Run validation at appropriate intervals
             if epoch > start_test and epoch % test_frequency == 0:
                 metrics_val, val_loss = validate(ddpm, diffe, val_loader, z_stats, proj_head, 
-                                                 supcon_loss,alpha, beta, gamma)
+                                                 supcon_loss, alpha, beta_val, gamma_val)
                 
                 # Record validation metrics
                 val_acc = metrics_val["accuracy"]
@@ -561,7 +748,19 @@ def test_best_model(best_metrics, z_stats_train):
         print("No best model was saved (validation accuracy didn't improve). Using final model state.")
     
     # Load test data
-    loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    if task == "SSVEP":
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "MI":
+        loaders = MI_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed)
+    elif task == "P300":
+        loaders = P300_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)
+    elif task == "Imagined_speech":
+        loaders = ImaginedSpeech_load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed,num_workers=num_workers, pin_memory=pin_memory)  
+    else:
+        print(f"Warning: Unknown task config '{task}'. Defaulting to 'SSVEP'")
+        loaders = load_split_dataset(root_dir=data_dir, num_seen=num_seen, seed=seed) 
+
+    
     test1_loader = loaders["test1"]
     test2_loader = loaders["test2"]
     

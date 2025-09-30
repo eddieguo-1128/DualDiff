@@ -2,5 +2,7 @@ ema-pytorch
 pytorch_metric_learning
 einops
 pandas
+mne
+gdown
 
 # pip3 install -r experiments/requirements.txt
