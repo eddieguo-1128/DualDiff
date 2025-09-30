@@ -1,6 +1,6 @@
 # MultiDiffNet: A Multi-Objective Diffusion Framework for Generalizable Brain Decoding
 
-This project implements a joint EEG generation and classification model using denoising diffusion techniques. 
+We introduce MultiDiffNet, a diffusion-based framework that generalizes to unseen subjects, supported by a new benchmark suite and evaluation protocol.
 
 ## Paper 
 
