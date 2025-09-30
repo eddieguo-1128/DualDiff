@@ -4,9 +4,9 @@ This project implements a joint EEG generation and classification model using de
 
 ## Paper 
 
-Accepted to the NeurIPS 2025 Workshop on Foundation Models for the Brain and Body. 
+Accepted to the [NeurIPS 2025 Workshop on Foundation Models for the Brain and Body](https://brainbodyfm-workshop.github.io/). 
 
-The paper will be added shortly: https://brainbodyfm-workshop.github.io/
+Link to the final paper will be added shortly.
 
 ## Final report
 
