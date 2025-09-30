@@ -3,16 +3,17 @@ import numpy as np
 import pandas as pd
 import subprocess
 from datetime import datetime
-from config import work_dir, use_subject_wise_z_norm
+from framework.config import work_dir, use_subject_wise_z_norm
 
 # Define ablation axes
-seeds = [42, 43, 44]
+seeds = [42,43,44]
+z_local_norm_mode = ["option1","option2"] # option1: directly claculate z_statistics across sessions; option2: calculate z_statistics by sessions and then average
 ddpm_variants = ["use_ddpm", "no_ddpm"] # no ddpm means no x_hat is generated
 encoder_inputs = ["x", "x_hat"] # x_hat is only available when ddpm is used
 decoder_inputs = ["x + x_hat + skips", "x + x_hat", "x_hat + skips", "x + skips",
                   "skips", "z only", "z + x", "z + x_hat", "z + skips"] # "z only" is the default
 decoder_variants = ["use_decoder", "no_decoder"] # no decoder means no decoder_out is generated 
-z_norm_mode = "option2" 
+z_norm_mode = ["option1","option2","option3"]
 classifier_variants = ["eegnet_classifier", "fc_classifier"] # "fc_classifier" is default
 classifier_inputs = ["x", "x_hat", "decoder_out", "z"] # "z" is the default 
 
@@ -32,25 +33,26 @@ gamma = "scheduler to 0.2" # default
 
 results = []
 
-for dec_input in decoder_inputs:
+for z_local_norm in z_local_norm_mode:
     acc_seen_list = []
     acc_unseen_list = []
 
-    for seed in seeds: 
-                print(f"\nRunning: decoder_input={dec_input}, seed={seed}")
+    for seed in seeds:      
+                print(f"\nRunning: decoder_input=z_only, z_local_norm_mode={z_local_norm}, seed={seed}")
                 
                 # Set environment variables
                 os.environ["CLASSIFIER_VARIANT"] = "fc_classifier"  
                 os.environ["CLASSIFIER_INPUT"] = "z"
-                os.environ["DECODER_INPUT"] = dec_input
+                os.environ["DECODER_INPUT"] = "z only"
                 os.environ["SEED"] = str(seed)
-                os.environ["Z_NORM_MODE"] = z_norm_mode
+                os.environ["Z_LOCAL_NORM_MODE"] = z_local_norm
+                os.environ["Z_NORM_MODE"] = "option2"
                 os.environ["DDPM_VARIANT"] = "use_ddpm"
                 os.environ["ENCODER_INPUT"] = "x"
                 os.environ["DECODER_VARIANT"] = "use_decoder"
 
                 # Construct run name
-                run_name = f"decinput_{dec_input.replace(' ', '_')}__s{seed}_z{z_norm_mode}"
+                run_name = f"z{z_local_norm}_s{seed}"
                 os.environ["RUN_NAME"] = run_name
                 log_dir = os.path.join(work_dir, run_name, "logs")
 
@@ -78,13 +80,14 @@ for dec_input in decoder_inputs:
     unseen_mean, unseen_std = np.mean(acc_unseen_list), np.std(acc_unseen_list)
 
     results.append({
-                "decoder_input": dec_input,
+                "decoder_input": os.environ["DECODER_INPUT"],
                 "classifier_variant": os.environ["CLASSIFIER_VARIANT"],
                 "classifier_input": os.environ["CLASSIFIER_INPUT"],
                 "ddpm_variant": os.environ["DDPM_VARIANT"],
                 "encoder_input": os.environ["ENCODER_INPUT"],
                 "decoder_variant": os.environ["DECODER_VARIANT"],
-                "z_norm_mode": z_norm_mode,
+                "z_local_norm_mode": z_local_norm,
+                "z_norm_mode": os.environ["Z_NORM_MODE"],
                 "test_seen_mean": seen_mean * 100,
                 "test_seen_std": seen_std * 100,
                 "test_unseen_mean": unseen_mean * 100,
@@ -94,6 +97,6 @@ results_df = pd.DataFrame(results)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
 ablation_dir = os.path.join(work_dir, "ablation_results")
 os.makedirs(ablation_dir, exist_ok=True)
-results_path = os.path.join(ablation_dir, f"ablation_decoder_input_{timestamp}.csv")
+results_path = os.path.join(ablation_dir, f"ablation_z_local_norm_mode_{timestamp}.csv")
 results_df.to_csv(results_path, index=False)
 print(f"\nFinished. Saved results to {results_path}")

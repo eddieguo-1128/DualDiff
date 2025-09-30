@@ -20,13 +20,47 @@ Link to the final paper will be added shortly.
 
 ## Codebase
 
-- [`baseline`](./baseline): Original EEGNet and baseline evaluation scripts.
-- [`diffusion-DiffE`](./diffusion-DiffE): Original [DiffE model](https://github.com/yorgoon/DiffE) implementation.
-- [`diffusion-DualDiff-Latent`](./diffusion-DualDiff-Latent): Modified DiffE `.py` files for the DualDiff-Latent model 
-- [`diffusion-DualDiff-Mixup`](./diffusion-DualDiff-Mixup): Modified DiffE `.py` files for the DualDiff-Mixup model 
-- [`feis-notebooks`](./feis-notebooks): Notebooks for the FEIS-specific experiments
-- [`mi-notebooks`](./mi-notebooks): Notebooks for Motor Imagery-specific experiments
-- [`ssvep-notebooks`](./ssvep-notebooks): Notebooks for SSVEP-specific experiments
+- [`framework`](./framework): Core framework with main training scripts, models, and configuration
+- [`ablations`](./ablations): Ablation study scripts for running multiple experiments with different parameter combinations
+- [`notebooks`](./notebooks): Jupyter notebooks organized by dataset (baseline, FEIS, Motor Imagery, SSVEP experiments)
+- [`archive`](./archive): Previous implementations including DiffE and DualDiff-Latent models
+
+## How to run
+
+The configuration is controlled by parameters in `framework/config.py`. Modify this file to change:
+- Work directory (todo: pick "local" or "drive")
+- Dataset directory (todo: specify the location)
+- Other parameters
+
+### Running a single experiment
+
+To run a single experiment with the current configuration:
+
+```bash
+python framework/main.py
+```
+
+### Running ablation studies
+
+To run multiple experiments with different parameter combinations, use the ablation scripts:
+
+```bash
+python ablations/run_ablation_0.py    # Basic parameter sweep
+python ablations/run_ablation_1.py    # Different configurations
+# ... other ablation scripts
+```
+
+Each ablation script automatically runs multiple experiments with different parameter settings and saves results to CSV files in the work directory.
+
+### Using the runner notebook
+
+Alternatively, you can use the provided runner notebook for interactive execution:
+
+```bash
+jupyter notebook framework/runner.ipynb
+```
+
+This notebook provides a step-by-step interface for configuring and running the training process.
 
 ## Acknowledgements
 
