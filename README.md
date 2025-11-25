@@ -12,16 +12,6 @@ Accepted to the [NeurIPS 2025 Workshop on Foundation Models for the Brain and Bo
   </a>
 </p>
 
-## Final report
-
-<p align="left">
-  <a href="https://drive.google.com/file/d/1j9D4cUCC8CuNJWCPe7GjeGUAo6qSsD5l/view?usp=sharing" target="_blank">
-    <img src="https://img.shields.io/badge/View Final Report-blue?style=for-the-badge" alt="View Final Report">
-  </a>
-</p>
-
-*Updated: April 30, 2025*
-
 ## Codebase
 
 - [`framework`](./framework): Core framework with main training scripts, models, and configuration
