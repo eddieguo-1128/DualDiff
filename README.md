@@ -4,7 +4,7 @@ We introduce MultiDiffNet, a diffusion-based framework that generalizes to unsee
 
 ## Paper 
 
-Accepted to the [NeurIPS 2025 Workshop on Foundation Models for the Brain and Body](https://brainbodyfm-workshop.github.io/). 
+Accepted to the [NeurIPS 2025 Workshop on Foundation Models for the Brain and Body](https://brainbodyfm-workshop.github.io/call-for-papers). 
 
 <p align="left">
   <a href="https://arxiv.org/abs/2511.18294" target="_blank">
