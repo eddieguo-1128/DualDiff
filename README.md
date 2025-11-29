@@ -17,7 +17,6 @@ Accepted to the [NeurIPS 2025 Workshop on Foundation Models for the Brain and Bo
 - [`framework`](./framework): Core framework with main training scripts, models, and configuration
 - [`ablations`](./ablations): Ablation study scripts for running multiple experiments with different parameter combinations
 - [`notebooks`](./notebooks): Jupyter notebooks organized by dataset (baseline, FEIS, Motor Imagery, SSVEP experiments)
-- [`archive`](./archive): Previous implementations including DiffE and DualDiff-Latent models
 
 ## How to run
 
